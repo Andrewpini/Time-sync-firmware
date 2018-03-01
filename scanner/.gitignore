@@ -1,0 +1,60 @@
+
+# mirco-ecc
+external/sdk13/external/micro-ecc/micro-ecc
+*micro_ecc_lib_nrf52.a
+*micro_ecc_lib_nrf52.lib
+
+## KEIL AND JLINK ##
+_build
+RTE
+JLinkSettings.ini
+JLinkLog.txt
+EventRecorderStub.scvd
+*.uvguix*
+
+## SES ##
+Output
+output
+*.emSession
+
+
+## ATOM EDITOR ##
+tags
+*.tag*
+
+## TESTS ##
+test/*/Listings/
+test/*/Objects/
+test/*/coverage.log
+test/*/cunit.log
+test/*/cunit_log.txt
+test/*/flash.hex
+test/*/ram.hex
+
+# Eclipse project files #
+.project
+.pydevproject
+
+# Logs #
+tools/rtt_log/logs/
+
+# Builds #
+*/_build/*
+*.d
+*.o
+
+# Doxygen generated files #
+/source/doc/html/
+/source/doc/warnings_thingee.txt
+
+# Misc #
+*.wav*
+*.TMP*
+*.mp3*
+*.zip*
+*.hex*
+*XXX*
+*/sound/*.h*
+*.TMP
+*.pyc
+*.pdf

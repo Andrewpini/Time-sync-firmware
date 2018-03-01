@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"app_error.h": "c",
+		"app_timer.h": "c",
+		"stdint.h": "c",
+		"stdio.h": "c"
+	}
+}
