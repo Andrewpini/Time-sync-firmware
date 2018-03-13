@@ -17,6 +17,7 @@
 
 typedef scan_report_t scan_reports_t;
 static volatile bool long_packet_error = false;
+static volatile bool timeout_triggered = false;
 
 
 static uint8_t crc_counter = 0;
@@ -33,10 +34,26 @@ void scan_init(void)
     SCAN_TIMER->CC[0]               = 0;
     SCAN_TIMER->TASKS_START         = 1;
 
+    NRF_TIMER3->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    NRF_TIMER3->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    NRF_TIMER3->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    NRF_TIMER3->CC[0]               = 500 * 1000;                                                                   // Event after 100 ms
+    //NRF_TIMER3->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos
+    NRF_TIMER3->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
+    NVIC_ClearPendingIRQ(TIMER3_IRQn);
+    NVIC_EnableIRQ(TIMER3_IRQn);
+
     channel_dicts[CHANNEL_37_INDEX] = dict_new();
     channel_dicts[CHANNEL_38_INDEX] = dict_new();
     channel_dicts[CHANNEL_39_INDEX] = dict_new();
 }
+
+void TIMER3_IRQHandler(void) 
+{
+    NRF_TIMER3->EVENTS_COMPARE[0]   = 0;
+    timeout_triggered = true;
+}
+
 
 void scan_get_device_address(uint8_t * source, uint8_t * dest) 
 {
@@ -48,7 +65,7 @@ void scan_get_device_address(uint8_t * source, uint8_t * dest)
     }
 }
 
-void scan_ble_channel_once(scan_report_t * p_report, uint8_t channel) 
+uint8_t scan_ble_channel_once(scan_report_t * p_report, uint8_t channel) 
 {
     uint8_t addr[6];
     int16_t rssi;
@@ -68,9 +85,21 @@ void scan_ble_channel_once(scan_report_t * p_report, uint8_t channel)
 
     radio_rx_prepare (true);
     radio_rssi_enable();
-
-    while (NRF_RADIO->EVENTS_DISABLED == 0) {}
     
+    NRF_TIMER3->TASKS_START = 1;
+    NRF_TIMER3->TASKS_CLEAR = 1;
+    
+    while ((NRF_RADIO->EVENTS_DISABLED == 0) && !timeout_triggered) {}
+
+    NRF_TIMER3->TASKS_STOP = 1;
+    NRF_TIMER3->TASKS_CLEAR = 1;
+
+    if (timeout_triggered)
+    {
+        timeout_triggered = false;
+        return FAIL;
+    }
+
     SCAN_TIMER->TASKS_CAPTURE[0] = 1;
     uint32_t capture_time = SCAN_TIMER->CC[0];
 
@@ -105,6 +134,8 @@ void scan_ble_channel_once(scan_report_t * p_report, uint8_t channel)
     memcpy((void *) p_report, (const void *) &report, sizeof(scan_report_t));
         
     long_packet_error = false;
+
+    return SUCCESS;
 }
 
 void RADIO_IRQHandler(void) 
@@ -130,19 +161,29 @@ void RADIO_IRQHandler(void)
 
 void scan_ble_adv_channels_once(scan_report_t * p_reports) 
 {
+    uint8_t err_code = SUCCESS;
     scan_report_t report_37;
     scan_report_t report_38;
     scan_report_t report_39;
     
 
-    scan_ble_channel_once(&report_37, ADV_CHANNEL_37);
-    memcpy((void *) &p_reports[0], (const void *) &report_37, sizeof(scan_report_t));
+    err_code = scan_ble_channel_once(&report_37, ADV_CHANNEL_37);
+    if (err_code == SUCCESS)
+    {   
+        memcpy((void *) &p_reports[0], (const void *) &report_37, sizeof(scan_report_t));
+    }
 
-    scan_ble_channel_once(&report_38, ADV_CHANNEL_38);
-    memcpy((void *) &p_reports[1], (const void *) &report_38, sizeof(scan_report_t));
+    err_code = scan_ble_channel_once(&report_38, ADV_CHANNEL_38);    
+    if (err_code == SUCCESS)
+    { 
+        memcpy((void *) &p_reports[1], (const void *) &report_38, sizeof(scan_report_t));
+    }
 
-    scan_ble_channel_once(&report_39, ADV_CHANNEL_39);
-    memcpy((void *) &p_reports[2], (const void *) &report_39, sizeof(scan_report_t));
+    err_code = scan_ble_channel_once(&report_39, ADV_CHANNEL_39);
+    if (err_code == SUCCESS)
+    { 
+        memcpy((void *) &p_reports[2], (const void *) &report_39, sizeof(scan_report_t));
+    }
 }
 
 //void scan_set_

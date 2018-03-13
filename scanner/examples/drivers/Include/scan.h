@@ -17,7 +17,7 @@ typedef struct
 } scan_report_t;
 
 void scan_init(void);
-void scan_ble_channel_once(scan_report_t * p_report, uint8_t channel);
+uint8_t scan_ble_channel_once(scan_report_t * p_report, uint8_t channel);
 void scan_ble_adv_channels_once(scan_report_t * reports);
 
 #endif

@@ -24,7 +24,7 @@ void advertise_init(void)
     m_adv_pdu[1] = 0;                                                                       // length
     m_adv_pdu[2] = 0;
 
-    if (  ( NRF_FICR->DEVICEADDR[0]           != 0xFFFFFFFF)
+    if ( ( NRF_FICR->DEVICEADDR[0]           != 0xFFFFFFFF)
             ||   ((NRF_FICR->DEVICEADDR[1] & 0xFFFF) != 0xFFFF) )
     {
         m_adv_pdu[BD_ADDR_OFFS    ] = (NRF_FICR->DEVICEADDR[0]      ) & 0xFF;

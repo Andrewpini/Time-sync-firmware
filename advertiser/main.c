@@ -53,7 +53,6 @@
 #include "nrf_log_default_backends.h"
 #include "nrf_delay.h"
 
-#include "scan.h"
 #include "advertise.h"
 
 #define PRINT_SCAN_REPORTS              1
@@ -72,27 +71,6 @@ static volatile uint32_t sync_time      = 0;
 static volatile uint32_t capture_time   = 0;
 static volatile uint32_t diff           = 0;
 
-
-void print_scan_reports(scan_report_t * reports)
-{
-    uint8_t i;
-   
-    for (i = 0; i < 3; i += 1)
-    {
-#if PRINT_SCAN_REPORTS
-        NRF_LOG_RAW_INFO("Time since last sync: %d\t ", diff);
-        NRF_LOG_RAW_INFO("Advertisement received:\t %02x:%02x:%02x:%02x:%02x:%02x \t", 
-                            reports[i].address[0], reports[i].address[1], reports[i].address[2], 
-                            reports[i].address[3], reports[i].address[4], reports[i].address[5]);
-        NRF_LOG_RAW_INFO("RSSI: %d dBm \t\t", reports[i].rssi);
-        NRF_LOG_RAW_INFO("Channel: %d\t\t", reports[i].channel);
-        NRF_LOG_RAW_INFO("CRC: %01d\r\n", reports[i].crc_status);
-#endif
-#if PRINT_SCAN_GRAPH_DATA
-        NRF_LOG_RAW_INFO("%d ", reports[i].rssi);
-#endif
-    }
-}
 
 /**@brief Function for initialization oscillators.
  */
@@ -217,7 +195,6 @@ void GPIOTE_IRQHandler(void)
 int main(void)
 {
     uint32_t err_code;
-    scan_report_t scan_reports[3];
     uint32_t counter = 1;
     
     clock_initialization();

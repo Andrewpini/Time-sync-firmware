@@ -35,6 +35,7 @@
 #include "radio.h"
 
 #include "channel_resolver.h"
+#include "ll_scan.h"
 
 #include "nrf_gpio.h"
 #include "nrf_soc.h"
@@ -42,7 +43,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
 
 /*****************************************************************************
 * Local definitions
@@ -56,7 +56,6 @@ static enum
   RADIO_DIR_RX,
   RADIO_DIR_TX
 } m_radio_dir;
-
 
 /*****************************************************************************
 * Static Globals
@@ -110,7 +109,7 @@ void radio_init (uint8_t channel)
 
     /* Packet configuration */
     NRF_RADIO->PCNF1 = (
-    (((150UL) << RADIO_PCNF1_MAXLEN_Pos) & RADIO_PCNF1_MAXLEN_Msk)   |                      /* Maximum length of payload in bytes [0-255] */
+    (((80UL) << RADIO_PCNF1_MAXLEN_Pos) & RADIO_PCNF1_MAXLEN_Msk)   |                      /* Maximum length of payload in bytes [0-255] */
     (((0UL) << RADIO_PCNF1_STATLEN_Pos) & RADIO_PCNF1_STATLEN_Msk)   |                      /* Expand the payload with N bytes in addition to LENGTH [0-255] */
     (((3UL) << RADIO_PCNF1_BALEN_Pos) & RADIO_PCNF1_BALEN_Msk)       |                      /* Base address length in number of bytes. */
     (((RADIO_PCNF1_ENDIAN_Little) << RADIO_PCNF1_ENDIAN_Pos) & RADIO_PCNF1_ENDIAN_Msk) |  /* Endianess of the S0, LENGTH, S1 and PAYLOAD fields. */
@@ -130,10 +129,13 @@ void radio_init (uint8_t channel)
     NRF_RADIO->EVENTS_ADDRESS     = 0;
     NRF_RADIO->EVENTS_BCMATCH     = 0;
 
+    /* Enable interrupt on events */
+    NRF_RADIO->INTENSET = (RADIO_INTENSET_ADDRESS_Msk | RADIO_INTENSET_DISABLED_Msk);
+
 
     /* Enable RADIO interrupts */
     NVIC_ClearPendingIRQ(RADIO_IRQn);
-    NVIC_EnableIRQ(RADIO_IRQn);
+   // NVIC_EnableIRQ(RADIO_IRQn);
 
     m_radio_dir = RADIO_DIR_NONE;
 }
@@ -193,7 +195,7 @@ void radio_rx_prepare(bool start_immediately)
   NRF_RADIO->TASKS_RXEN = 1;
 
   /* Set shorts */
-  NRF_RADIO->SHORTS = RADIO_SHORTS_READY_START_Msk | RADIO_SHORTS_END_DISABLE_Msk | RADIO_SHORTS_ADDRESS_BCSTART_Msk;
+  NRF_RADIO->SHORTS = RADIO_SHORTS_READY_START_Msk | RADIO_SHORTS_END_DISABLE_Msk;
   
   if (start_immediately)
   {
@@ -268,3 +270,41 @@ void radio_tx_prepare(void)
   m_radio_dir = RADIO_DIR_TX;
 }
 
+void radio_event_cb(void)
+{
+  bool crc_valid;
+  
+  if (NRF_RADIO->EVENTS_DISABLED != 0)
+  {
+    switch (m_radio_dir)
+    {
+      case RADIO_DIR_RX:
+        /* Disable RSSISTART short so sample isn't overwritten */
+        NRF_RADIO->SHORTS &= ~RADIO_SHORTS_ADDRESS_RSSISTART_Msk;
+      
+        crc_valid = NRF_RADIO->CRCSTATUS != 0;
+        ll_scan_rx_cb (crc_valid);
+        break;
+      case RADIO_DIR_TX:
+        ll_scan_tx_cb ();
+        break;
+      default:
+        break;
+    }
+    NRF_RADIO->EVENTS_DISABLED = 0;
+  }
+  
+  if (NRF_RADIO->EVENTS_ADDRESS != 0)
+  {
+    if (m_radio_dir == RADIO_DIR_RX)
+    {
+      radio_rx_timeout_disable ();      
+    }
+    NRF_RADIO->EVENTS_ADDRESS = 0;
+  }
+}
+
+void radio_timeout_cb(void)
+{
+  ll_scan_timeout_cb ();
+}

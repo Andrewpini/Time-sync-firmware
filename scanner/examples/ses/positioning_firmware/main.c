@@ -239,11 +239,6 @@ void timer_init(void)
     NRF_TIMER3->TASKS_START         = 1;
 }
 
-void TIMER3_IRQHandler(void) 
-{
-    NRF_TIMER1->EVENTS_COMPARE[0]   = 0;
-    flag = 1;
-}
 
 void calc_time_since_sync(void)
 {
@@ -560,6 +555,9 @@ void check_ctrl_cmd(void)
 
 int main(void)
 {   
+    uint8_t err_code_37 = SUCCESS;
+    uint8_t err_code_38 = SUCCESS;
+    uint8_t err_code_39 = SUCCESS;
     static scan_report_t scan_reports[3];
     uint32_t counter = 1;
     
@@ -595,16 +593,26 @@ int main(void)
             {
                 if (scanning_enabled)
                 {
-                    scan_ble_adv_channels_once(scan_reports);
-                    send_scan_report(&scan_reports[0]);
-                    send_scan_report(&scan_reports[1]);
-                    send_scan_report(&scan_reports[2]);
+                    //scan_ble_adv_channels_once(scan_reports);
+                    err_code_37 = scan_ble_channel_once(&scan_reports[0], 37);
+                    err_code_38 = scan_ble_channel_once(&scan_reports[1], 38);
+                    err_code_39 = scan_ble_channel_once(&scan_reports[2], 39);
+
+                    if (err_code_37 == SUCCESS)
+                        send_scan_report(&scan_reports[0]);
+                    if (err_code_38 == SUCCESS)
+                        send_scan_report(&scan_reports[1]);
+                    if (err_code_39 == SUCCESS)
+                        send_scan_report(&scan_reports[2]);
                 }
                 if (advertising_enabled)
                 {
                     advertise_set_payload((uint8_t *)&counter, sizeof(counter));
+                    nrf_delay_ms(10);
                     advertise_ble_channel_once(37);   
-                    advertise_ble_channel_once(38);    
+                    nrf_delay_ms(1);
+                    advertise_ble_channel_once(38);   
+                    nrf_delay_ms(1); 
                     advertise_ble_channel_once(39);
                     counter++;      
                 }
