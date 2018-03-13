@@ -62,6 +62,7 @@
 #include "dhcp.h"
 #include "dhcp_cb.h"
 #include "scan.h"
+#include "advertise.h"
 
 #include "config.h"
 #include "util.h"
@@ -124,6 +125,8 @@ static volatile bool data_in_flag           = false;
 static volatile bool network_is_busy        = false;
 static volatile bool connected              = false;
 static volatile bool server_ip_received     = false;
+static volatile bool scanning_enabled       = true;
+static volatile bool advertising_enabled    = false;
 
 void send_to_tcp(uint8_t * buf, uint8_t length);
 
@@ -430,21 +433,6 @@ void sync_init(void)
     nrf_gpio_pin_clear(SYNC_OUT);
 }
 
-
-void multicast_init(void) 
-{
-    uint8_t mac_addr[] = {0x01, 0x00, 0x5e, 0x01, 0x01, 0x0b};
-    uint8_t ip_addr[] = {211, 1, 1, 11};
-    setSn_DHAR(SOCKET_MULTICAST, &(mac_addr[0]));
-    setSn_DIPR(SOCKET_MULTICAST, &(ip_addr[0]));
-    setSn_DPORT(SOCKET_MULTICAST, 3000);
-    setSn_PORT(SOCKET_MULTICAST, 3000);
-    setSn_MR(SOCKET_MULTICAST, (Sn_MR_UDP | Sn_MR_MULTI));
-    setSn_CR(SOCKET_MULTICAST , Sn_CR_OPEN);
-    
-    while (getSn_SR(SOCKET_MULTICAST) != SOCK_UDP) { printf("%d\r\n", getSn_SR(SOCKET_MULTICAST)); }
-}
-
 void broadcast_init(void)
 {
     uint8_t flag = SF_IO_NONBLOCK;
@@ -460,7 +448,6 @@ void broadcast_send(void)
     
     sendto(SOCKET_UDP, &buf[0], len, broadcast_ip, broadcast_port);
 }
-
 
 
 void get_server_ip(uint8_t * buf, uint8_t len)
@@ -526,14 +513,16 @@ void check_ctrl_cmd(void)
             uint8_t str[CTRL_CMD_PREFIX_LEN] = {0};
             const uint8_t pos[] = CTRL_CMD_PREFIX;
             strncpy((void *)str, (const void *)received_data, CTRL_CMD_PREFIX_LEN);
-            int8_t compare = strncmp((void *)str, (const void *)pos, CTRL_CMD_PREFIX_LEN);
 
+            // Check if command prefix is correct
+            int8_t compare = strncmp((void *)str, (const void *)pos, CTRL_CMD_PREFIX_LEN);
             if (compare == 0)
             {
                 ctrl_cmd_t cmd = received_data[CTRL_CMD_CMD_INDEX];
                 uint8_t payload_len = received_data[CTRL_CMD_PAYLOAD_LEN_INDEX];
                 uint8_t * p_payload = &received_data[CTRL_CMD_PAYLOAD_INDEX];
 
+                // Choose the right action according to command
                 switch (cmd)
                 {
                     case CMD_SERVER_IP_BROADCAST:
@@ -543,13 +532,24 @@ void check_ctrl_cmd(void)
                         }
                         break;
                     case CMD_NEW_SERVER_IP:
+                        server_ip_received = false;
                         break;
                     case CMD_NEW_FIRMWARE:
+                        LOG("CMD: New firmware available\r\n");
                         break;
                     case CMD_NEW_ACCESS_ADDRESS:
+                        LOG("CMD: New access address set\r\n");
+                        break;
+                    case CMD_ADVERTISING_START:
+                        LOG("CMD: Advertising start\r\n");
+                        advertising_enabled = true;
+                        break;
+                    case CMD_ADVERTISING_STOP:
+                        LOG("CMD: Advertising stop\r\n");
+                        advertising_enabled = false;
                         break;
                     default:
-                        NRF_LOG_INFO("Unrecognized control command: %d\r\n", cmd);
+                        LOG("CMD: Unrecognized control command: %d\r\n", cmd);
                         break;
                 }
             }
@@ -561,6 +561,7 @@ void check_ctrl_cmd(void)
 int main(void)
 {   
     static scan_report_t scan_reports[3];
+    uint32_t counter = 1;
     
     clock_init();
     leds_init();
@@ -590,10 +591,24 @@ int main(void)
     {
         if (connected)
         {
-            scan_ble_adv_channels_once(scan_reports);
-            send_scan_report(&scan_reports[0]);
-            send_scan_report(&scan_reports[1]);
-            send_scan_report(&scan_reports[2]);
+            if (server_ip_received)
+            {
+                if (scanning_enabled)
+                {
+                    scan_ble_adv_channels_once(scan_reports);
+                    send_scan_report(&scan_reports[0]);
+                    send_scan_report(&scan_reports[1]);
+                    send_scan_report(&scan_reports[2]);
+                }
+                if (advertising_enabled)
+                {
+                    advertise_set_payload((uint8_t *)&counter, sizeof(counter));
+                    advertise_ble_channel_once(37);   
+                    advertise_ble_channel_once(38);    
+                    advertise_ble_channel_once(39);
+                    counter++;      
+                }
+            }
             check_ctrl_cmd();
         }
     }

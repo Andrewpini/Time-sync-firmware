@@ -145,6 +145,7 @@
       <file file_name="../../../../../drivers/channel_resolver.c" />
       <file file_name="../../../../../drivers/radio.c" />
       <file file_name="../../../../../drivers/scanner/scan.c" />
+      <file file_name="../../../../../drivers/advertise.c" />
     </folder>
     <folder Name="Wiznet">
       <file file_name="../../../../../../external/Wiznet/user_ethernet.c" />

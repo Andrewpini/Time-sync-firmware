@@ -240,7 +240,6 @@ int main(void)
             advertise_ble_channel_once(38);    
             advertise_ble_channel_once(39);
             counter++;
-
         }
     }
 }
