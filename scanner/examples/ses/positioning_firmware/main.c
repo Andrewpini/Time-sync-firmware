@@ -65,6 +65,7 @@
 
 #include "config.h"
 #include "util.h"
+#include "commands.h"
 
 #define UART_TX_BUF_SIZE                    256                     /**< UART TX buffer size. */
 #define UART_RX_BUF_SIZE                    256                     /**< UART RX buffer size. */
@@ -122,6 +123,7 @@ static uint8_t TX_BUF[TX_BUF_SIZE];
 static volatile bool data_in_flag           = false;
 static volatile bool network_is_busy        = false;
 static volatile bool connected              = false;
+static volatile bool server_ip_received     = false;
 
 void send_to_tcp(uint8_t * buf, uint8_t length);
 
@@ -445,7 +447,8 @@ void multicast_init(void)
 
 void broadcast_init(void)
 {
-    socket(SOCKET_BROADCAST, Sn_MR_UDP, BROADCAST_PORT, 0x00);
+    uint8_t flag = SF_IO_NONBLOCK;
+    socket(SOCKET_BROADCAST, Sn_MR_UDP, BROADCAST_PORT, flag);
 }
 
 void broadcast_send(void) 
@@ -458,65 +461,102 @@ void broadcast_send(void)
     sendto(SOCKET_UDP, &buf[0], len, broadcast_ip, broadcast_port);
 }
 
-uint8_t get_server_ip(void)
+
+
+void get_server_ip(uint8_t * buf, uint8_t len)
+{
+    uint8_t str[SERVER_IP_PREFIX_LEN] = {0};
+    const uint8_t pos[] = SERVER_IP_PREFIX;
+    strncpy((void *)str, (const void *)buf, SERVER_IP_PREFIX_LEN);
+    int8_t compare = strncmp((void *)str, (const void *)pos, SERVER_IP_PREFIX_LEN);
+
+    if (compare == 0)
+    {
+        // Server IP address prefix is found
+        server_ip_received = true;
+        uint8_t ip_str[len - SERVER_IP_PREFIX_LEN];
+        uint8_t ip[4] = {0};
+        uint16_t port = 0;
+        uint8_t index = 0;
+        uint8_t *p_ip_str = &(ip_str[0]);
+
+        memcpy((char *)ip_str, (const char *)&(buf[SERVER_IP_PREFIX_LEN]), (len - SERVER_IP_PREFIX_LEN));
+
+        while (index < 5) 
+        {
+            if (isdigit((unsigned char)*p_ip_str)) {
+                if (index < 4)
+                {
+                    ip[index] *= 10;
+                    ip[index] += *p_ip_str - '0';
+                }
+                else
+                {
+                    port *= 10;
+                    port += *p_ip_str - '0';
+                }
+            } else {
+                index++;
+            }
+            p_ip_str += 1;
+        }
+        memcpy((char *)target_IP, (const char *)ip, 4);
+        target_port = port;
+        printf("Server IP: %d.%d.%d.%d : %d\r\n", target_IP[0], target_IP[1], target_IP[2], target_IP[3], target_port);
+
+    }
+}
+
+
+// Function for checking if the device has received a new control command
+void check_ctrl_cmd(void)
 {
     if (getSn_RX_RSR(SOCKET_BROADCAST) != 0x00)
     {
-        uint8_t buf[200];
+        uint8_t received_data[200];
         uint8_t broadcast_ip[] = {255, 255, 255, 255};
         uint16_t broadcast_port = BROADCAST_PORT;
         
-        int32_t recv_len = recvfrom(SOCKET_BROADCAST, buf, sizeof(buf), broadcast_ip, &broadcast_port);
-        
+        // Receive new data from socket
+        int32_t recv_len = recvfrom(SOCKET_BROADCAST, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
+
+        // If any data is received, check which command it is
         if (recv_len > 0)
         {
-            uint8_t str[SERVER_IP_PREFIX_LEN] = {0};
-            const uint8_t pos[] = SERVER_IP_PREFIX;
-            strncpy((void *)str, (const void *)buf, SERVER_IP_PREFIX_LEN);
-            int8_t compare = strncmp((void *)str, (const void *)pos, SERVER_IP_PREFIX_LEN);
+            uint8_t str[CTRL_CMD_PREFIX_LEN] = {0};
+            const uint8_t pos[] = CTRL_CMD_PREFIX;
+            strncpy((void *)str, (const void *)received_data, CTRL_CMD_PREFIX_LEN);
+            int8_t compare = strncmp((void *)str, (const void *)pos, CTRL_CMD_PREFIX_LEN);
 
             if (compare == 0)
             {
-                // Server IP address prefix is found
-                uint8_t ip_str[recv_len - SERVER_IP_PREFIX_LEN];
-                uint8_t ip[4] = {0};
-                uint16_t port = 0;
-                uint8_t index = 0;
-                uint8_t *p_ip_str = &(ip_str[0]);
-                
-                memcpy((char *)ip_str, (const char *)&(buf[SERVER_IP_PREFIX_LEN]), (recv_len - SERVER_IP_PREFIX_LEN));
-                
-                while (index < 5) 
+                ctrl_cmd_t cmd = received_data[CTRL_CMD_CMD_INDEX];
+                uint8_t payload_len = received_data[CTRL_CMD_PAYLOAD_LEN_INDEX];
+                uint8_t * p_payload = &received_data[CTRL_CMD_PAYLOAD_INDEX];
+
+                switch (cmd)
                 {
-                    if (isdigit((unsigned char)*p_ip_str)) {
-                        if (index < 4)
+                    case CMD_SERVER_IP_BROADCAST:
+                        if (!server_ip_received)
                         {
-                            ip[index] *= 10;
-                            ip[index] += *p_ip_str - '0';
+                            get_server_ip(p_payload, payload_len);
                         }
-                        else
-                        {
-                            port *= 10;
-                            port += *p_ip_str - '0';
-                        }
-                    } else {
-                        index++;
-                    }
-                    p_ip_str += 1;
+                        break;
+                    case CMD_NEW_SERVER_IP:
+                        break;
+                    case CMD_NEW_FIRMWARE:
+                        break;
+                    case CMD_NEW_ACCESS_ADDRESS:
+                        break;
+                    default:
+                        NRF_LOG_INFO("Unrecognized control command: %d\r\n", cmd);
+                        break;
                 }
-                memcpy((char *)target_IP, (const char *)ip, 4);
-                target_port = port;
-                printf("Server IP: %d.%d.%d.%d : %d\r\n", target_IP[0], target_IP[1], target_IP[2], target_IP[3], target_port);
-                return NRF_SUCCESS;
             }
         }
-        else 
-        {
-            printf("No new UDP broadcast\r\n");
-        }
     }
-    return 1;
 }
+
 
 int main(void)
 {   
@@ -537,9 +577,12 @@ int main(void)
     //APP_ERROR_CHECK(err_code);
     
     dhcp_init();
-    //multicast_init();
     broadcast_init();
-    while(get_server_ip() != NRF_SUCCESS);
+    while(!server_ip_received)
+    {
+        check_ctrl_cmd();
+    }
+
     connection_init();
     scan_init();
     
@@ -551,6 +594,7 @@ int main(void)
             send_scan_report(&scan_reports[0]);
             send_scan_report(&scan_reports[1]);
             send_scan_report(&scan_reports[2]);
+            check_ctrl_cmd();
         }
-}
+    }
 }

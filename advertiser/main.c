@@ -64,7 +64,7 @@
 #define SYNC_PIN                        31
 #define PPI_CHANNEL_LED                 0
 #define PPI_CHANNEL_SYNC                1
-#define SCAN_TIMER_MS                   500
+#define SCAN_TIMER_MS                   200
 
 
 static volatile uint32_t flag           = 0;
