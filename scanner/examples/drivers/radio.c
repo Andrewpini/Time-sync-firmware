@@ -61,6 +61,10 @@ static enum
 * Static Globals
 *****************************************************************************/
 
+static uint32_t access_address = 0xb9bed600;    // 0x89bed600 for BLE
+
+
+
 /**@brief Global variables for timeslot requests and return values.
  */
 
@@ -91,7 +95,7 @@ void radio_init (uint8_t channel)
 
     /* Configure Access Address according to the BLE standard */
     NRF_RADIO->PREFIX0 = 0x8e;
-    NRF_RADIO->BASE0 = 0xb9bed600;    // 0x89bed600 for BLE
+    NRF_RADIO->BASE0 = access_address;    // 0x89bed600 for BLE
 
     /* Use logical address 0 (prefix0 + base0) = 0x8E89BED6 when transmitting and receiving */
     NRF_RADIO->TXADDRESS = 0x00;
@@ -154,6 +158,11 @@ void radio_disable(void)
   NRF_RADIO->TASKS_DISABLE = 1;
   
   m_radio_dir = RADIO_DIR_NONE;
+}
+
+void radio_set_access_address(uint32_t address)
+{
+    access_address = address; 
 }
 
 void radio_buffer_configure (uint8_t * const buff)

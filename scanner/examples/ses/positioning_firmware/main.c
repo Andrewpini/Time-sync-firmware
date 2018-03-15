@@ -61,6 +61,8 @@
 #include "socket.h"
 #include "dhcp.h"
 #include "dhcp_cb.h"
+
+#include "radio.h"
 #include "scan.h"
 #include "advertise.h"
 
@@ -164,7 +166,6 @@ void leds_init(void)
     nrf_gpio_pin_clear(LED_HP);
 }
 
-
 void gpiote_init(void) 
 {
     // GPIOTE configuration for syncing of clocks
@@ -179,29 +180,10 @@ void gpiote_init(void)
                                     | (0 << GPIOTE_CONFIG_PORT_Pos)
                                     | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
                                     | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
-
-//    // GPIOTE configuration for LED pin
-//    NRF_GPIOTE->CONFIG[2]           = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
-//                                    | (LED2_PIN << GPIOTE_CONFIG_PSEL_Pos)
-//                                    | (0 << GPIOTE_CONFIG_PORT_Pos)
-//                                    | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
-//                                    | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
-
-
-//    NRF_GPIOTE->INTENSET            = GPIOTE_INTENSET_IN0_Set << GPIOTE_INTENSET_IN0_Pos;
-    //NVIC_ClearPendingIRQ(GPIOTE_IRQn);
-    //NVIC_EnableIRQ(GPIOTE_IRQn);
-
 }
 
 void ppi_init(void) 
 {
-//    // PPI channel for syncing clocks and toggling LED on timer compare event
-//    NRF_PPI->CH[PPI_CHANNEL_LED].EEP        = (uint32_t) &(NRF_TIMER1->EVENTS_COMPARE[0]);
-//    NRF_PPI->CH[PPI_CHANNEL_LED].TEP        = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[0]);
-//    NRF_PPI->FORK[PPI_CHANNEL_LED].TEP      = (uint32_t) &(NRF_TIMER2->TASKS_CAPTURE[0]);
-//    NRF_PPI->CHENSET                        = 1 << PPI_CHANNEL_LED;
-
     NRF_PPI->CH[PPI_CHANNEL_SYNC].EEP       = (uint32_t) &(NRF_GPIOTE->EVENTS_IN[0]);
     NRF_PPI->CH[PPI_CHANNEL_SYNC].TEP       = (uint32_t) &(SCAN_TIMER->TASKS_CLEAR);
     NRF_PPI->FORK[PPI_CHANNEL_SYNC].TEP     = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[1]);
@@ -382,14 +364,14 @@ void clock_init()
 /* Function to send scan reports over Ethernet, using TCP or UDP */
 void send_scan_report(scan_report_t * scan_report)
 {
-    uint8_t buf[150];
+    uint8_t buf[200];
     uint8_t len = 0;
     
     if(!network_is_busy)
     {
         network_is_busy = true;
         
-        sprintf((char *)&buf[0], "{\"nodeID\" : \"%d:%d:%d:%d:%d:%d\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d }\r\n", 
+        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d }\r\n", 
                         scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
                         scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
                         scan_report->address[3], scan_report->address[4], scan_report->address[5],
@@ -534,6 +516,7 @@ void check_ctrl_cmd(void)
                         break;
                     case CMD_NEW_ACCESS_ADDRESS:
                         LOG("CMD: New access address set\r\n");
+                        radio_set_access_address((uint32_t)*((uint32_t *)p_payload));
                         break;
                     case CMD_ADVERTISING_START:
                         LOG("CMD: Advertising start\r\n");

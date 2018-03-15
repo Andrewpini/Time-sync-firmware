@@ -84,4 +84,7 @@ void radio_tx_mode_on_receipt (void);
 /* Configure radio to transmit */
 void radio_tx_prepare (void);
 
+/* COnfigure radio access address */
+void radio_set_access_address(uint32_t address);
+
 #endif /* __RADIO_H__ */
