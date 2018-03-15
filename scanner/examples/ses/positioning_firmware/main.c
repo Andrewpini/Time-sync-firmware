@@ -389,7 +389,8 @@ void send_scan_report(scan_report_t * scan_report)
     {
         network_is_busy = true;
         
-        sprintf((char *)&buf[0], "{ \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d }\r\n", 
+        sprintf((char *)&buf[0], "{\"nodeID\" : \"%d:%d:%d:%d:%d:%d\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d }\r\n", 
+                        scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
                         scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
                         scan_report->address[3], scan_report->address[4], scan_report->address[5],
                         scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error);
@@ -434,17 +435,16 @@ void broadcast_init(void)
     socket(SOCKET_BROADCAST, Sn_MR_UDP, BROADCAST_PORT, flag);
 }
 
-void broadcast_send(void) 
+// Function to broadcast data to all nodes on the network
+void broadcast_send(uint8_t * buf, uint8_t len) 
 {
-    uint8_t buf[] = {0x41, 0x42};
-    uint8_t len = 2;
     uint8_t broadcast_ip[] = {255, 255, 255, 255};
     uint16_t broadcast_port = 10000;
     
     sendto(SOCKET_UDP, &buf[0], len, broadcast_ip, broadcast_port);
 }
 
-
+// Function to get and store server IP and port number to which all data will be sent
 void get_server_ip(uint8_t * buf, uint8_t len)
 {
     uint8_t str[SERVER_IP_PREFIX_LEN] = {0};

@@ -8,6 +8,7 @@
 typedef struct
 {
     uint32_t    timestamp;
+    uint8_t     id[6];
     uint8_t     channel;
     uint32_t    counter;
     int16_t     rssi;
