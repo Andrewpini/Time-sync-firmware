@@ -70,11 +70,11 @@
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2    /**< Reply when unsupported features are requested. */
 
 #define ADVERTISING_LED                 BSP_BOARD_LED_0                         /**< Is on when device is advertising. */
-#define CONNECTED_LED                   BSP_BOARD_LED_1                         /**< Is on when device has connected. */
-#define LEDBUTTON_LED                   BSP_BOARD_LED_2                         /**< LED to be toggled with the help of the LED Button Service. */
-#define LEDBUTTON_BUTTON                BSP_BUTTON_0                            /**< Button that will trigger the notification event with the LED Button Service */
+#define CONNECTED_LED                   12                         /**< Is on when device has connected. */
+#define LEDBUTTON_LED                   11                         /**< LED to be toggled with the help of the LED Button Service. */
+#define LEDBUTTON_BUTTON                16                            /**< Button that will trigger the notification event with the LED Button Service */
 
-#define DEVICE_NAME                     "Nordic_Blinky"                         /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                     "Blinky____jt"                         /**< Name of device. Will be included in the advertising data. */
 
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
@@ -126,6 +126,10 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 static void leds_init(void)
 {
     bsp_board_leds_init();
+    nrf_gpio_cfg_output(CONNECTED_LED);
+    nrf_gpio_cfg_output(LEDBUTTON_LED);
+    nrf_gpio_pin_set(CONNECTED_LED);
+    nrf_gpio_pin_set(LEDBUTTON_LED);
 }
 
 
@@ -219,12 +223,14 @@ static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t l
 {
     if (led_state)
     {
-        bsp_board_led_on(LEDBUTTON_LED);
+       //bsp_board_led_on(LEDBUTTON_LED);
+        nrf_gpio_pin_clear(LEDBUTTON_LED);
         NRF_LOG_INFO("Received LED ON!");
     }
     else
     {
-        bsp_board_led_off(LEDBUTTON_LED);
+        //bsp_board_led_off(LEDBUTTON_LED);
+        nrf_gpio_pin_set(LEDBUTTON_LED);
         NRF_LOG_INFO("Received LED OFF!");
     }
 }
@@ -335,8 +341,9 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("Connected");
-            bsp_board_led_on(CONNECTED_LED);
-            bsp_board_led_off(ADVERTISING_LED);
+            //bsp_board_led_on(CONNECTED_LED);
+            nrf_gpio_pin_clear(CONNECTED_LED);
+            //bsp_board_led_off(ADVERTISING_LED);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 
             err_code = app_button_enable();
