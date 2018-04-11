@@ -58,6 +58,7 @@
 #include "nrf_drv_clock.h"
 
 #include "nrf_log.h"
+#include "nrf_delay.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
@@ -576,27 +577,39 @@ void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
 
 int main(void)
 {
-    init_bsp();
+    uint16_t pwm_seq[4] =
+        {
+            10000, 1000};
 
-    APP_ERROR_CHECK(NRF_LOG_INIT(NULL));
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
+    NRF_PWM0->PSEL.OUT[0] = (17 << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
 
-    NRF_LOG_INFO("PWM example");
+    NRF_PWM0->PSEL.OUT[1] = (18 << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
 
-    // Start with Demo 1, then switch to another one when the user presses
-    // button 1 or button 2 (see the 'bsp_evt_handler' function).
-    demo1();
+    NRF_PWM0->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
 
-    for (;;)
+    NRF_PWM0->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
+
+    NRF_PWM0->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_16 << PWM_PRESCALER_PRESCALER_Pos);
+
+    NRF_PWM0->COUNTERTOP = (20000 << PWM_COUNTERTOP_COUNTERTOP_Pos); //1 msec
+
+    NRF_PWM0->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
+
+    NRF_PWM0->DECODER = (PWM_DECODER_LOAD_Individual << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
+
+    NRF_PWM0->SEQ[0].PTR = ((uint32_t)(pwm_seq) << PWM_SEQ_PTR_PTR_Pos);
+
+    NRF_PWM0->SEQ[0].CNT = ((sizeof(pwm_seq) / sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos);
+
+    NRF_PWM0->SEQ[0].REFRESH = 0;
+
+    NRF_PWM0->SEQ[0].ENDDELAY = 0;
+
+    NRF_PWM0->TASKS_SEQSTART[0] = 1;
+
+    while (true)
     {
-        // Wait for an event.
         __WFE();
-
-        // Clear the event register.
-        __SEV();
-        __WFE();
-
-        NRF_LOG_FLUSH();
     }
 }
 

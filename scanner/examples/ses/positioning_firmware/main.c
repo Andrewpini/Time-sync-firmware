@@ -102,12 +102,12 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 
 #define TX_BUF_SIZE                         2048
 
-#define LED_0                               11
-#define LED_1                               12
-#define LED_HP                              13
-#define SYNC_OUT                            14    
-#define SYNC_IN                             15
-#define BUTTON_0                            16
+#define LED_0                               11UL
+#define LED_1                               12UL
+#define LED_HP                              13UL
+#define SYNC_OUT                            14UL  
+#define SYNC_IN                             15UL
+#define BUTTON_0                            16UL
 
 #define PPI_CHANNEL_LED                     1
 #define PPI_CHANNEL_SYNC                    0
@@ -115,6 +115,8 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 
 #define SERVER_IP_PREFIX                    "position_server: "
 #define SERVER_IP_PREFIX_LEN                17
+
+#define PWM_PERIOD_US                       1000
 
 
 
@@ -140,6 +142,7 @@ static volatile uint32_t flag = 0;
 static volatile uint32_t sync_time = 0;
 static volatile uint32_t capture_time = 0;
 static volatile uint32_t diff = 0;
+static volatile uint16_t pwm_seq[1] = {0};
 
 
 
@@ -161,9 +164,26 @@ void leds_init(void)
     nrf_gpio_cfg_output(LED_1);
     nrf_gpio_cfg_output(LED_HP);
     
-    nrf_gpio_pin_set(LED_0);
-    nrf_gpio_pin_set(LED_1);
+    nrf_gpio_pin_clear(LED_1);
     nrf_gpio_pin_clear(LED_HP);
+}
+
+// Sets PWM properties for a pin. Duty cycle in percent. Frequency is statically set to 1000 Hz.
+void pwm_set(uint8_t pin, float duty_cycle)
+{
+    pwm_seq[0] = ( 1 << 15 ) | (uint16_t)(PWM_PERIOD_US * (uint32_t)(10.0 * duty_cycle) / 1000);
+    NRF_PWM1->PSEL.OUT[0] = (pin << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
+    NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
+    NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
+    NRF_PWM1->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_16 << PWM_PRESCALER_PRESCALER_Pos);
+    NRF_PWM1->COUNTERTOP = (PWM_PERIOD_US << PWM_COUNTERTOP_COUNTERTOP_Pos); 
+    NRF_PWM1->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
+    NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
+    NRF_PWM1->SEQ[0].PTR = ((uint32_t)(pwm_seq) << PWM_SEQ_PTR_PTR_Pos);
+    NRF_PWM1->SEQ[0].CNT = ((sizeof(pwm_seq) / sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos);
+    NRF_PWM1->SEQ[0].REFRESH = 0;
+    NRF_PWM1->SEQ[0].ENDDELAY = 0;
+    NRF_PWM1->TASKS_SEQSTART[0] = 1;
 }
 
 void gpiote_init(void) 
@@ -429,7 +449,7 @@ void broadcast_send(uint8_t * buf, uint8_t len)
 // Function to get and store server IP and port number to which all data will be sent
 void get_server_ip(uint8_t * buf, uint8_t len)
 {
-    uint8_t str[SERVER_IP_PREFIX_LEN] = {0};
+    static uint8_t str[SERVER_IP_PREFIX_LEN] = {0};
     const uint8_t pos[] = SERVER_IP_PREFIX;
     strncpy((void *)str, (const void *)buf, SERVER_IP_PREFIX_LEN);
     int8_t compare = strncmp((void *)str, (const void *)pos, SERVER_IP_PREFIX_LEN);
@@ -507,6 +527,7 @@ void check_ctrl_cmd(void)
                         {
                             get_server_ip(p_payload, payload_len);
                         }
+                        server_ip_received = true;
                         break;
                     case CMD_NEW_SERVER_IP:
                         server_ip_received = false;
@@ -546,6 +567,7 @@ int main(void)
     
     clock_init();
     leds_init();
+    pwm_set(LED_HP, 0.1);
     sync_init();
     gpiote_init();
     ppi_init();
