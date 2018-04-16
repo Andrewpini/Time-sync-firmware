@@ -70,6 +70,9 @@
 #include "util.h"
 #include "commands.h"
 
+
+#define LOG(...)                             printf(__VA_ARGS__)    //NRF_LOG_RAW_INFO(__VA_ARGS__)
+
 #define UART_TX_BUF_SIZE                    256                     /**< UART TX buffer size. */
 #define UART_RX_BUF_SIZE                    256                     /**< UART RX buffer size. */
 
@@ -80,7 +83,6 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 #define TCP_SOCKET_CHECK_INTERVAL           APP_TIMER_TICKS(100)	/**< RR interval interval (ticks). */
 
 #define DHCP_ENABLED                        1
-#define _MAIN_DEBUG_                        0
 #define NETWORK_USE_TCP                     0
 #define NETWORK_USE_UDP                     1
 
@@ -113,14 +115,15 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 #define PPI_CHANNEL_SYNC                    0
 #define SCAN_TIMER_MS                       500
 
+
+#define SCAN_REPORT_LENGTH                  200
 #define SERVER_IP_PREFIX                    "position_server: "
 #define SERVER_IP_PREFIX_LEN                17
 
 #define PWM_PERIOD_US                       1000
 
+#define DHCP_TIMER                          NRF_TIMER1
 
-
-#define LOG(...)                             printf(__VA_ARGS__) //NRF_LOG_RAW_INFO(__VA_ARGS__)
 
 void connection_init(void);
 
@@ -133,6 +136,7 @@ static volatile bool scanning_enabled       = true;
 static volatile bool advertising_enabled    = false;
 
 void send_to_tcp(uint8_t * buf, uint8_t length);
+void on_connect(void);
 
 // Default / placeholder IP and port, will receive updated IP and port from server before sending any data
 uint8_t target_IP[4] = {10, 0, 0, 12};      
@@ -146,18 +150,6 @@ static volatile uint16_t pwm_seq[1] = {0};
 
 
 
-void on_connect(void)
-{
-    connected = true;
-    nrf_gpio_pin_clear(LED_1);
-}
-
-void on_disconnect(void)
-{
-    connected = true;
-    nrf_gpio_pin_set(LED_1);
-}
-
 void leds_init(void)
 {
     nrf_gpio_cfg_output(LED_0);
@@ -168,24 +160,44 @@ void leds_init(void)
     nrf_gpio_pin_clear(LED_HP);
 }
 
-// Sets PWM properties for a pin. Duty cycle in percent. Frequency is statically set to 1000 Hz.
-void pwm_set(uint8_t pin, float duty_cycle)
+
+// ***  SECTION: Peripheral modules   *** //
+
+
+/**@brief Function for initialization oscillators.
+ */
+void clock_init()
 {
-    pwm_seq[0] = ( 1 << 15 ) | (uint16_t)(PWM_PERIOD_US * (uint32_t)(10.0 * duty_cycle) / 1000);
-    NRF_PWM1->PSEL.OUT[0] = (pin << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
-    NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
-    NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
-    NRF_PWM1->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_16 << PWM_PRESCALER_PRESCALER_Pos);
-    NRF_PWM1->COUNTERTOP = (PWM_PERIOD_US << PWM_COUNTERTOP_COUNTERTOP_Pos); 
-    NRF_PWM1->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
-    NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
-    NRF_PWM1->SEQ[0].PTR = ((uint32_t)(pwm_seq) << PWM_SEQ_PTR_PTR_Pos);
-    NRF_PWM1->SEQ[0].CNT = ((sizeof(pwm_seq) / sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos);
-    NRF_PWM1->SEQ[0].REFRESH = 0;
-    NRF_PWM1->SEQ[0].ENDDELAY = 0;
-    NRF_PWM1->TASKS_SEQSTART[0] = 1;
+    if(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
+    {
+        /* Start 16 MHz crystal oscillator */
+        NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+        NRF_CLOCK->TASKS_HFCLKSTART    = 1;
+
+        /* Wait for the external oscillator to start up */
+        while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
+        {
+            // Do nothing.
+        }
+    }
+    
+    if(NRF_CLOCK->EVENTS_LFCLKSTARTED == 0)
+    {
+        /* Start 32 kHz crystal oscillator */
+        NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
+        NRF_CLOCK->TASKS_LFCLKSTART    = 1;
+
+        /* Wait for the external oscillator to start up */
+        while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0)
+        {
+            // Do nothing.
+        }
+    }
 }
 
+
+/**@brief Function for initialization of GPIOTE
+ */
 void gpiote_init(void) 
 {
     // GPIOTE configuration for syncing of clocks
@@ -202,6 +214,8 @@ void gpiote_init(void)
                                     | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
 }
 
+/**@brief Function for initialization of PPI.
+ */
 void ppi_init(void) 
 {
     NRF_PPI->CH[PPI_CHANNEL_SYNC].EEP       = (uint32_t) &(NRF_GPIOTE->EVENTS_IN[0]);
@@ -211,9 +225,11 @@ void ppi_init(void)
 
 }
 
+/**@brief Function for initialization of timers.
+ */
 void timer_init(void) 
 {
-    // Timer for sampling of RSSI values
+   /* // Timer for sampling of RSSI values
     NRF_TIMER1->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
     NRF_TIMER1->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
     NRF_TIMER1->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
@@ -238,21 +254,36 @@ void timer_init(void)
 
     NRF_TIMER1->TASKS_START         = 1;
     NRF_TIMER2->TASKS_START         = 1;
-    NRF_TIMER3->TASKS_START         = 1;
+    NRF_TIMER3->TASKS_START         = 1;*/
 }
 
+
+
+/**@brief Sets PWM properties for a pin. Duty cycle in percent. Frequency is statically set to 1000 Hz.
+*/
+void pwm_set_duty_cycle(uint8_t pin, float duty_cycle)
+{
+    pwm_seq[0] = ( 1 << 15 ) | (uint16_t)(PWM_PERIOD_US * (uint32_t)(10.0 * duty_cycle) / 1000);
+    NRF_PWM1->PSEL.OUT[0] = (pin << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
+    NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
+    NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
+    NRF_PWM1->PRESCALER = (PWM_PRESCALER_PRESCALER_DIV_16 << PWM_PRESCALER_PRESCALER_Pos);
+    NRF_PWM1->COUNTERTOP = (PWM_PERIOD_US << PWM_COUNTERTOP_COUNTERTOP_Pos); 
+    NRF_PWM1->LOOP = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
+    NRF_PWM1->DECODER = (PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
+    NRF_PWM1->SEQ[0].PTR = ((uint32_t)(pwm_seq) << PWM_SEQ_PTR_PTR_Pos);
+    NRF_PWM1->SEQ[0].CNT = ((sizeof(pwm_seq) / sizeof(uint16_t)) << PWM_SEQ_CNT_CNT_Pos);
+    NRF_PWM1->SEQ[0].REFRESH = 0;
+    NRF_PWM1->SEQ[0].ENDDELAY = 0;
+    NRF_PWM1->TASKS_SEQSTART[0] = 1;
+}
+//   ***   //
 
 void calc_time_since_sync(void)
 {
     NRF_TIMER2->TASKS_CAPTURE[0] = 1;
     capture_time = NRF_TIMER2->CC[0];
     diff = capture_time - sync_time;
-}
-
-void GPIOTE_IRQHandler(void)
-{
-    NRF_GPIOTE->EVENTS_IN[1] = 0;
-    sync_time = NRF_TIMER3->CC[0];
 }
 
 
@@ -290,101 +321,64 @@ static void user_app_timer_start(void)
 
 void dhcp_timer_init(void)
 {
-    NRF_TIMER1->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    NRF_TIMER1->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    NRF_TIMER1->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    NRF_TIMER1->CC[0]               = 1000000;                                                         // Compare event every 2 seconds
-    NRF_TIMER1->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
-    NRF_TIMER1->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
+    DHCP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    DHCP_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    DHCP_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    DHCP_TIMER->CC[0]               = 1000000;                                                         // Compare event every 2 seconds
+    DHCP_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+    DHCP_TIMER->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
     NVIC_ClearPendingIRQ(TIMER1_IRQn);
     NVIC_EnableIRQ(TIMER1_IRQn);
     
-    NRF_TIMER1->TASKS_START = 1;
+    DHCP_TIMER->TASKS_START = 1;
 
-}
-
-void TIMER1_IRQHandler(void)
-{
-    NRF_TIMER1->EVENTS_COMPARE[0] = 0;
-    DHCP_time_handler();
 }
 
 static void dhcp_init(void)
 {
-	if(DHCP_ENABLED && !network_is_busy)
-	{
-		uint32_t ret;
-		uint8_t dhcp_retry = 0;
+    if(DHCP_ENABLED && !network_is_busy)
+    {
+        uint32_t ret;
+        uint8_t dhcp_retry = 0;
         network_is_busy = true;
-        
+
         dhcp_timer_init();
-		DHCP_init(SOCKET_DHCP, TX_BUF);
-		reg_dhcp_cbfunc(w5500_dhcp_assign, w5500_dhcp_assign, w5500_dhcp_conflict);
+        DHCP_init(SOCKET_DHCP, TX_BUF);
+        reg_dhcp_cbfunc(w5500_dhcp_assign, w5500_dhcp_assign, w5500_dhcp_conflict);
 
-		while(1)
-		{
-			ret = DHCP_run();
+        while(1)
+        {
+            ret = DHCP_run();
 
-			if(ret == DHCP_IP_LEASED)
-			{
-                
+            if(ret == DHCP_IP_LEASED)
+            {
                 network_is_busy = false;   
                 print_network_info();
                 break;
-			}
-			else if(ret == DHCP_FAILED)
-			{
-				dhcp_retry++;  
-			}
+            }
+            else if(ret == DHCP_FAILED)
+            {
+                 dhcp_retry++;  
+            }
 
-			if(dhcp_retry > 10)
-			{
-				break;
-			}
-		}
+            if(dhcp_retry > 10)
+            {
+                break;
+            }
+        }
         network_is_busy = false;
-	}
-	else 							
-	{
-		// Fallback config if DHCP fails
-	}
-}
-
-/**@brief Function for initialization oscillators.
- */
-void clock_init()
-{
-    if(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
-    {
-        /* Start 16 MHz crystal oscillator */
-        NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
-        NRF_CLOCK->TASKS_HFCLKSTART    = 1;
-
-        /* Wait for the external oscillator to start up */
-        while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)
-        {
-            // Do nothing.
-        }
     }
-    
-    if(NRF_CLOCK->EVENTS_LFCLKSTARTED == 0)
+    else 							
     {
-        /* Start 32 kHz crystal oscillator */
-        NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
-        NRF_CLOCK->TASKS_LFCLKSTART    = 1;
-
-        /* Wait for the external oscillator to start up */
-        while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0)
-        {
-            // Do nothing.
-        }
+        // Fallback config if DHCP fails
     }
 }
+
 
 /* Function to send scan reports over Ethernet, using TCP or UDP */
 void send_scan_report(scan_report_t * scan_report)
 {
-    uint8_t buf[200];
+    uint8_t buf[SCAN_REPORT_LENGTH];
     uint8_t len = 0;
     
     if(!network_is_busy)
@@ -411,6 +405,10 @@ void send_scan_report(scan_report_t * scan_report)
     }
 }
 
+
+/// ***  SECTION: Network functions   *** ///
+
+// Function to establish socket, UDP or TCP depending on configuration
 void connection_init(void) 
 {
     #if NETWORK_USE_TCP
@@ -424,13 +422,7 @@ void connection_init(void)
     #endif
 }
 
-void sync_init(void) 
-{
-    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
-    nrf_gpio_cfg_output(SYNC_OUT);
-    nrf_gpio_pin_clear(SYNC_OUT);
-}
-
+// Initiates socket for UDP broadcast messages
 void broadcast_init(void)
 {
     uint8_t flag = SF_IO_NONBLOCK;
@@ -489,6 +481,32 @@ void get_server_ip(uint8_t * buf, uint8_t len)
         printf("Server IP: %d.%d.%d.%d : %d\r\n", target_IP[0], target_IP[1], target_IP[2], target_IP[3], target_port);
 
     }
+}
+///   ***   ///
+
+
+/// ***  SECTION: Event handlers   *** ///
+
+void on_connect(void)
+{
+    connected = true;
+    pwm_set_duty_cycle(LED_HP, 0.1);
+}
+
+void on_disconnect(void)
+{
+    connected = true;
+    pwm_set_duty_cycle(LED_HP, 0);
+}
+
+///   ***   ///
+
+// Initializes time synchronization
+void sync_init(void) 
+{
+    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_output(SYNC_OUT);
+    nrf_gpio_pin_clear(SYNC_OUT);
 }
 
 
@@ -557,6 +575,25 @@ void check_ctrl_cmd(void)
 }
 
 
+// ***  SECTION: Interrupt handlers  *** //
+
+void GPIOTE_IRQHandler(void)
+{
+    NRF_GPIOTE->EVENTS_IN[1] = 0;
+    sync_time = NRF_TIMER3->CC[0];
+}
+
+
+void TIMER1_IRQHandler(void)
+{
+    NRF_TIMER1->EVENTS_COMPARE[0] = 0;
+    DHCP_time_handler();
+}
+
+
+///   ***   ///
+
+
 int main(void)
 {   
     uint8_t err_code_37 = SUCCESS;
@@ -567,7 +604,6 @@ int main(void)
     
     clock_init();
     leds_init();
-    pwm_set(LED_HP, 0.1);
     sync_init();
     gpiote_init();
     ppi_init();
