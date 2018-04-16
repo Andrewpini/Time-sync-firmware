@@ -52,11 +52,8 @@ void wizchip_write(uint8_t wb)
 void user_ethernet_init()
 {
     uint8_t tmp;
-	uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
-	wiz_NetTimeout timeout_info;
-        
-
-        
+    uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
+    wiz_NetTimeout timeout_info;
         
     gWIZNETINFO.mac[2] = (NRF_FICR->DEVICEADDR[0] >> 0 )    & 0xFF;
     gWIZNETINFO.mac[3] = (NRF_FICR->DEVICEADDR[0] >> 8 )    & 0xFF;

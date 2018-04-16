@@ -13,12 +13,18 @@
 // Typedef for control commands
 typedef enum
 {
-    CMD_SERVER_IP_BROADCAST = 10,
-    CMD_NEW_SERVER_IP,
-    CMD_NEW_FIRMWARE,
-    CMD_NEW_ACCESS_ADDRESS,
-    CMD_ADVERTISING_START,
-    CMD_ADVERTISING_STOP
+    CMD_SERVER_IP_BROADCAST         = 10,
+    CMD_NEW_SERVER_IP               = 11,
+    CMD_NEW_FIRMWARE                = 12,
+    CMD_NEW_ACCESS_ADDRESS          = 13,
+    CMD_ADVERTISING_START           = 14,
+    CMD_ADVERTISING_STOP            = 15,
+    CMD_SINGLE_HPLED_ON             = 50,
+    CMD_SINGLE_HPLED_OFF            = 51,
+    CMD_SINGLE_HPLED_DEFAULT        = 52,
+    CMD_SINGLE_HPLED_CUSTOM         = 53,
+    CMD_SINGLE_ADVERTISING_ON       = 60,
+    CMD_SINGLE_ADVERTISING_OFF      = 61
 } ctrl_cmd_t;
 
 

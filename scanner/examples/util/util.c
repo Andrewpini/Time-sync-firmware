@@ -7,6 +7,26 @@
 #include "util.h"
 
 
+// Returns true if arr1[0..n-1] and arr2[0..m-1]
+// contain same elements.
+bool arrays_are_equal(uint8_t * p_arr1, uint8_t * p_arr2, uint8_t n, uint8_t m)
+{
+    if (n != m)
+        return false;
+ 
+    for (uint8_t i = 0; i < n; i++)
+         if (p_arr1[i] != p_arr2[i])
+            return false;
+ 
+    return true;
+}
+
+bool IPs_are_equal(uint8_t * ip1, uint8_t * ip2)
+{
+    return arrays_are_equal(ip1, ip2, 4, 4);
+}
+
+
 int32_t dict_find_index(dict_t dict, const uint8_t *key) {
     for (int32_t i = 0; i < dict->len; i++) {
         if (!memcmp((uint8_t *)dict->entry[i].key, (const uint8_t *)key, 6)) {
@@ -50,3 +70,4 @@ void dict_free(dict_t dict) {
     free(dict->entry);
     free(dict);
 }
+

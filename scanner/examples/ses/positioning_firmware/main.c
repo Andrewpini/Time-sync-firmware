@@ -122,7 +122,6 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 
 #define PWM_PERIOD_US                       1000
 
-#define DHCP_TIMER                          NRF_TIMER1
 
 
 void connection_init(void);
@@ -139,7 +138,8 @@ void send_to_tcp(uint8_t * buf, uint8_t length);
 void on_connect(void);
 
 // Default / placeholder IP and port, will receive updated IP and port from server before sending any data
-uint8_t target_IP[4] = {10, 0, 0, 12};      
+uint8_t own_IP[4] = {0};
+uint8_t target_IP[4] = {10, 0, 0, 4};      
 uint32_t target_port = 15000;
 
 static volatile uint32_t flag = 0;
@@ -147,7 +147,6 @@ static volatile uint32_t sync_time = 0;
 static volatile uint32_t capture_time = 0;
 static volatile uint32_t diff = 0;
 static volatile uint16_t pwm_seq[1] = {0};
-
 
 
 void leds_init(void)
@@ -324,7 +323,7 @@ void dhcp_timer_init(void)
     DHCP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
     DHCP_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
     DHCP_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    DHCP_TIMER->CC[0]               = 1000000;                                                         // Compare event every 2 seconds
+    DHCP_TIMER->CC[0]               = 1000000;                                                                      // Compare event every second
     DHCP_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
     DHCP_TIMER->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
     NVIC_ClearPendingIRQ(TIMER1_IRQn);
@@ -352,7 +351,9 @@ static void dhcp_init(void)
 
             if(ret == DHCP_IP_LEASED)
             {
-                network_is_busy = false;   
+                network_is_busy = false;
+                getIPfromDHCP(&own_IP[0]);
+                LOG("\r\n\r\nThis device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
                 print_network_info();
                 break;
             }
@@ -490,7 +491,7 @@ void get_server_ip(uint8_t * buf, uint8_t len)
 void on_connect(void)
 {
     connected = true;
-    pwm_set_duty_cycle(LED_HP, 0.1);
+    pwm_set_duty_cycle(LED_HP, LED_HP_CONNECTED_DUTY_CYCLE);
 }
 
 void on_disconnect(void)
@@ -513,7 +514,7 @@ void sync_init(void)
 // Function for checking if the device has received a new control command
 void check_ctrl_cmd(void)
 {
-    if (getSn_RX_RSR(SOCKET_BROADCAST) != 0x00)
+    while (getSn_RX_RSR(SOCKET_BROADCAST) != 0x00)
     {
         uint8_t received_data[200];
         uint8_t broadcast_ip[] = {255, 255, 255, 255};
@@ -547,24 +548,83 @@ void check_ctrl_cmd(void)
                         }
                         server_ip_received = true;
                         break;
+
                     case CMD_NEW_SERVER_IP:
                         server_ip_received = false;
                         break;
+
                     case CMD_NEW_FIRMWARE:
                         LOG("CMD: New firmware available\r\n");
                         break;
+
                     case CMD_NEW_ACCESS_ADDRESS:
                         LOG("CMD: New access address set\r\n");
                         radio_set_access_address((uint32_t)*((uint32_t *)p_payload));
                         break;
+
                     case CMD_ADVERTISING_START:
                         LOG("CMD: Advertising start\r\n");
                         advertising_enabled = true;
                         break;
+
                     case CMD_ADVERTISING_STOP:
                         LOG("CMD: Advertising stop\r\n");
                         advertising_enabled = false;
                         break;
+
+                    case CMD_SINGLE_HPLED_ON:
+                        LOG("CMD: Single HP LED ON: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
+                            LOG("IP match -> turning HP LED ON\r\n");
+                        }
+                        else 
+                        {
+                            LOG("no IP match -> no action \r\n");
+                        }
+                        break;
+
+                    case CMD_SINGLE_HPLED_OFF:
+                        LOG("CMD: Single HP LED OFF: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
+                            LOG("IP match -> turning HP LED OFF\r\n");
+                        }
+                        else 
+                        {
+                            LOG("no IP match -> no action\r\n");
+                        }
+                        break;
+
+                    case CMD_SINGLE_HPLED_DEFAULT:
+                        LOG("CMD: Single HP LED default: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
+                            LOG("IP match -> setting HP LED to default value\r\n");
+                        }
+                        else 
+                        {
+                            LOG("no IP match -> no action \r\n");
+                        }
+                        break;
+
+                    case CMD_SINGLE_HPLED_CUSTOM:
+                        LOG("CMD: Single HP LED custom value: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            float duty_cycle = p_payload [4] + (p_payload[5] / 10.0f);
+                            pwm_set_duty_cycle(LED_HP, duty_cycle);
+                            LOG("IP match -> setting HP LED duty cycle to %d.%d \% \r\n", p_payload[4], p_payload[5]);
+                        }
+                        else 
+                        {
+                            LOG("no IP match -> no action \r\n");
+                        }
+                        break;
+
                     default:
                         LOG("CMD: Unrecognized control command: %d\r\n", cmd);
                         break;
@@ -573,6 +633,14 @@ void check_ctrl_cmd(void)
         }
     }
 }
+
+///   ***   ///
+
+
+/// ***   SECTION: Helper functions   ***   ///
+
+
+///   ***   ///
 
 
 // ***  SECTION: Interrupt handlers  *** //
