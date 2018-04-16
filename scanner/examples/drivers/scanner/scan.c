@@ -97,6 +97,7 @@ uint8_t scan_ble_channel_once(scan_report_t * p_report, uint8_t channel)
     if (timeout_triggered)
     {
         timeout_triggered = false;
+        radio_disable();
         return FAIL;
     }
 

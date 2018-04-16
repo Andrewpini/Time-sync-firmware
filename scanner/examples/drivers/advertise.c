@@ -72,6 +72,7 @@ void advertise_set_payload(uint8_t * p_data, uint8_t len)
 
 void advertise_ble_channel_once(uint8_t channel) 
 {
+    //radio_disable();
     radio_init(channel);
     radio_tx_prepare();
     while (NRF_RADIO->EVENTS_DISABLED == 0) {}

@@ -134,7 +134,7 @@ void radio_init (uint8_t channel)
     NRF_RADIO->EVENTS_BCMATCH     = 0;
 
     /* Enable interrupt on events */
-    NRF_RADIO->INTENSET = (RADIO_INTENSET_ADDRESS_Msk | RADIO_INTENSET_DISABLED_Msk);
+   // NRF_RADIO->INTENSET = (RADIO_INTENSET_ADDRESS_Msk | RADIO_INTENSET_DISABLED_Msk);
 
 
     /* Enable RADIO interrupts */
@@ -268,12 +268,12 @@ void radio_tx_prepare(void)
   /* Clear events */
   NRF_RADIO->EVENTS_DISABLED = 0;
   
+  NRF_RADIO->TASKS_TXEN = 1;
   /* Set shorts */
   NRF_RADIO->SHORTS = RADIO_SHORTS_READY_START_Msk | RADIO_SHORTS_END_DISABLE_Msk;
   
   NRF_RADIO->TIFS = 149;  
   /* Enable TX */
-  NRF_RADIO->TASKS_TXEN = 1;
   
   
   m_radio_dir = RADIO_DIR_TX;

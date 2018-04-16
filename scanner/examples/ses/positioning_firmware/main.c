@@ -502,6 +502,10 @@ void on_disconnect(void)
 
 ///   ***   ///
 
+
+
+/// ***   SECTION: Helper functions   ***   ///
+
 // Initializes time synchronization
 void sync_init(void) 
 {
@@ -510,6 +514,37 @@ void sync_init(void)
     nrf_gpio_pin_clear(SYNC_OUT);
 }
 
+// Enables scanning for current radio mode
+void scanning_enable(void)
+{
+    scanning_enabled = true;
+}
+
+// Disables scanning for current radio mode
+void scanning_disable(void)
+{
+    scanning_enabled = false;
+}
+
+// Enables advertising for current radio mode
+void advertising_enable(void)
+{                    
+    advertise_init();
+    advertising_enabled = true;
+}
+
+// Disables advertising for current radio mode
+void advertising_disable(void)
+{
+    advertising_enabled = false;
+}
+
+
+///   ***   ///
+
+
+
+/// ***   SECTION: Command system   ***   ///
 
 // Function for checking if the device has received a new control command
 void check_ctrl_cmd(void)
@@ -564,12 +599,12 @@ void check_ctrl_cmd(void)
 
                     case CMD_ADVERTISING_START:
                         LOG("CMD: Advertising start\r\n");
-                        advertising_enabled = true;
+                        advertising_enable();
                         break;
 
                     case CMD_ADVERTISING_STOP:
                         LOG("CMD: Advertising stop\r\n");
-                        advertising_enabled = false;
+                        advertising_disable();
                         break;
 
                     case CMD_SINGLE_HPLED_ON:
@@ -625,6 +660,34 @@ void check_ctrl_cmd(void)
                         }
                         break;
 
+                    case CMD_SINGLE_ADVERTISING_ON:
+                        LOG("CMD: Single advertising START: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            scanning_disable();
+                            advertising_enable();
+                            LOG("IP match -> enabling advertising \r\n");
+                        }
+                        else 
+                        {
+                            LOG("no IP match -> no action \r\n");
+                        }
+                        break;
+
+                    case CMD_SINGLE_ADVERTISING_OFF:
+                        LOG("CMD: Single advertising STOP: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            advertising_disable();
+                            scanning_enable();
+                            LOG("IP match -> disabling advertising \r\n");
+                        }
+                        else 
+                        {
+                            LOG("no IP match -> no action \r\n");
+                        }
+                        break;
+
                     default:
                         LOG("CMD: Unrecognized control command: %d\r\n", cmd);
                         break;
@@ -633,12 +696,6 @@ void check_ctrl_cmd(void)
         }
     }
 }
-
-///   ***   ///
-
-
-/// ***   SECTION: Helper functions   ***   ///
-
 
 ///   ***   ///
 
@@ -668,7 +725,7 @@ int main(void)
     uint8_t err_code_38 = SUCCESS;
     uint8_t err_code_39 = SUCCESS;
     static scan_report_t scan_reports[3];
-    uint32_t counter = 1;
+    static uint32_t counter = 1;
     
     clock_init();
     leds_init();
@@ -715,9 +772,9 @@ int main(void)
                         send_scan_report(&scan_reports[2]);
                 }
                 if (advertising_enabled)
-                {
+                {   
                     advertise_set_payload((uint8_t *)&counter, sizeof(counter));
-                    nrf_delay_ms(10);
+                    nrf_delay_ms(300);
                     advertise_ble_channel_once(37);   
                     nrf_delay_ms(1);
                     advertise_ble_channel_once(38);   
