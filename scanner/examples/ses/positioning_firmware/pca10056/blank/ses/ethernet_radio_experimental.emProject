@@ -127,6 +127,7 @@
       <file file_name="../../../main.c" />
       <file file_name="../config/sdk_config.h" />
       <file file_name="../../../../../commands/commands.c" />
+      <file file_name="../../../../../config/config.h" />
     </folder>
     <folder Name="None">
       <file file_name="../../../../../../components/drivers_nrf/spi_slave/nrf_drv_spis.c" />
@@ -156,7 +157,6 @@
       <file file_name="../../../../../../external/Wiznet/ioLibrary_Driver/Ethernet/socket.c" />
       <file file_name="../../../../../../external/Wiznet/ioLibrary_Driver/Ethernet/wizchip_conf.c" />
     </folder>
-    <file file_name="../../../../../config/config.h" />
     <folder Name="Utils">
       <file file_name="../../../../../util/util.c" />
     </folder>

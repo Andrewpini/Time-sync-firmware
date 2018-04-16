@@ -111,8 +111,7 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 #define SYNC_IN                             15UL
 #define BUTTON_0                            16UL
 
-#define PPI_CHANNEL_LED                     1
-#define PPI_CHANNEL_SYNC                    0
+
 #define SCAN_TIMER_MS                       500
 
 
@@ -147,6 +146,7 @@ static volatile uint32_t sync_time = 0;
 static volatile uint32_t capture_time = 0;
 static volatile uint32_t diff = 0;
 static volatile uint16_t pwm_seq[1] = {0};
+static volatile float led_hp_default_value = LED_HP_CONNECTED_DUTY_CYCLE;
 
 
 void leds_init(void)
@@ -200,62 +200,29 @@ void clock_init()
 void gpiote_init(void) 
 {
     // GPIOTE configuration for syncing of clocks
-    NRF_GPIOTE->CONFIG[0]           = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
-                                    | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
-                                    | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                    | (GPIOTE_CONFIG_POLARITY_LoToHi << GPIOTE_CONFIG_POLARITY_Pos);
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_IN]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
+                                                | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
+                                                | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                | (GPIOTE_CONFIG_POLARITY_LoToHi << GPIOTE_CONFIG_POLARITY_Pos);
 
     // GPIOTE configuration for LED pin
-    NRF_GPIOTE->CONFIG[1]           = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
-                                    | (LED_0 << GPIOTE_CONFIG_PSEL_Pos)
-                                    | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                    | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
-                                    | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_LED] = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
+                                                | (LED_0 << GPIOTE_CONFIG_PSEL_Pos)
+                                                | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
+                                                | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
 }
 
 /**@brief Function for initialization of PPI.
  */
 void ppi_init(void) 
 {
-    NRF_PPI->CH[PPI_CHANNEL_SYNC].EEP       = (uint32_t) &(NRF_GPIOTE->EVENTS_IN[0]);
-    NRF_PPI->CH[PPI_CHANNEL_SYNC].TEP       = (uint32_t) &(SCAN_TIMER->TASKS_CLEAR);
-    NRF_PPI->FORK[PPI_CHANNEL_SYNC].TEP     = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[1]);
-    NRF_PPI->CHENSET                        = 1 << PPI_CHANNEL_SYNC;
+    NRF_PPI->CH[PPI_CHANNEL_SYNC_IN].EEP        = (uint32_t) &(NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]);
+    NRF_PPI->CH[PPI_CHANNEL_SYNC_IN].TEP        = (uint32_t) &(SCAN_TIMESTAMP_TIMER->TASKS_CLEAR);
+    NRF_PPI->FORK[PPI_CHANNEL_SYNC_IN].TEP      = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[GPIOTE_CHANNEL_SYNC_LED]);
+    NRF_PPI->CHENSET                            = 1 << PPI_CHANNEL_SYNC_IN;
 
 }
-
-/**@brief Function for initialization of timers.
- */
-void timer_init(void) 
-{
-   /* // Timer for sampling of RSSI values
-    NRF_TIMER1->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    NRF_TIMER1->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    NRF_TIMER1->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    NRF_TIMER1->CC[0]               = SCAN_TIMER_MS * 1000;                                                         // Compare event 
-    NRF_TIMER1->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
-    NRF_TIMER1->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
-    NVIC_ClearPendingIRQ(TIMER1_IRQn);
-    NVIC_EnableIRQ(TIMER1_IRQn);
-
-    // Timer for creating timestamps on RSSI capture
-    NRF_TIMER2->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    NRF_TIMER2->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    NRF_TIMER2->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    NRF_TIMER2->CC[0]               = 0;
-
-    // Timer for sync testing
-    NRF_TIMER3->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    NRF_TIMER3->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    NRF_TIMER3->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    NRF_TIMER3->CC[0]               = 0;
-
-
-    NRF_TIMER1->TASKS_START         = 1;
-    NRF_TIMER2->TASKS_START         = 1;
-    NRF_TIMER3->TASKS_START         = 1;*/
-}
-
 
 
 /**@brief Sets PWM properties for a pin. Duty cycle in percent. Frequency is statically set to 1000 Hz.
@@ -277,13 +244,6 @@ void pwm_set_duty_cycle(uint8_t pin, float duty_cycle)
     NRF_PWM1->TASKS_SEQSTART[0] = 1;
 }
 //   ***   //
-
-void calc_time_since_sync(void)
-{
-    NRF_TIMER2->TASKS_CAPTURE[0] = 1;
-    capture_time = NRF_TIMER2->CC[0];
-    diff = capture_time - sync_time;
-}
 
 
 /**@brief Function for initializing the nrf log module. */
@@ -491,7 +451,7 @@ void get_server_ip(uint8_t * buf, uint8_t len)
 void on_connect(void)
 {
     connected = true;
-    pwm_set_duty_cycle(LED_HP, LED_HP_CONNECTED_DUTY_CYCLE);
+    pwm_set_duty_cycle(LED_HP, led_hp_default_value);
 }
 
 void on_disconnect(void)
@@ -539,6 +499,35 @@ void advertising_disable(void)
     advertising_enabled = false;
 }
 
+// Set node as sync master
+void sync_master_set(void)
+{
+    SYNC_TIMER->MODE                                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    SYNC_TIMER->BITMODE                             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    SYNC_TIMER->PRESCALER                           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    SYNC_TIMER->CC[0]                               = SYNC_INTERVAL_MS * 1000; 
+    SYNC_TIMER->SHORTS                              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+
+    // GPIOTE configuration for syncing of clocks
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_OUT]     = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
+                                                    | (SYNC_OUT << GPIOTE_CONFIG_PSEL_Pos)
+                                                    | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                    | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
+                                                    | (GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos);
+
+    // PPI channel configuration for triggering syncing
+    NRF_PPI->CH[PPI_CHANNEL_SYNC_OUT].EEP           = (uint32_t) &(SYNC_TIMER->EVENTS_COMPARE[0]);
+    NRF_PPI->CH[PPI_CHANNEL_SYNC_OUT].TEP           = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[GPIOTE_CHANNEL_SYNC_OUT]);
+    NRF_PPI->CHENSET                                = 1 << PPI_CHANNEL_SYNC_OUT;
+
+    SYNC_TIMER->TASKS_START                         = 1;
+}
+
+// Unset node as sync master
+void sync_master_unset(void)
+{
+    SYNC_TIMER->TASKS_STOP          = 1;
+}
 
 ///   ***   ///
 
@@ -607,6 +596,33 @@ void check_ctrl_cmd(void)
                         advertising_disable();
                         break;
 
+                    case CMD_ALL_HPLED_ON:
+                        LOG("CMD: All HP LEDs ON: \r\n");
+                        pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
+                        break;
+
+                    case CMD_ALL_HPLED_OFF:
+                        LOG("CMD: All HP LEDs OFF \r\n");
+                        pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
+                        break;
+
+                    case CMD_ALL_HPLED_DEFAULT:
+                        LOG("CMD: Set all HP LEDs to default value  \r\n");
+                        pwm_set_duty_cycle(LED_HP, led_hp_default_value);
+                        break;
+
+                    case CMD_ALL_HPLED_NEW_DEFAULT:
+                        LOG("CMD: Sets new HP LED default value: %d\r\n", p_payload[0]);
+                        led_hp_default_value = p_payload[0] + (p_payload[1] / 10.0f);
+                        pwm_set_duty_cycle(LED_HP, led_hp_default_value);
+                        break;
+
+                    case CMD_ALL_HPLED_CUSTOM:
+                        LOG("CMD: All HP LEDs set to value: %d.%d\r\n", p_payload[0], (p_payload[1] / 10.0f));
+                        float duty_cycle = p_payload[0] + (p_payload[1] / 10.0f);
+                        pwm_set_duty_cycle(LED_HP, duty_cycle);
+                        break;
+
                     case CMD_SINGLE_HPLED_ON:
                         LOG("CMD: Single HP LED ON: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
@@ -637,7 +653,7 @@ void check_ctrl_cmd(void)
                         LOG("CMD: Single HP LED default: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
-                            pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
+                            pwm_set_duty_cycle(LED_HP, led_hp_default_value);
                             LOG("IP match -> setting HP LED to default value\r\n");
                         }
                         else 
@@ -684,6 +700,20 @@ void check_ctrl_cmd(void)
                         }
                         else 
                         {
+                            LOG("no IP match -> no action \r\n");
+                        }
+                        break;
+
+                     case CMD_SYNC_NODE_SET:
+                        LOG("CMD: Sync node set: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            sync_master_set();
+                            LOG("IP match -> setting node as sync master \r\n");
+                        }
+                        else 
+                        {
+                            sync_master_unset();
                             LOG("no IP match -> no action \r\n");
                         }
                         break;
@@ -774,11 +804,9 @@ int main(void)
                 if (advertising_enabled)
                 {   
                     advertise_set_payload((uint8_t *)&counter, sizeof(counter));
-                    nrf_delay_ms(300);
+                    nrf_delay_ms(ADVERTISING_INTERVAL);
                     advertise_ble_channel_once(37);   
-                    nrf_delay_ms(1);
                     advertise_ble_channel_once(38);   
-                    nrf_delay_ms(1); 
                     advertise_ble_channel_once(39);
                     counter++;      
                 }

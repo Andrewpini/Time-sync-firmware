@@ -28,18 +28,18 @@ static uint8_t m_rx_buf[RX_BUF_SIZE];
 void scan_init(void)
 {
     // Timer for sync testing
-    SCAN_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    SCAN_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    SCAN_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    SCAN_TIMER->CC[0]               = 0;
-    SCAN_TIMER->TASKS_START         = 1;
+    SCAN_TIMESTAMP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    SCAN_TIMESTAMP_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    SCAN_TIMESTAMP_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    SCAN_TIMESTAMP_TIMER->CC[0]               = 0;
+    SCAN_TIMESTAMP_TIMER->TASKS_START         = 1;
 
-    NRF_TIMER3->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    NRF_TIMER3->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    NRF_TIMER3->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    NRF_TIMER3->CC[0]               = 500 * 1000;                                                                   // Event after 100 ms
-    //NRF_TIMER3->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos
-    NRF_TIMER3->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
+    SCAN_TIMEOUT_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    SCAN_TIMEOUT_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    SCAN_TIMEOUT_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    SCAN_TIMEOUT_TIMER->CC[0]               = 500 * 1000;                                                                   // Event after 100 ms
+    //SCAN_TIMEOUT_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos
+    SCAN_TIMEOUT_TIMER->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;
     NVIC_ClearPendingIRQ(TIMER3_IRQn);
     NVIC_EnableIRQ(TIMER3_IRQn);
 
@@ -50,7 +50,7 @@ void scan_init(void)
 
 void TIMER3_IRQHandler(void) 
 {
-    NRF_TIMER3->EVENTS_COMPARE[0]   = 0;
+    SCAN_TIMEOUT_TIMER->EVENTS_COMPARE[0]   = 0;
     timeout_triggered = true;
 }
 
@@ -86,13 +86,13 @@ uint8_t scan_ble_channel_once(scan_report_t * p_report, uint8_t channel)
     radio_rx_prepare (true);
     radio_rssi_enable();
     
-    NRF_TIMER3->TASKS_START = 1;
-    NRF_TIMER3->TASKS_CLEAR = 1;
+    SCAN_TIMEOUT_TIMER->TASKS_START = 1;
+    SCAN_TIMEOUT_TIMER->TASKS_CLEAR = 1;
     
     while ((NRF_RADIO->EVENTS_DISABLED == 0) && !timeout_triggered) {}
 
-    NRF_TIMER3->TASKS_STOP = 1;
-    NRF_TIMER3->TASKS_CLEAR = 1;
+    SCAN_TIMEOUT_TIMER->TASKS_STOP = 1;
+    SCAN_TIMEOUT_TIMER->TASKS_CLEAR = 1;
 
     if (timeout_triggered)
     {
@@ -101,8 +101,8 @@ uint8_t scan_ble_channel_once(scan_report_t * p_report, uint8_t channel)
         return FAIL;
     }
 
-    SCAN_TIMER->TASKS_CAPTURE[0] = 1;
-    uint32_t capture_time = SCAN_TIMER->CC[0];
+    SCAN_TIMESTAMP_TIMER->TASKS_CAPTURE[0] = 1;
+    uint32_t capture_time = SCAN_TIMESTAMP_TIMER->CC[0];
 
     rssi = radio_rssi_get();
     radio_disable();
