@@ -30,5 +30,9 @@
 #define PPI_CHANNEL_SYNC_IN                 0
 #define PPI_CHANNEL_SYNC_OUT                1
 
+// 
+#define SCAN_REPORT_LENGTH                  200
+#define SERVER_IP_PREFIX                    "position_server: "
+#define SERVER_IP_PREFIX_LEN                17
 
 #endif

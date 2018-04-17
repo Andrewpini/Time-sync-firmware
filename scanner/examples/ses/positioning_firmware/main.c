@@ -110,21 +110,16 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 #define SYNC_OUT                            14UL  
 #define SYNC_IN                             15UL
 #define BUTTON_0                            16UL
-
-
 #define SCAN_TIMER_MS                       500
-
-
-#define SCAN_REPORT_LENGTH                  200
-#define SERVER_IP_PREFIX                    "position_server: "
-#define SERVER_IP_PREFIX_LEN                17
 
 #define PWM_PERIOD_US                       1000
 
 
 
+
 void connection_init(void);
 
+// State variables
 static uint8_t TX_BUF[TX_BUF_SIZE];
 static volatile bool data_in_flag           = false;
 static volatile bool network_is_busy        = false;
@@ -132,6 +127,7 @@ static volatile bool connected              = false;
 static volatile bool server_ip_received     = false;
 static volatile bool scanning_enabled       = true;
 static volatile bool advertising_enabled    = false;
+static volatile bool controls_sync_signal   = false;
 
 void send_to_tcp(uint8_t * buf, uint8_t length);
 void on_connect(void);
@@ -147,6 +143,7 @@ static volatile uint32_t capture_time = 0;
 static volatile uint32_t diff = 0;
 static volatile uint16_t pwm_seq[1] = {0};
 static volatile float led_hp_default_value = LED_HP_CONNECTED_DUTY_CYCLE;
+static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
 
 
 void leds_init(void)
@@ -229,7 +226,7 @@ void ppi_init(void)
 */
 void pwm_set_duty_cycle(uint8_t pin, float duty_cycle)
 {
-    pwm_seq[0] = ( 1 << 15 ) | (uint16_t)(PWM_PERIOD_US * (uint32_t)(10.0 * duty_cycle) / 1000);
+    pwm_seq[0] = ( 1 << 15 ) | (uint16_t)(PWM_PERIOD_US * 10.0 * duty_cycle / 1000);
     NRF_PWM1->PSEL.OUT[0] = (pin << PWM_PSEL_OUT_PIN_Pos) | (PWM_PSEL_OUT_CONNECT_Connected << PWM_PSEL_OUT_CONNECT_Pos);
     NRF_PWM1->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
     NRF_PWM1->MODE = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
@@ -346,11 +343,11 @@ void send_scan_report(scan_report_t * scan_report)
     {
         network_is_busy = true;
         
-        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d }\r\n", 
+        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
                         scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
                         scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
                         scan_report->address[3], scan_report->address[4], scan_report->address[5],
-                        scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error);
+                        scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error, controls_sync_signal);
         
         len = strlen((const char *)&buf[0]);
         
@@ -451,7 +448,7 @@ void get_server_ip(uint8_t * buf, uint8_t len)
 void on_connect(void)
 {
     connected = true;
-    pwm_set_duty_cycle(LED_HP, led_hp_default_value);
+    pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
 }
 
 void on_disconnect(void)
@@ -500,17 +497,21 @@ void advertising_disable(void)
 }
 
 // Set node as sync master
-void sync_master_set(void)
+void sync_master_set(uint32_t interval)
 {
+    SYNC_TIMER->TASKS_STOP                          = 1;
     SYNC_TIMER->MODE                                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
     SYNC_TIMER->BITMODE                             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
     SYNC_TIMER->PRESCALER                           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    SYNC_TIMER->CC[0]                               = SYNC_INTERVAL_MS * 1000; 
+    SYNC_TIMER->CC[0]                               = interval * 1000; 
     SYNC_TIMER->SHORTS                              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+
+
+    nrf_gpio_cfg_output(SYNC_IN);
 
     // GPIOTE configuration for syncing of clocks
     NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_OUT]     = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
-                                                    | (SYNC_OUT << GPIOTE_CONFIG_PSEL_Pos)
+                                                    | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
                                                     | (0 << GPIOTE_CONFIG_PORT_Pos)
                                                     | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
                                                     | (GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos);
@@ -521,13 +522,23 @@ void sync_master_set(void)
     NRF_PPI->CHENSET                                = 1 << PPI_CHANNEL_SYNC_OUT;
 
     SYNC_TIMER->TASKS_START                         = 1;
+    controls_sync_signal                            = true;
 }
 
 // Unset node as sync master
 void sync_master_unset(void)
 {
     SYNC_TIMER->TASKS_STOP          = 1;
+    controls_sync_signal            = false;
 }
+
+// Sets interval in units of 100 ms
+void sync_set_interval(uint8_t interval)
+{
+    sync_interval = interval * 100;
+    sync_master_set(sync_interval);
+}
+
 
 ///   ***   ///
 
@@ -708,16 +719,29 @@ void check_ctrl_cmd(void)
                         LOG("CMD: Sync node set: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
-                            sync_master_set();
+                            sync_master_set(sync_interval);
                             LOG("IP match -> setting node as sync master \r\n");
                         }
                         else 
                         {
                             sync_master_unset();
+                            LOG("no IP match -> unset as sync master, no further action \r\n");
+                        }
+                        break;
+                    
+                    case CMD_SYNC_SET_INTERVAL:
+                        LOG("CMD: Sync set interval: ");
+                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+                        {
+                            sync_set_interval(p_payload[4]);
+                            LOG("IP match -> setting sync interval to %d ms\r\n", p_payload[4] * 100);
+                        }
+                        else 
+                        {
                             LOG("no IP match -> no action \r\n");
                         }
                         break;
-
+                    
                     default:
                         LOG("CMD: Unrecognized control command: %d\r\n", cmd);
                         break;

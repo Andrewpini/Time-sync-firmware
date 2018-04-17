@@ -48,7 +48,7 @@ uint8_t g_socket_rcv_buf[MAX_MTU_SIZE];
 uint8_t g_op_mode = NORMAL_MODE;
 uint32_t g_wirite_addr;
 
-uint8_t targetIP[4] = {192,168,14,47};
+uint8_t targetIP[4] = {10, 0, 0, 13};
 //uint32_t tcp_targetPort = 69;
 
 

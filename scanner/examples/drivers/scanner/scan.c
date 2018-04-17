@@ -30,7 +30,7 @@ void scan_init(void)
     // Timer for sync testing
     SCAN_TIMESTAMP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
     SCAN_TIMESTAMP_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    SCAN_TIMESTAMP_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    SCAN_TIMESTAMP_TIMER->PRESCALER           = 0 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
     SCAN_TIMESTAMP_TIMER->CC[0]               = 0;
     SCAN_TIMESTAMP_TIMER->TASKS_START         = 1;
 
