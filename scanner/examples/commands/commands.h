@@ -13,6 +13,8 @@
 // Typedef for control commands
 typedef enum
 {
+    WHOAMI_START                    = 1,
+    WHOAMI_STOP                     = 2,
     CMD_SERVER_IP_BROADCAST         = 10,
     CMD_NEW_SERVER_IP               = 11,
     CMD_NEW_FIRMWARE                = 12,

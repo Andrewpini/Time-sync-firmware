@@ -71,10 +71,10 @@
 #include "commands.h"
 
 
-#define LOG(...)                             printf(__VA_ARGS__)    //NRF_LOG_RAW_INFO(__VA_ARGS__)
+#define LOG(...)                            printf(__VA_ARGS__)         //NRF_LOG_RAW_INFO(__VA_ARGS__)
 
-#define UART_TX_BUF_SIZE                    256                     /**< UART TX buffer size. */
-#define UART_RX_BUF_SIZE                    256                     /**< UART RX buffer size. */
+#define UART_TX_BUF_SIZE                    256                         /**< UART TX buffer size. */
+#define UART_RX_BUF_SIZE                    256                         /**< UART RX buffer size. */
 
 APP_TIMER_DEF(tcp_con_timer_id);									/**< Publish data timer. */
 #define TCP_CON_INTERVAL             	    APP_TIMER_TICKS(1000)	/**< RR interval interval (ticks). */
@@ -115,8 +115,6 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 #define PWM_PERIOD_US                       1000
 
 
-
-
 void connection_init(void);
 
 // State variables
@@ -128,21 +126,23 @@ static volatile bool server_ip_received     = false;
 static volatile bool scanning_enabled       = true;
 static volatile bool advertising_enabled    = false;
 static volatile bool controls_sync_signal   = false;
+static volatile bool who_am_i_enabled       = false;
 
 void send_to_tcp(uint8_t * buf, uint8_t length);
 void on_connect(void);
 
 // Default / placeholder IP and port, will receive updated IP and port from server before sending any data
-uint8_t own_IP[4] = {0};
-uint8_t target_IP[4] = {10, 0, 0, 4};      
-uint32_t target_port = 15000;
+static uint8_t own_MAC[6]          = {0};
+static uint8_t own_IP[4]           = {0};
+static uint8_t target_IP[4]                 = {10, 0, 0, 4};      // Arbitrary fallback
+static uint32_t target_port                 = 15000;
 
-static volatile uint32_t flag = 0;
-static volatile uint32_t sync_time = 0;
-static volatile uint32_t capture_time = 0;
-static volatile uint32_t diff = 0;
-static volatile uint16_t pwm_seq[1] = {0};
-static volatile float led_hp_default_value = LED_HP_CONNECTED_DUTY_CYCLE;
+static volatile uint32_t flag               = 0;
+static volatile uint32_t sync_time          = 0;
+static volatile uint32_t capture_time       = 0;
+static volatile uint32_t diff               = 0;
+static volatile uint16_t pwm_seq[1]         = {0};
+static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
 
 
@@ -309,6 +309,7 @@ static void dhcp_init(void)
             if(ret == DHCP_IP_LEASED)
             {
                 network_is_busy = false;
+                getSHAR(&own_MAC[0]);
                 getIPfromDHCP(&own_IP[0]);
                 LOG("\r\n\r\nThis device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
                 print_network_info();
@@ -539,6 +540,16 @@ void sync_set_interval(uint8_t interval)
     sync_master_set(sync_interval);
 }
 
+void send_who_am_i(void)
+{
+    uint8_t buf[100] = {0};
+    uint8_t len = sizeof(buf);
+    sprintf((char *)&buf[0], "{\"MAC\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"IP\" : \"%d.%d.%d.%d\"}",
+                                own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
+                                own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
+
+    sendto(SOCKET_UDP, &buf[0], strlen(buf), target_IP, target_port);
+}
 
 ///   ***   ///
 
@@ -576,6 +587,14 @@ void check_ctrl_cmd(void)
                 // Choose the right action according to command
                 switch (cmd)
                 {
+                    case WHOAMI_START:
+                        LOG("CMD: WHO AM I start\r\n");
+                        who_am_i_enabled = true;
+                        break;
+                    case WHOAMI_STOP:
+                        LOG("CMD: WHO AM I stop\r\n");
+                        who_am_i_enabled = false;
+                        break;
                     case CMD_SERVER_IP_BROADCAST:
                         if (!server_ip_received)
                         {
@@ -833,6 +852,10 @@ int main(void)
                     advertise_ble_channel_once(38);   
                     advertise_ble_channel_once(39);
                     counter++;      
+                }
+                if (who_am_i_enabled)
+                {
+                    send_who_am_i();
                 }
             }
             check_ctrl_cmd();

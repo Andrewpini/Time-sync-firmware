@@ -125,7 +125,7 @@ uint8_t scan_ble_channel_once(scan_report_t * p_report, uint8_t channel)
 #endif
 
     report.timestamp = capture_time;
-    report.id[0] = (NRF_FICR->DEVICEADDR[0]      ) & 0xFF;
+    report.id[0] = (0xB0                         ) & 0xFF;
     report.id[1] = (NRF_FICR->DEVICEADDR[0] >>  8) & 0xFF;
     report.id[2] = (NRF_FICR->DEVICEADDR[0] >> 16) & 0xFF;
     report.id[3] = (NRF_FICR->DEVICEADDR[0] >> 24)       ;

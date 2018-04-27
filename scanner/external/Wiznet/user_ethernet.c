@@ -55,11 +55,12 @@ void user_ethernet_init()
     uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
     wiz_NetTimeout timeout_info;
         
-    gWIZNETINFO.mac[2] = (NRF_FICR->DEVICEADDR[0] >> 0 )    & 0xFF;
-    gWIZNETINFO.mac[3] = (NRF_FICR->DEVICEADDR[0] >> 8 )    & 0xFF;
-    gWIZNETINFO.mac[4] = (NRF_FICR->DEVICEADDR[0] >> 16)    & 0xFF;
-    gWIZNETINFO.mac[5] = (NRF_FICR->DEVICEADDR[0] >> 24)    & 0xFF;
-
+    gWIZNETINFO.mac[0] = (0xB0                         ) & 0xFF;
+    gWIZNETINFO.mac[1] = (NRF_FICR->DEVICEADDR[0] >>  8) & 0xFF;
+    gWIZNETINFO.mac[2] = (NRF_FICR->DEVICEADDR[0] >> 16) & 0xFF;
+    gWIZNETINFO.mac[3] = (NRF_FICR->DEVICEADDR[0] >> 24)       ;
+    gWIZNETINFO.mac[4] = (NRF_FICR->DEVICEADDR[1]      ) & 0xFF;
+    gWIZNETINFO.mac[5] = (NRF_FICR->DEVICEADDR[1] >>  8) & 0xFF;
 
     reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
     reg_wizchip_spi_cbfunc(wizchip_read, wizchip_write);

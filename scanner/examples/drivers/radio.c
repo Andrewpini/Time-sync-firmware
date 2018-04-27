@@ -139,7 +139,7 @@ void radio_init (uint8_t channel)
 
     /* Enable RADIO interrupts */
     NVIC_ClearPendingIRQ(RADIO_IRQn);
-   // NVIC_EnableIRQ(RADIO_IRQn);
+    NVIC_EnableIRQ(RADIO_IRQn);
 
     m_radio_dir = RADIO_DIR_NONE;
 }
