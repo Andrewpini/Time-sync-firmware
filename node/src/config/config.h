@@ -12,6 +12,8 @@
 #define SUCCESS                             0
 #define FAIL                                1
 
+#define TX_POWER                            RADIO_TXPOWER_TXPOWER_0dBm
+
 #define ADVERTISING_INTERVAL                300
 #define SYNC_INTERVAL_MS                    1000
 
