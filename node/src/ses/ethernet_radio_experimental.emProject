@@ -126,7 +126,6 @@
     <folder Name="Application">
       <file file_name="../main.c" />
       <file file_name="../config/sdk_config.h" />
-      <file file_name="../commands/commands.c" />
       <file file_name="../config/config.h" />
     </folder>
     <folder Name="None">
