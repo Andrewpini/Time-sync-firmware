@@ -52,7 +52,6 @@ tools/rtt_log/logs/
 *.TMP*
 *.mp3*
 *.zip*
-*.hex*
 *XXX*
 */sound/*.h*
 *.TMP

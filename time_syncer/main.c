@@ -10,7 +10,7 @@
 #define LED3_PIN                        19
 #define LED4_PIN                        20
 
-#define TRIGGER_TIMER_INTERVAL_MS       2000
+#define TRIGGER_TIMER_INTERVAL_MS       1000
 
 #define TRIGGER_PIN_1                   11
 #define TRIGGER_PIN_2                   12
