@@ -94,7 +94,7 @@ APP_TIMER_DEF(tcp_socket_check_timer_id);							/**< Publish data timer. */
 #define SOCKET_DHCP                         2
 #define SOCKET_UDP                          3
 #define SOCKET_MULTICAST                    4
-#define SOCKET_BROADCAST                    5
+#define SOCKET_BROADCAST                    6
 
 #define UDP_PORT                            17545
 #define UDP_FLAGS                           0x00
@@ -208,6 +208,10 @@ void gpiote_init(void)
                                                 | (0 << GPIOTE_CONFIG_PORT_Pos)
                                                 | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
                                                 | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
+
+    NVIC_EnableIRQ(GPIOTE_IRQn);
+    NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos);
+    NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
 
 /**@brief Function for initialization of PPI.
@@ -285,7 +289,7 @@ void dhcp_timer_init(void)
     DHCP_TIMER->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
     NVIC_ClearPendingIRQ(TIMER1_IRQn);
     NVIC_EnableIRQ(TIMER1_IRQn);
-    
+ 
     DHCP_TIMER->TASKS_START = 1;
 
 }
@@ -591,10 +595,12 @@ void check_ctrl_cmd(void)
                         LOG("CMD: WHO AM I start\r\n");
                         who_am_i_enabled = true;
                         break;
+
                     case WHOAMI_STOP:
                         LOG("CMD: WHO AM I stop\r\n");
                         who_am_i_enabled = false;
                         break;
+
                     case CMD_SERVER_IP_BROADCAST:
                         if (!server_ip_received)
                         {
@@ -777,8 +783,12 @@ void check_ctrl_cmd(void)
 
 void GPIOTE_IRQHandler(void)
 {
-    NRF_GPIOTE->EVENTS_IN[1] = 0;
-    sync_time = NRF_TIMER3->CC[0];
+    if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN])
+    {
+      NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
+      sync_time = NRF_TIMER3->CC[0];
+      LOG("SYNC!!!!!!!!!!!!\n");
+    }
 }
 
 
@@ -811,8 +821,8 @@ int main(void)
     spi0_master_init();
     user_ethernet_init();
     
-    //ret_code_t err_code = app_timer_init();
-    //APP_ERROR_CHECK(err_code);
+//    ret_code_t err_code = app_timer_init();
+//    APP_ERROR_CHECK(err_code);
     
     dhcp_init();
     broadcast_init();
