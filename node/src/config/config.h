@@ -31,6 +31,7 @@
 // PPI channels
 #define PPI_CHANNEL_SYNC_IN                 0
 #define PPI_CHANNEL_SYNC_OUT                1
+#define PPI_CHANNEL_SYNC                    2
 
 // 
 #define SCAN_REPORT_LENGTH                  200

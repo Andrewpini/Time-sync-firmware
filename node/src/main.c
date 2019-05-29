@@ -145,6 +145,11 @@ static volatile uint16_t pwm_seq[1]         = {0};
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
 
+/* Variables for calculating drift */
+static int prev_counter_val;
+static int prev_drift;
+
+#define DIFF_TIMER_MAX 1000000
 
 void leds_init(void)
 {
@@ -221,7 +226,12 @@ void ppi_init(void)
     NRF_PPI->CH[PPI_CHANNEL_SYNC_IN].EEP        = (uint32_t) &(NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]);
     NRF_PPI->CH[PPI_CHANNEL_SYNC_IN].TEP        = (uint32_t) &(SCAN_TIMESTAMP_TIMER->TASKS_CLEAR);
     NRF_PPI->FORK[PPI_CHANNEL_SYNC_IN].TEP      = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[GPIOTE_CHANNEL_SYNC_LED]);
-    NRF_PPI->CHENSET                            = 1 << PPI_CHANNEL_SYNC_IN;
+
+    NRF_PPI->CH[PPI_CHANNEL_SYNC].EEP        = (uint32_t) &(NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]);
+    NRF_PPI->CH[PPI_CHANNEL_SYNC].TEP        = (uint32_t) &(NRF_TIMER0->TASKS_CAPTURE[1]);
+    NRF_PPI->FORK[PPI_CHANNEL_SYNC].TEP      = (uint32_t) &(NRF_TIMER0->TASKS_START);
+
+    NRF_PPI->CHENSET = (1 << PPI_CHANNEL_SYNC_IN) | (1 << PPI_CHANNEL_SYNC);
 
 }
 
@@ -256,29 +266,6 @@ static void log_init(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 }
 
-
-static void user_app_timer_init(void)
-{
-    uint32_t err_code = NRF_SUCCESS;
-    
-    //err_code = app_timer_create(&tcp_con_timer_id, APP_TIMER_MODE_REPEATED, tcp_con_timer);
-   // APP_ERROR_CHECK(err_code);
-	
-   // err_code = app_timer_create(&tcp_socket_check_timer_id, APP_TIMER_MODE_REPEATED, tcp_socket_check);
-    //APP_ERROR_CHECK(err_code);	
-}
-
-static void user_app_timer_start(void)
-{
-    uint32_t err_code;
-    
-    err_code = app_timer_start(tcp_con_timer_id, TCP_CON_INTERVAL,NULL);
-    APP_ERROR_CHECK(err_code);
-
-    //err_code = app_timer_start(tcp_socket_check_timer_id, TCP_SOCKET_CHECK_INTERVAL, NULL);
-    //APP_ERROR_CHECK(err_code);	
-}
-
 void dhcp_timer_init(void)
 {
     DHCP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
@@ -291,6 +278,18 @@ void dhcp_timer_init(void)
     NVIC_EnableIRQ(TIMER1_IRQn);
  
     DHCP_TIMER->TASKS_START = 1;
+
+}
+
+void timer5_init(void)
+{
+    NRF_TIMER0->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    NRF_TIMER0->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    NRF_TIMER0->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    NRF_TIMER0->CC[0]               = DIFF_TIMER_MAX;                                                                      // Compare event every second
+    NRF_TIMER0->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+
+//    NRF_TIMER0->TASKS_START = 1;
 
 }
 
@@ -374,11 +373,6 @@ void send_scan_report(scan_report_t * scan_report)
 // Function to establish socket, UDP or TCP depending on configuration
 void connection_init(void) 
 {
-    #if NETWORK_USE_TCP
-        user_app_timer_init();
-        user_app_timer_start();
-    #endif
-    
     #if NETWORK_USE_UDP
         socket(SOCKET_UDP, Sn_MR_UDP, UDP_PORT, UDP_FLAGS);
         on_connect();
@@ -781,13 +775,28 @@ void check_ctrl_cmd(void)
 
 // ***  SECTION: Interrupt handlers  *** //
 
+int calc_drift_time(uint32_t counter_val){
+    int temp_diff = prev_counter_val - counter_val;
+    if(temp_diff < -(DIFF_TIMER_MAX/2)){
+      return DIFF_TIMER_MAX - abs(temp_diff);
+    } else {
+      return temp_diff;
+    }
+}
+
 void GPIOTE_IRQHandler(void)
 {
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN])
     {
       NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
       sync_time = NRF_TIMER3->CC[0];
-      LOG("SYNC!!!!!!!!!!!!\n");
+
+    /*TEST FOR Å SJEKKE OM PPI-CONNECTION MELLOM GPIO OG OG TIMER0 FUNGERER SOM DEN SKAL*/
+    int current_drift = prev_drift - calc_drift_time(NRF_TIMER0->CC[1]);
+    LOG("Raw counter value : %d\n", NRF_TIMER0->CC[1]);
+    LOG("Current timer drift (in relation to sync master) : %d microseconds\n", current_drift);
+    prev_drift = current_drift;
+    prev_counter_val = NRF_TIMER0->CC[1];
     }
 }
 
@@ -798,9 +807,7 @@ void TIMER1_IRQHandler(void)
     DHCP_time_handler();
 }
 
-
 ///   ***   ///
-
 
 int main(void)
 {   
@@ -821,10 +828,9 @@ int main(void)
     spi0_master_init();
     user_ethernet_init();
     
-//    ret_code_t err_code = app_timer_init();
-//    APP_ERROR_CHECK(err_code);
-    
+    timer5_init();
     dhcp_init();
+
     broadcast_init();
     while(!server_ip_received)
     {
