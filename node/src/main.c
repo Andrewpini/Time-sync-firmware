@@ -128,7 +128,6 @@ static volatile bool advertising_enabled    = false;
 static volatile bool controls_sync_signal   = false;
 static volatile bool who_am_i_enabled       = false;
 
-void send_to_tcp(uint8_t * buf, uint8_t length);
 void on_connect(void);
 
 // Default / placeholder IP and port, will receive updated IP and port from server before sending any data
@@ -146,8 +145,9 @@ static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
 
 /* Variables for calculating drift */
-static int prev_counter_val;
-static int prev_drift;
+static volatile int prev_counter_val;
+static volatile int prev_drift;
+static volatile uint32_t m_time_tic;
 
 #define DIFF_TIMER_MAX 1000000
 
@@ -355,9 +355,32 @@ void send_scan_report(scan_report_t * scan_report)
         
         len = strlen((const char *)&buf[0]);
         
-        #if NETWORK_USE_TCP
-            send_to_tcp(&buf[0], len);
+        
+        #if NETWORK_USE_UDP
+            sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
         #endif
+        
+        network_is_busy = false;
+    }
+}
+
+/* Function to send timing samples over Ethernet, using UDP */
+void send_timing_samples(int drift, uint32_t time_tic)
+{
+    uint8_t buf[SCAN_REPORT_LENGTH];
+    uint8_t len = 0;
+    
+    if(!network_is_busy)
+    {
+        network_is_busy = true;
+        
+        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
+                        own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
+                        drift,
+                        time_tic);
+        
+        len = strlen((const char *)&buf[0]);
+        
         
         #if NETWORK_USE_UDP
             sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
@@ -795,6 +818,8 @@ void GPIOTE_IRQHandler(void)
     int current_drift = prev_drift - calc_drift_time(NRF_TIMER0->CC[1]);
     LOG("Raw counter value : %d\n", NRF_TIMER0->CC[1]);
     LOG("Current timer drift (in relation to sync master) : %d microseconds\n", current_drift);
+    send_timing_samples(current_drift, m_time_tic);
+    m_time_tic++;
     prev_drift = current_drift;
     prev_counter_val = NRF_TIMER0->CC[1];
     }
@@ -853,12 +878,12 @@ int main(void)
                     err_code_38 = scan_ble_channel_once(&scan_reports[1], 38);
                     err_code_39 = scan_ble_channel_once(&scan_reports[2], 39);
 
-                    if (err_code_37 == SUCCESS)
-                        send_scan_report(&scan_reports[0]);
-                    if (err_code_38 == SUCCESS)
-                        send_scan_report(&scan_reports[1]);
-                    if (err_code_39 == SUCCESS)
-                        send_scan_report(&scan_reports[2]);
+//                    if (err_code_37 == SUCCESS)
+//                        send_scan_report(&scan_reports[0]);
+//                    if (err_code_38 == SUCCESS)
+//                        send_scan_report(&scan_reports[1]);
+//                    if (err_code_39 == SUCCESS)
+//                        send_scan_report(&scan_reports[2]);
                 }
                 if (advertising_enabled)
                 {   
