@@ -149,7 +149,7 @@ static volatile int prev_counter_val;
 static volatile int prev_drift;
 static volatile uint32_t m_time_tic;
 
-#define DIFF_TIMER_MAX 1000000
+#define DIFF_TIMER_MAX 2000000
 
 void leds_init(void)
 {
