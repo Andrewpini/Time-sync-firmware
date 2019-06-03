@@ -145,9 +145,11 @@ static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
 
 /* Variables for calculating drift */
-static volatile int prev_counter_val;
-static volatile int prev_drift;
+static volatile int m_prev_counter_val;
+static volatile int m_prev_drift;
+static volatile int m_current_drift;
 static volatile uint32_t m_time_tic;
+static volatile bool m_updated_drift_rdy;
 
 #define DIFF_TIMER_MAX 2000000
 
@@ -216,7 +218,7 @@ void gpiote_init(void)
 
     NVIC_EnableIRQ(GPIOTE_IRQn);
     NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos);
-    NVIC_SetPriority(GPIOTE_IRQn, 1);
+//    NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
 
 /**@brief Function for initialization of PPI.
@@ -271,7 +273,7 @@ void dhcp_timer_init(void)
     DHCP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
     DHCP_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
     DHCP_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    DHCP_TIMER->CC[0]               = 1000000;                                                                      // Compare event every second
+    DHCP_TIMER->CC[0]               = 1000000 / 2;                                                                      // Compare event every second / 2
     DHCP_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
     DHCP_TIMER->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
     NVIC_ClearPendingIRQ(TIMER1_IRQn);
@@ -383,7 +385,10 @@ void send_timing_samples(int drift, uint32_t time_tic)
         
         
         #if NETWORK_USE_UDP
-            sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+            uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+            if(err < 1){
+                LOG("Error during sending: %d\n", err);
+            }
         #endif
         
         network_is_busy = false;
@@ -799,7 +804,7 @@ void check_ctrl_cmd(void)
 // ***  SECTION: Interrupt handlers  *** //
 
 int calc_drift_time(uint32_t counter_val){
-    int temp_diff = prev_counter_val - counter_val;
+    int temp_diff = m_prev_counter_val - counter_val;
     if(temp_diff < -(DIFF_TIMER_MAX/2)){
       return DIFF_TIMER_MAX - abs(temp_diff);
     } else {
@@ -815,13 +820,14 @@ void GPIOTE_IRQHandler(void)
       sync_time = NRF_TIMER3->CC[0];
 
     /*TEST FOR Å SJEKKE OM PPI-CONNECTION MELLOM GPIO OG OG TIMER0 FUNGERER SOM DEN SKAL*/
-    int current_drift = prev_drift - calc_drift_time(NRF_TIMER0->CC[1]);
+    m_current_drift = m_prev_drift - calc_drift_time(NRF_TIMER0->CC[1]);
     LOG("Raw counter value : %d\n", NRF_TIMER0->CC[1]);
-    LOG("Current timer drift (in relation to sync master) : %d microseconds\n", current_drift);
-    send_timing_samples(current_drift, m_time_tic);
+    LOG("Current timer drift (in relation to sync master) : %d microseconds\n", m_current_drift);
     m_time_tic++;
-    prev_drift = current_drift;
-    prev_counter_val = NRF_TIMER0->CC[1];
+    m_prev_drift = m_current_drift;
+    m_updated_drift_rdy = true;
+
+    m_prev_counter_val = NRF_TIMER0->CC[1];
     }
 }
 
@@ -867,10 +873,19 @@ int main(void)
     
     for (;;)
     {
+        LOG("sec\n");
         if (connected)
         {
             if (server_ip_received)
             {
+                if(m_updated_drift_rdy){
+                    int outgoing_drift = m_current_drift;
+                    int outgoing_time_tic = m_time_tic;
+                    send_timing_samples(m_current_drift, m_time_tic);
+                    m_updated_drift_rdy = false;
+                }
+
+
                 if (scanning_enabled)
                 {
                     //scan_ble_adv_channels_once(scan_reports);
