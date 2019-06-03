@@ -6,7 +6,9 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "config.h"
+#include "nrf_gpio.h"
 #include "gpio.h"
+
 
 /**@brief Function for initialization of GPIOTE
  */
@@ -29,3 +31,14 @@ void gpiote_init(void)
     NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos);
 //    NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
+
+void leds_init(void)
+{
+    nrf_gpio_cfg_output(LED_0);
+    nrf_gpio_cfg_output(LED_1);
+    nrf_gpio_cfg_output(LED_HP);
+    
+    nrf_gpio_pin_clear(LED_1);
+    nrf_gpio_pin_clear(LED_HP);
+}
+

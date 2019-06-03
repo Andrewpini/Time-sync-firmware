@@ -11,4 +11,6 @@
 
 void gpiote_init(void);
 
+void leds_init(void);
+
 #endif
