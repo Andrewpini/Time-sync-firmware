@@ -15,4 +15,6 @@ void leds_init(void);
 
 void sync_line_init(void);
 
+void sync_master_gpio_init(void);
+
 #endif

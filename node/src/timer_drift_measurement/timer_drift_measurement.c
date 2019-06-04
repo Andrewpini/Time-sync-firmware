@@ -8,12 +8,10 @@
 #include "config.h"
 #include "nrf_gpio.h"
 #include "timer.h"
-#include "command_system.h"
+#include "network.h"
 #include "socket.h"
 #include "w5500.h"
 
-#define LOG(...) printf(__VA_ARGS__)
-#define SOCKET_UDP 3
 
 /* Variables for calculating drift */
 static volatile int m_prev_counter_val;
@@ -57,8 +55,8 @@ void send_drift_timing_sample(void)
         uint8_t target_IP[4] = {10, 0, 0, 4};    
         uint32_t target_port = 15000;
         uint8_t own_MAC[6] = {0};
-        get_target_ip_and_port(target_IP, &target_port);
-        getSHAR(own_MAC);
+        get_target_IP_and_port(target_IP, &target_port);
+        get_own_MAC(own_MAC);
  
         if(!is_network_busy())
         {

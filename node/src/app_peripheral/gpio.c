@@ -33,6 +33,16 @@ void gpiote_init(void)
 //    NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
 
+void sync_master_gpio_init(void){
+    nrf_gpio_cfg_output(SYNC_IN);
+    // GPIOTE configuration for syncing of clocks
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_OUT]     = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
+                                                    | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
+                                                    | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                    | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
+                                                    | (GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos);
+}
+
 /*Triggers each time the sync-line is set high by the master node*/
 void GPIOTE_IRQHandler(void)
 {

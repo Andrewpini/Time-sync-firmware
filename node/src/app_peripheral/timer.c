@@ -10,6 +10,8 @@
 #include "timer.h"
 
 #define DRIFT_TIMER NRF_TIMER0
+#define DHCP TIMER1
+
 
 void dhcp_timer_init(void)
 {
@@ -40,8 +42,17 @@ void drift_timer_reset(void)
     DRIFT_TIMER->TASKS_CLEAR = 1;
 }
 
+void sync_master_timer_init(uint32_t interval){
+    SYNC_TIMER->TASKS_STOP                          = 1;
+    SYNC_TIMER->MODE                                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
+    SYNC_TIMER->BITMODE                             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
+    SYNC_TIMER->PRESCALER                           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
+    SYNC_TIMER->CC[0]                               = interval * 1000; 
+    SYNC_TIMER->SHORTS                              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+}
+
 void TIMER1_IRQHandler(void)
 {
-    NRF_TIMER1->EVENTS_COMPARE[0] = 0;
+    DHCP_TIMER->EVENTS_COMPARE[0] = 0;
     DHCP_time_handler();
 }

@@ -24,92 +24,17 @@
 #include "dhcp_cb.h"
 #include "user_ethernet.h"
 #include "timer_drift_measurement.h"
+#include "network.h"
+#include "ppi.h"
 
-#define DHCP_ENABLED                        1
-#define NETWORK_USE_UDP                     1
-
-#define PRINT_SCAN_REPORTS                  1
-#define PRINT_SCAN_GRAPH_DATA               0
-
-#define SOCKET_CONFIG                       0
-#define SOCKET_TCPC                         1
-#define SOCKET_DHCP                         2
-#define SOCKET_UDP                          3
-#define SOCKET_MULTICAST                    4
-#define SOCKET_BROADCAST                    6
-
-#define UDP_PORT                            17545
-#define UDP_FLAGS                           0x00
-
-#define MULTICAST_PORT                      3000
-#define BROADCAST_PORT                      10000
-
-#define TX_BUF_SIZE                         2048
-
-#define PWM_PERIOD_US                       1000
-#define LOG(...)                            printf(__VA_ARGS__)         //NRF_LOG_RAW_INFO(__VA_ARGS__)
-
-static uint8_t target_IP[4]                 = {10, 0, 0, 4};      // Arbitrary fallback
-static uint32_t target_port                 = 15000;
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
-static uint8_t TX_BUF[TX_BUF_SIZE];
-static uint8_t own_MAC[6]          = {0};
-static uint8_t own_IP[4]           = {0};
 
-
-static volatile bool m_network_is_busy        = false;
 static volatile bool m_controls_sync_signal   = false;
 static volatile bool m_scanning_enabled       = true;
 static volatile bool m_advertising_enabled    = false;
 static volatile bool m_who_am_i_enabled       = false;
-static volatile bool m_server_ip_received     = false;
 
-
-// Function to get and store server IP and port number to which all data will be sent
-void get_server_ip(uint8_t * buf, uint8_t len)
-{
-    static uint8_t str[SERVER_IP_PREFIX_LEN] = {0};
-    const uint8_t pos[] = SERVER_IP_PREFIX;
-    strncpy((void *)str, (const void *)buf, SERVER_IP_PREFIX_LEN);
-    int8_t compare = strncmp((void *)str, (const void *)pos, SERVER_IP_PREFIX_LEN);
-
-    if (compare == 0)
-    {
-        // Server IP address prefix is found
-        m_server_ip_received = true;
-        uint8_t ip_str[len - SERVER_IP_PREFIX_LEN];
-        uint8_t ip[4] = {0};
-        uint16_t port = 0;
-        uint8_t index = 0;
-        uint8_t *p_ip_str = &(ip_str[0]);
-
-        memcpy((char *)ip_str, (const char *)&(buf[SERVER_IP_PREFIX_LEN]), (len - SERVER_IP_PREFIX_LEN));
-
-        while (index < 5) 
-        {
-            if (isdigit((unsigned char)*p_ip_str)) {
-                if (index < 4)
-                {
-                    ip[index] *= 10;
-                    ip[index] += *p_ip_str - '0';
-                }
-                else
-                {
-                    port *= 10;
-                    port += *p_ip_str - '0';
-                }
-            } else {
-                index++;
-            }
-            p_ip_str += 1;
-        }
-        memcpy((char *)target_IP, (const char *)ip, 4);
-        target_port = port;
-        printf("Server IP: %d.%d.%d.%d : %d\r\n", target_IP[0], target_IP[1], target_IP[2], target_IP[3], target_port);
-
-    }
-}
 
 // Enables scanning for current radio mode
 void scanning_enable(void)
@@ -139,29 +64,11 @@ void advertising_disable(void)
 // Set node as sync master
 void sync_master_set(uint32_t interval)
 {
-    SYNC_TIMER->TASKS_STOP                          = 1;
-    SYNC_TIMER->MODE                                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    SYNC_TIMER->BITMODE                             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    SYNC_TIMER->PRESCALER                           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    SYNC_TIMER->CC[0]                               = interval * 1000; 
-    SYNC_TIMER->SHORTS                              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+    sync_master_timer_init(interval);
+    sync_master_gpio_init();
+    sync_master_ppi_init();
 
-
-    nrf_gpio_cfg_output(SYNC_IN);
-
-    // GPIOTE configuration for syncing of clocks
-    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_OUT]     = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
-                                                    | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
-                                                    | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                                    | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
-                                                    | (GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos);
-
-    // PPI channel configuration for triggering syncing
-    NRF_PPI->CH[PPI_CHANNEL_SYNC_OUT].EEP           = (uint32_t) &(SYNC_TIMER->EVENTS_COMPARE[0]);
-    NRF_PPI->CH[PPI_CHANNEL_SYNC_OUT].TEP           = (uint32_t) &(NRF_GPIOTE->TASKS_OUT[GPIOTE_CHANNEL_SYNC_OUT]);
-    NRF_PPI->CHENSET                                = 1 << PPI_CHANNEL_SYNC_OUT;
-
-    SYNC_TIMER->TASKS_START                         = 1;
+    START_SYNC_TIMER = 1;
     m_controls_sync_signal                            = true;
 }
 
@@ -185,9 +92,9 @@ void send_scan_report(scan_report_t * scan_report)
     uint8_t buf[SCAN_REPORT_LENGTH];
     uint8_t len = 0;
     
-    if(!m_network_is_busy)
+    if(!is_network_busy())
     {
-        m_network_is_busy = true;
+        set_network_busy(true);
         
         sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
                         scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
@@ -197,58 +104,17 @@ void send_scan_report(scan_report_t * scan_report)
         
         len = strlen((const char *)&buf[0]);
         
+        uint8_t target_IP[4] = {10, 0, 0, 4};    
+        uint32_t target_port = 15000;
+        get_target_IP_and_port(target_IP, &target_port);
+
+        sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+
         
-        #if NETWORK_USE_UDP
-            sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-        #endif
-        
-        m_network_is_busy = false;
+        set_network_busy(false);
     }
 }
 
-
-void dhcp_init(void)
-{
-    if(DHCP_ENABLED && !m_network_is_busy)
-    {
-        uint32_t ret;
-        uint8_t dhcp_retry = 0;
-        m_network_is_busy = true;
-
-        dhcp_timer_init();
-        DHCP_init(SOCKET_DHCP, TX_BUF);
-        reg_dhcp_cbfunc(w5500_dhcp_assign, w5500_dhcp_assign, w5500_dhcp_conflict);
-
-        while(1)
-        {
-            ret = DHCP_run();
-
-            if(ret == DHCP_IP_LEASED)
-            {
-                m_network_is_busy = false;
-                getSHAR(&own_MAC[0]);
-                getIPfromDHCP(&own_IP[0]);
-                LOG("\r\n\r\nThis device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
-                print_network_info();
-                break;
-            }
-            else if(ret == DHCP_FAILED)
-            {
-                 dhcp_retry++;  
-            }
-
-            if(dhcp_retry > 10)
-            {
-                break;
-            }
-        }
-        m_network_is_busy = false;
-    }
-    else 							
-    {
-        // Fallback config if DHCP fails
-    }
-}
 
 // Function for checking if the device has received a new control command
 void check_ctrl_cmd(void)
@@ -258,6 +124,9 @@ void check_ctrl_cmd(void)
         uint8_t received_data[200];
         uint8_t broadcast_ip[] = {255, 255, 255, 255};
         uint16_t broadcast_port = BROADCAST_PORT;
+
+        uint8_t own_IP[4] = {0};
+        get_own_IP(own_IP);
         
         // Receive new data from socket
         int32_t recv_len = recvfrom(SOCKET_BROADCAST, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
@@ -291,15 +160,15 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_SERVER_IP_BROADCAST:
-                        if (!m_server_ip_received)
+                        if (!is_server_IP_received())
                         {
                             get_server_ip(p_payload, payload_len);
                         }
-                        m_server_ip_received = true;
+                        set_server_IP_received(true);
                         break;
 
                     case CMD_NEW_SERVER_IP:
-                        m_server_ip_received = false;
+                        set_server_IP_received(false);
                         break;
 
                     case CMD_NEW_FIRMWARE:
@@ -457,7 +326,7 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_SYNC_RESET:
-                        LOG("CMD: Sync Reset: ");
+                        LOG("CMD: Sync Reset\n");
                         sync_master_unset();
                         drift_timer_reset();
                         reset_drift_measure_params();
@@ -471,37 +340,4 @@ void check_ctrl_cmd(void)
             }
         }
     }
-}
-
-bool is_scanning_enabled(void){
-    return m_scanning_enabled;
-}
-
-bool is_advertising_enabled(void){
-    return m_advertising_enabled;
-}
-
-bool is_who_am_i_enabled(void){
-    return m_who_am_i_enabled;
-}
-
-bool is_server_ip_received(void){
-    return m_server_ip_received;
-}
-
-bool is_network_busy(void){
-    return m_network_is_busy;
-}
-
-void set_network_busy(bool val){
-   m_network_is_busy = val;
-}
-
-void get_target_ip_and_port(uint8_t* p_IP, uint32_t* p_port){
-    memcpy(p_IP, target_IP, 4);
-    *p_port = target_port;
-}
-
-void get_own_MAC(){
-
 }

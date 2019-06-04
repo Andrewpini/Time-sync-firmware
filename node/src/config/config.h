@@ -2,6 +2,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define LOG(...) printf(__VA_ARGS__)
+
 #define DHCP_TIMER                          NRF_TIMER1
 #define SCAN_TIMESTAMP_TIMER                NRF_TIMER2          // The timer instance to use for capturing timestamps when scanning
 #define SCAN_TIMEOUT_TIMER                  NRF_TIMER3

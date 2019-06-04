@@ -45,27 +45,21 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "app_timer.h"
-
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
-
 #include "nrf_drv_spi.h"
 #include "user_ethernet.h"
 #include "user_spi.h"
-
-
 #include "w5500.h"
 #include "socket.h"
 #include "dhcp.h"
 #include "dhcp_cb.h"
-
 #include "radio.h"
 #include "scan.h"
 #include "advertise.h"
-
 #include "config.h"
 #include "util.h"
 #include "commands.h"
@@ -99,14 +93,14 @@ int main(void)
     drift_timer_init();
     dhcp_init();
     broadcast_init();
-    LOG("\r\n\r\nApplication started.\r\n");
-
-    while(!is_server_ip_received())
+    
+    LOG("Establishing contatct with server...\n\n");
+    /*Waits until contact with the server is established*/
+    while(!is_server_IP_received())
     {
         check_ctrl_cmd();
     }
-    LOG("\r\n\r\nIP recieved.\r\n");
-
+    LOG("Application started and ready for use\n");
     connection_init();
     scan_init();
     
@@ -114,7 +108,7 @@ int main(void)
     {
         if (is_connected())
         {
-            if (is_server_ip_received())
+            if (is_server_IP_received())
             {
                 send_drift_timing_sample();
             }
