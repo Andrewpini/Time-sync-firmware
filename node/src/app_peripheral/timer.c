@@ -6,6 +6,7 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "config.h"
+#include "dhcp.h"
 #include "timer.h"
 
 #define DRIFT_TIMER NRF_TIMER0
@@ -37,4 +38,10 @@ void drift_timer_reset(void)
 {
     DRIFT_TIMER->TASKS_STOP = 1;
     DRIFT_TIMER->TASKS_CLEAR = 1;
+}
+
+void TIMER1_IRQHandler(void)
+{
+    NRF_TIMER1->EVENTS_COMPARE[0] = 0;
+    DHCP_time_handler();
 }

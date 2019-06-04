@@ -8,6 +8,7 @@
 #include "config.h"
 #include "nrf_gpio.h"
 #include "gpio.h"
+#include "timer_drift_measurement.h"
 
 
 /**@brief Function for initialization of GPIOTE
@@ -32,6 +33,16 @@ void gpiote_init(void)
 //    NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
 
+/*Triggers each time the sync-line is set high by the master node*/
+void GPIOTE_IRQHandler(void)
+{
+    if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]){
+        NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
+        sync_line_event_handler();
+    }
+}
+
+
 void leds_init(void)
 {
     nrf_gpio_cfg_output(LED_0);
@@ -42,3 +53,11 @@ void leds_init(void)
     nrf_gpio_pin_clear(LED_HP);
 }
 
+
+// Initializes time synchronization
+void sync_line_init(void) 
+{
+    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_output(SYNC_OUT);
+    nrf_gpio_pin_clear(SYNC_OUT);
+}

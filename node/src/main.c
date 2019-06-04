@@ -76,94 +76,21 @@
 #include "ppi.h"
 #include "clock.h"
 #include "timer_drift_measurement.h"
-
-#define LOG(...)                            printf(__VA_ARGS__)         //NRF_LOG_RAW_INFO(__VA_ARGS__)
-#define SOCKET_UDP                          3
-#define SOCKET_BROADCAST                    6
-#define UDP_PORT                            17545
-#define UDP_FLAGS                           0x00
-#define BROADCAST_PORT                      10000
-
-/* Forward declarations */
-void connection_init(void);
-void on_connect(void);
-
-/* State variables */
-static volatile bool m_connected              = false;
-static volatile uint32_t m_sync_time          = 0;
-
+#include "network.h"
 
 /**@brief Function for initializing the nrf log module. */
 static void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
-
     NRF_LOG_DEFAULT_BACKENDS_INIT();
-}
-
-/// ***  SECTION: Network functions   *** ///
-
-// Function to establish UDP socket 
-void connection_init(void) 
-{
-        socket(SOCKET_UDP, Sn_MR_UDP, UDP_PORT, UDP_FLAGS);
-        on_connect();
-}
-
-// Initiates socket for UDP broadcast messages
-void broadcast_init(void)
-{
-    uint8_t flag = SF_IO_NONBLOCK;
-    socket(SOCKET_BROADCAST, Sn_MR_UDP, BROADCAST_PORT, flag);
-}
-
-// Function to broadcast data to all nodes on the network
-void broadcast_send(uint8_t * buf, uint8_t len) 
-{
-    uint8_t broadcast_ip[] = {255, 255, 255, 255};
-    uint16_t broadcast_port = 10000;
-    
-    sendto(SOCKET_UDP, &buf[0], len, broadcast_ip, broadcast_port);
-}
-
-/// ***  SECTION: Event handlers   *** ///
-
-void on_connect(void)
-{
-    m_connected = true;
-    pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
-}
-
-void on_disconnect(void)
-{
-    m_connected = true;
-    pwm_set_duty_cycle(LED_HP, 0);
-}
-
-/// ***   SECTION: Helper functions   ***   ///
-
-// Initializes time synchronization
-void sync_init(void) 
-{
-    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
-    nrf_gpio_cfg_output(SYNC_OUT);
-    nrf_gpio_pin_clear(SYNC_OUT);
-}
-
-
-void TIMER1_IRQHandler(void)
-{
-    NRF_TIMER1->EVENTS_COMPARE[0] = 0;
-    DHCP_time_handler();
 }
 
 int main(void)
 {   
-
     clock_init();
     leds_init();
-    sync_init();
+    sync_line_init();
     gpiote_init();
     ppi_init();
     log_init();
@@ -185,7 +112,7 @@ int main(void)
     
     for (;;)
     {
-        if (m_connected)
+        if (is_connected())
         {
             if (is_server_ip_received())
             {

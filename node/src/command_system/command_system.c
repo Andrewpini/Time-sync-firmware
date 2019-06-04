@@ -179,7 +179,7 @@ void sync_set_interval(uint8_t interval)
     sync_master_set(sync_interval);
 }
 
-/* Function to send scan reports over Ethernet, using TCP or UDP */
+/* Function to send scan reports over Ethernet using UDP */
 void send_scan_report(scan_report_t * scan_report)
 {
     uint8_t buf[SCAN_REPORT_LENGTH];
