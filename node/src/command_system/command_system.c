@@ -23,7 +23,7 @@
 #include "timer.h"
 #include "dhcp_cb.h"
 #include "user_ethernet.h"
-
+#include "timer_drift_measurement.h"
 
 #define DHCP_ENABLED                        1
 #define NETWORK_USE_UDP                     1
@@ -206,34 +206,6 @@ void send_scan_report(scan_report_t * scan_report)
     }
 }
 
-/* Function to send timing samples over Ethernet, using UDP */
-void send_timing_samples(int drift, uint32_t time_tic)
-{
-    uint8_t buf[SCAN_REPORT_LENGTH];
-    uint8_t len = 0;
-    
-    if(!m_network_is_busy)
-    {
-        m_network_is_busy = true;
-        
-        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
-                        own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
-                        drift,
-                        time_tic);
-        
-        len = strlen((const char *)&buf[0]);
-        
-        
-        #if NETWORK_USE_UDP
-            uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-            if(err < 1){
-                LOG("Error during sending: %d\n", err);
-            }
-        #endif
-        
-        m_network_is_busy = false;
-    }
-}
 
 void dhcp_init(void)
 {
@@ -483,7 +455,15 @@ void check_ctrl_cmd(void)
                             LOG("no IP match -> no action \r\n");
                         }
                         break;
-                    
+
+                    case CMD_SYNC_RESET:
+                        LOG("CMD: Sync Reset: ");
+                        sync_master_unset();
+                        drift_timer_reset();
+                        reset_drift_measure_params();
+      
+                        break;
+                                            
                     default:
                         LOG("CMD: Unrecognized control command: %d\r\n", cmd);
                         break;
@@ -507,4 +487,21 @@ bool is_who_am_i_enabled(void){
 
 bool is_server_ip_received(void){
     return m_server_ip_received;
+}
+
+bool is_network_busy(void){
+    return m_network_is_busy;
+}
+
+void set_network_busy(bool val){
+   m_network_is_busy = val;
+}
+
+void get_target_ip_and_port(uint8_t* p_IP, uint32_t* p_port){
+    memcpy(p_IP, target_IP, 4);
+    *p_port = target_port;
+}
+
+void get_own_MAC(){
+
 }

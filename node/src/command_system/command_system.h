@@ -16,5 +16,10 @@ void dhcp_init(void);
 
 void check_ctrl_cmd(void);
 
-void send_timing_samples(int drift, uint32_t time_tic);
+bool is_network_busy(void);
+
+void set_network_busy(bool val);
+
+void get_target_ip_and_port(uint8_t* p_IP, uint32_t* p_port);
+
 #endif

@@ -32,3 +32,9 @@ void drift_timer_init(void)
     DRIFT_TIMER->CC[0]               = DRIFT_TIMER_MAX;                                                                
     DRIFT_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
 }
+
+void drift_timer_reset(void)
+{
+    DRIFT_TIMER->TASKS_STOP = 1;
+    DRIFT_TIMER->TASKS_CLEAR = 1;
+}

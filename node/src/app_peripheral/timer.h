@@ -8,4 +8,7 @@ void dhcp_timer_init(void);
 
 void drift_timer_init(void);
 
+void drift_timer_reset(void);
+
+
 #endif
