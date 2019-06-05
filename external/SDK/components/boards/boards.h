@@ -74,6 +74,8 @@
   #include "arduino_primo.h"
 #elif defined(BOARD_CUSTOM)
   #include "custom_board.h"
+#elif defined(BOARD_WIZBLE520)
+  #include "wizble520.h"
 #else
 #error "Board is not defined"
 
