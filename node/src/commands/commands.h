@@ -33,7 +33,8 @@ typedef enum
     CMD_SINGLE_ADVERTISING_ON       = 60,
     CMD_SINGLE_ADVERTISING_OFF      = 61,
     CMD_SYNC_NODE_SET               = 70,
-    CMD_SYNC_SET_INTERVAL           = 71
+    CMD_SYNC_SET_INTERVAL           = 71,
+    CMD_SYNC_RESET                  = 72
 } ctrl_cmd_t;
 
 
