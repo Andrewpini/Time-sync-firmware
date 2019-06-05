@@ -1,1 +1,0 @@
-Indoor positioning platform - Node firmware
