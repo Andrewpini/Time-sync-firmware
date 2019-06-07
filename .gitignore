@@ -11,6 +11,8 @@ JLinkSettings.ini
 JLinkLog.txt
 EventRecorderStub.scvd
 *.uvguix*
+*.uvoptx
+*.uvprojx
 
 ## SES ##
 Output
