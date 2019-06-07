@@ -9,9 +9,6 @@
 #include "dhcp.h"
 #include "timer.h"
 
-#define DRIFT_TIMER NRF_TIMER0
-#define DHCP TIMER1
-
 
 void dhcp_timer_init(void)
 {
