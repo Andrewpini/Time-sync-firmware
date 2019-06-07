@@ -34,7 +34,7 @@
       <file file_name="$(StudioDir)/source/thumb_crt0.s" />
     </folder>
     <folder Name="nRF_Log">
-      <file file_name="../external/SDK/components/libraries/experimental_log/src/nrf_log_backend_rtt.c" />
+	  <file file_name="../external/SDK/components/libraries/experimental_log/src/nrf_log_backend_rtt.c" />
       <file file_name="../external/SDK/components/libraries/experimental_log/src/nrf_log_backend_serial.c" />
       <file file_name="../external/SDK/components/libraries/experimental_log/src/nrf_log_backend_uart.c" />
       <file file_name="../external/SDK/components/libraries/experimental_log/src/nrf_log_default_backends.c" />
@@ -139,7 +139,7 @@
     </folder>
     <folder Name="nRF_Segger_RTT">
       <file file_name="../external/segger_rtt/SEGGER_RTT.c" />
-      <file file_name="../external/segger_rtt/SEGGER_RTT_printf.c" />
+	  <file file_name="../external/segger_rtt/SEGGER_RTT_printf.c" />
       <file file_name="../external/segger_rtt/SEGGER_RTT_Syscalls_SES.c" />
     </folder>
     <folder Name="Radio">
@@ -169,7 +169,7 @@
     </folder>
     <configuration
       Name="Debug"
-      debug_additional_load_file="C:/Users/ans1/Documents/git_repos/Time-sync-firmware/external/SDK/components/softdevice/s140/hex/s140_nrf52_6.1.0_softdevice.hex"
+      debug_additional_load_file="../external/SDK/components/softdevice/s140/hex/s140_nrf52_6.1.0_softdevice.hex"
       linker_section_placement_macros="" />
   </project>
   <configuration

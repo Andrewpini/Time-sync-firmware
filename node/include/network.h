@@ -2,7 +2,7 @@
 #ifndef APP_NETWORK_H
 #define APP_NETWORK_H
 
-#define LOG(...)                            printf(__VA_ARGS__)       
+//#define LOG(...)                            printf(__VA_ARGS__)       
 #define SOCKET_UDP                          3
 #define SOCKET_BROADCAST                    6
 #define UDP_PORT                            17545

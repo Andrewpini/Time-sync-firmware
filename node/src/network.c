@@ -147,7 +147,7 @@ void dhcp_init(void)
                 m_network_is_busy = false;
                 getSHAR(&own_MAC[0]);
                 getIPfromDHCP(&own_IP[0]);
-                LOG("\r\n\r\nThis device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
+                printf("\r\n\r\nThis device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
                 print_network_info();
                 break;
             }
