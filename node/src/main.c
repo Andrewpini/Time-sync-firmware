@@ -807,7 +807,7 @@ int main(void)
     ppi_init();
     log_init();
 
-    LOG("\r\n\r\nApplication started.\r\n");
+    LOG("\r\n\r\nApplication 1 started.\r\n");
     spi0_master_init();
     user_ethernet_init();
     
