@@ -125,8 +125,8 @@
       <file file_name="../external/SDK/components/libraries/bsp/bsp_nfc.c" />
     </folder>
     <folder Name="Application">
-      <file file_name="../config/sdk_config.h" />
-      <file file_name="../config/config.h" />
+      <file file_name="include/sdk_config.h" />
+      <file file_name="include/config.h" />
       <file file_name="src/command_system.c" />
       <file file_name="src/network.c" />
       <file file_name="src/timer_drift_measurement.c" />
