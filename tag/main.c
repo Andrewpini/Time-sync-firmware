@@ -214,8 +214,8 @@ int main(void)
             
             advertise_set_payload((uint8_t *)&counter, sizeof(counter));
             advertise_ble_channel_once(37);   
-            advertise_ble_channel_once(38);    
-            advertise_ble_channel_once(39);
+//            advertise_ble_channel_once(38);    
+//            advertise_ble_channel_once(39);
             counter++;
         }
     }
