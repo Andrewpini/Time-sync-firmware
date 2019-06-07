@@ -8,6 +8,7 @@
 #include "scan.h"
 #include "config.h"
 #include "util.h"
+#include "timer.h"
 
 #define RX_BUF_SIZE                                 37
 #define MAXIMUM_BYTE_LENGTH_ADV_PACKET              54
