@@ -106,6 +106,7 @@ int main(void)
     
     for (;;)
     {
+        NRF_LOG_PROCESS();
         if (is_connected())
         {
             if (is_server_IP_received())
