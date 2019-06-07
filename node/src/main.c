@@ -96,7 +96,7 @@ int main(void)
     dhcp_init();
     broadcast_init();
     
-    LOG("Establishing contatct with server...\n\n");
+    LOG("Establishing contatct with server...\n");
     NRF_LOG_PROCESS();
     /*Waits until contact with the server is established*/
     
