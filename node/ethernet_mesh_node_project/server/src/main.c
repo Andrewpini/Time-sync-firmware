@@ -92,51 +92,23 @@ static bool m_device_provisioned;
 
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event) 
 {
-    if(p_event->p_meta_data->p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
-    {
-        dsm_local_unicast_address_t element_addr;
-        rssi_util_mac_to_element_addr_find(&m_rssi_util, p_event->p_meta_data->p_core_metadata->params.scanner.adv_addr.addr, &element_addr);
-        rssi_server_add_rssi_data(element_addr.address_start, p_event->p_meta_data->p_core_metadata->params.scanner.rssi);
-    }
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- %d RSSI: %d  -----\n", p_event->p_meta_data->p_core_metadata->source, p_event->p_meta_data->p_core_metadata->params.loopback);
 }
 
 /*************************************************************************************************/
-
-static void app_model_init(void)
-{
-    ERROR_CHECK(rssi_server_init(&m_rssi_server, 0));
-
-    ERROR_CHECK(rssi_util_init(&m_rssi_util));
-    ERROR_CHECK(access_model_subscription_list_alloc(m_rssi_util.model_handle));
-
-    ERROR_CHECK(health_client_init(&m_health_client, 0, app_health_event_cb));
-    ERROR_CHECK(access_model_subscription_list_alloc(m_health_client.model_handle));
-}
-
-/*************************************************************************************************/
-
-static void node_reset(void)
-{
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- Node reset  -----\n");
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_RESET);
-    /* This function may return if there are ongoing flash operations. */
-    mesh_stack_device_reset();
-}
 
 static void config_server_evt_cb(const config_server_evt_t * p_evt)
 {
-    if (p_evt->type == CONFIG_SERVER_EVT_NODE_RESET)
-    {
-        node_reset();
+    if (p_evt->type == CONFIG_SERVER_EVT_NODE_RESET){
+        hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_RESET);
+        mesh_stack_device_reset();
     }
 }
 
 static void device_identification_start_cb(uint8_t attention_duration_s)
 {
     hal_led_mask_set(LEDS_MASK, false);
-    hal_led_blink_ms(BSP_LED_2_MASK  | BSP_LED_3_MASK,
-                     LED_BLINK_ATTENTION_INTERVAL_MS,
-                     LED_BLINK_ATTENTION_COUNT(attention_duration_s));
+    hal_led_blink_ms(LEDS_MASK, LED_BLINK_ATTENTION_INTERVAL_MS, LED_BLINK_ATTENTION_COUNT(attention_duration_s));
 }
 
 static void provisioning_aborted_cb(void)
@@ -163,15 +135,9 @@ static void provisioning_complete_cb(void)
     hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF);
     hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
 
-
-//    const nrf_mesh_network_secmat_t ** pp_net;
-//
-//    ERROR_CHECK(dsm_net_secmat_from_keyindex_get(0 , pp_net));
     m_netkey_handle = dsm_net_key_index_to_subnet_handle(0);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "NETKEYHANDLE: %d\n", m_netkey_handle);
 
-    
-//    ERROR_CHECK(dsm_subnet_add(0, netkey, &m_netkey_handle));
     ERROR_CHECK(dsm_appkey_add(0, m_netkey_handle, appkey, &m_appkey_handle));
 
     health_server_t* p_health_server;
@@ -206,17 +172,38 @@ static void provisioning_complete_cb(void)
     ERROR_CHECK(access_model_publish_period_set(m_rssi_server.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 10));
 
     access_flash_config_store();
-
 }
+
 
 static void models_init_cb(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
-    app_model_init();
+    ERROR_CHECK(rssi_server_init(&m_rssi_server, 0));
+
+    ERROR_CHECK(rssi_util_init(&m_rssi_util));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_rssi_util.model_handle));
+
+    ERROR_CHECK(health_client_init(&m_health_client, 0, app_health_event_cb));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_health_client.model_handle));
 }
 
-static void mesh_init(void)
+
+static void initialize(void)
 {
+    /* Make sure that high power LED is disabled */
+    nrf_gpio_cfg_output(13);
+    nrf_gpio_pin_clear(13);
+
+    __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
+    ERROR_CHECK(app_timer_init());
+    hal_leds_init();
+    ble_stack_init();
+
+    #if MESH_FEATURE_GATT_ENABLED
+        gap_params_init();
+        conn_params_init();
+    #endif
+
     mesh_stack_init_params_t init_params =
     {
         .core.irq_priority       = NRF_MESH_IRQ_PRIORITY_LOWEST,
@@ -226,28 +213,7 @@ static void mesh_init(void)
         .models.config_server_cb = config_server_evt_cb
     };
     ERROR_CHECK(mesh_stack_init(&init_params, &m_device_provisioned));
-}
 
-static void initialize(void)
-{
-    __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- BLE Mesh Light Switch Server Demo -----\n");
-
-    ERROR_CHECK(app_timer_init());
-    hal_leds_init();
-
-    ble_stack_init();
-
-#if MESH_FEATURE_GATT_ENABLED
-    gap_params_init();
-    conn_params_init();
-#endif
-
-    mesh_init();
-}
-
-static void start(void)
-{
     if (!m_device_provisioned)
     {
         static const uint8_t static_auth_data[NRF_MESH_KEY_SIZE] = STATIC_AUTH_DATA;
@@ -262,25 +228,19 @@ static void start(void)
         };
         ERROR_CHECK(mesh_provisionee_prov_start(&prov_start_params));
     }
-
-    mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());
-
     ERROR_CHECK(mesh_stack_start());
 
+    mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());
     hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF); 
     hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
 }
 
+
 int main(void)
 {
-    nrf_gpio_cfg_output(13);
-    nrf_gpio_pin_clear(13);
-
     initialize();
-    start();
 
-    for (;;)
-    {
+    while(1){
         (void)sd_app_evt_wait();
     }
 }
