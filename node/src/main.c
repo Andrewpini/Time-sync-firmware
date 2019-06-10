@@ -87,7 +87,7 @@ int main(void)
     sync_line_init();
     gpiote_init();
     ppi_init();
-    log_init();
+    log_init(); 
     spi0_master_init();
     user_ethernet_init();
     drift_timer_init();
