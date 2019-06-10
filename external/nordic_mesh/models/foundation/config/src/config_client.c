@@ -1109,3 +1109,12 @@ void config_client_reset(void)
     memset(&m_client, 0, sizeof(m_client));
 }
 #endif
+
+/* Egendefinert @Anders Storro*/
+uint32_t config_client_server_publish_addr_reset(void)
+{
+    uint32_t status;
+    status = access_model_publication_stop(m_client.model_handle);
+    access_flash_config_store();
+    return  status;
+}

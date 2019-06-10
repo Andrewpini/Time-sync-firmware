@@ -201,9 +201,17 @@ void SystemInit(void)
             ((NRF_UICR->PSELRESET[1] & UICR_PSELRESET_CONNECT_Msk) != (UICR_PSELRESET_CONNECT_Connected << UICR_PSELRESET_CONNECT_Pos))){
             NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos;
             while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+			#if defined (BOARD_PCA20036)
+			NRF_UICR->PSELRESET[0] = 18;
+			#else
             NRF_UICR->PSELRESET[0] = 21;
+			#endif
             while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+			#if defined (BOARD_PCA20036)
+			NRF_UICR->PSELRESET[1] = 18;
+			#else
             NRF_UICR->PSELRESET[1] = 21;
+			#endif
             while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
             NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos;
             while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}

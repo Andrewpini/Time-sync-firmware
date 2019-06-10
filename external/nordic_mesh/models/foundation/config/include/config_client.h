@@ -658,6 +658,8 @@ uint32_t config_client_heartbeat_subscription_set(const config_msg_heartbeat_sub
  */
 void config_client_pending_msg_cancel(void);
 
+/* Egendefinert @Anders */
+uint32_t config_client_server_publish_addr_reset(void);
 
 
 /** @todo Unsupported API calls */
