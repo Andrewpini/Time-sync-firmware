@@ -127,6 +127,7 @@ int main(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
     NRF_LOG_INFO("Inside main");
+		NRF_LOG_FLUSH();
 
     //leds_init();
     buttons_init();

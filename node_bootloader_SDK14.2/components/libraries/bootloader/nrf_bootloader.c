@@ -43,6 +43,7 @@
 #include "nrf.h"
 #include "nrf_bootloader_app_start.h"
 #include "nrf_log.h"
+#include "nrf_log_ctrl.h"
 #include "nrf_dfu.h"
 #include "nrf_error.h"
 
@@ -52,13 +53,13 @@
  * @note   This function will be overridden if nrf_dfu.c is
  *         compiled and linked with the project
  */
- #if (__LINT__ != 1)
-__WEAK uint32_t nrf_dfu_init(void)
-{
-    NRF_LOG_DEBUG("in weak nrf_dfu_init");
-    return NRF_SUCCESS;
-}
-#endif
+// #if (__LINT__ != 1)
+//__WEAK uint32_t nrf_dfu_init(void)
+//{
+//    NRF_LOG_DEBUG("in weak nrf_dfu_init");
+//    return NRF_SUCCESS;
+//}
+//#endif
 
 
 /** @brief Weak implementation of nrf_dfu_init
@@ -69,6 +70,7 @@ __WEAK uint32_t nrf_dfu_init(void)
 __WEAK uint32_t nrf_dfu_init_user(void)
 {
     NRF_LOG_DEBUG("in weak nrf_dfu_init_user");
+		NRF_LOG_PROCESS();
     return NRF_SUCCESS;
 }
 
@@ -76,6 +78,7 @@ __WEAK uint32_t nrf_dfu_init_user(void)
 uint32_t nrf_bootloader_init(void)
 {
     NRF_LOG_DEBUG("In nrf_bootloader_init");
+		NRF_LOG_PROCESS();
 
     uint32_t ret_val = NRF_SUCCESS;
 

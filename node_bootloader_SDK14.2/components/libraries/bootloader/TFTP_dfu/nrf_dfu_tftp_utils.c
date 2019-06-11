@@ -562,10 +562,13 @@ uint32_t nrf_dfu_continue(uint32_t * p_enter_dfu_mode)
 bool nrf_dfu_app_is_valid(void)
 {
     NRF_LOG_DEBUG("Enter nrf_dfu_app_is_valid");
+		NRF_LOG_FLUSH();
+
     if (s_dfu_settings.bank_0.bank_code != NRF_DFU_BANK_VALID_APP)
     {
        // Bank 0 has no valid app. Nothing to boot
        NRF_LOG_DEBUG("Return false in valid app check");
+			 NRF_LOG_FLUSH();
        return false;
     }
 
@@ -580,11 +583,13 @@ bool nrf_dfu_app_is_valid(void)
         {
             // CRC does not match with what is stored.
             NRF_LOG_DEBUG("Return false in CRC");
+						NRF_LOG_FLUSH();
             return  false;
         }
     }
 
-    NRF_LOG_DEBUG("Return true. App was valid");
+    NRF_LOG_INFO("Return true. App was valid");
+		NRF_LOG_FLUSH();
     return true;
 }
 

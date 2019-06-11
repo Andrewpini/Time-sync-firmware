@@ -19,6 +19,7 @@
 #include "app_scheduler.h"
 //#include "app_timer_appsh.h"
 #include "nrf_log.h"
+#include "nrf_log_ctrl.h"
 #include "boards.h"
 #include "nrf_bootloader_info.h"
 #include "nrf_dfu_req_handler.h"
@@ -101,7 +102,8 @@ uint32_t nrf_dfu_init()
     uint32_t enter_bootloader_mode = 0;
     uint32_t *check_app;
 
-    NRF_LOG_INFO("In real nrf_dfu_init\r\n");
+    NRF_LOG_INFO("In real nrf_dfu_init");
+		NRF_LOG_PROCESS();
 
     nrf_dfu_settings_init(false);
 
@@ -110,7 +112,8 @@ uint32_t nrf_dfu_init()
     ret_val = nrf_dfu_continue(&enter_bootloader_mode);
     if(ret_val != NRF_SUCCESS)
     {
-        NRF_LOG_INFO("Could not continue DFU operation: 0x%08x\r\n");
+        NRF_LOG_DEBUG("Could not continue DFU operation: 0x%08x");
+				NRF_LOG_FLUSH();
         enter_bootloader_mode = 1;
     }
 
@@ -118,7 +121,8 @@ uint32_t nrf_dfu_init()
     // besides the effect of the continuation
     if (nrf_dfu_enter_check())
     {
-        NRF_LOG_INFO("Application sent bootloader request\n");
+        NRF_LOG_DEBUG("Application sent bootloader request");
+				NRF_LOG_FLUSH();
         enter_bootloader_mode = 1;
     }
     
@@ -127,19 +131,23 @@ uint32_t nrf_dfu_init()
     if((enter_bootloader_mode != 0) || (*check_app) == 0xFFFFFFFF) //|| !nrf_dfu_app_is_valid())
     {
         //tftp bootloader
-        NRF_LOG_INFO("Enter Boot Mode\r\n");
+        NRF_LOG_DEBUG("Enter Boot Mode");
+				NRF_LOG_FLUSH();
         user_ethernet_init();
         TFTP_init(SOCK_TFTP, g_socket_rcv_buf);
         application_update();
+				NRF_LOG_FLUSH();
     }
 
     if (nrf_dfu_app_is_valid())
     {
-        NRF_LOG_INFO("Jumping to: 0x%08x\r\n", MAIN_APPLICATION_START_ADDR);
+        NRF_LOG_DEBUG("Jumping to: 0x%08x", MAIN_APPLICATION_START_ADDR);
+				NRF_LOG_FLUSH();
         nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
     }
 
     // Should not be reached!
-    NRF_LOG_INFO("After real nrf_dfu_init\r\n");
+    NRF_LOG_INFO("After real nrf_dfu_init");
+		NRF_LOG_PROCESS();
     return NRF_SUCCESS;
 }
