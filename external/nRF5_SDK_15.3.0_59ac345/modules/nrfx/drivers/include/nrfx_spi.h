@@ -42,6 +42,7 @@
 #define NRFX_SPI_H__
 
 #include <nrfx.h>
+#include <nrf_error.h>
 #include <hal/nrf_spi.h>
 
 #ifdef __cplusplus

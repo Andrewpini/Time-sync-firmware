@@ -100,6 +100,8 @@
 "build/ethernet_mesh_node_Debug/obj/app_error_handler_gcc.o"
 "build/ethernet_mesh_node_Debug/obj/ses_startup_nrf52.o"
 "build/ethernet_mesh_node_Debug/obj/ses_startup_nrf_common.o"
+"build/ethernet_mesh_node_Debug/obj/nrf_drv_spi.o"
+"build/ethernet_mesh_node_Debug/obj/nrf_drv_spis.o"
 "build/ethernet_mesh_node_Debug/obj/prov_provisionee.o"
 "build/ethernet_mesh_node_Debug/obj/nrf_mesh_prov.o"
 "build/ethernet_mesh_node_Debug/obj/provisioning.o"
