@@ -1200,6 +1200,163 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xa7 build/ethernet_mesh_node_Debug/obj/assertion_handler_weak.o
  .debug_macro   0x0000000000000000      0x16d build/ethernet_mesh_node_Debug/obj/assertion_handler_weak.o
  .debug_macro   0x0000000000000000       0x49 build/ethernet_mesh_node_Debug/obj/assertion_handler_weak.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/w5500.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/w5500.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/w5500.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/w5500.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .data          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .bss           0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.WIZCHIP_READ
+                0x0000000000000000       0x64 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.WIZCHIP_WRITE
+                0x0000000000000000       0x68 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.WIZCHIP_READ_BUF
+                0x0000000000000000       0x7c build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.WIZCHIP_WRITE_BUF
+                0x0000000000000000       0x78 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.getSn_TX_FSR
+                0x0000000000000000       0x5e build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.getSn_RX_RSR
+                0x0000000000000000       0x5e build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.wiz_send_data
+                0x0000000000000000       0x5e build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.wiz_recv_data
+                0x0000000000000000       0x5e build/ethernet_mesh_node_Debug/obj/w5500.o
+ .text.wiz_recv_ignore
+                0x0000000000000000       0x44 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_frame   0x0000000000000000      0x19c build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_info    0x0000000000000000      0x946 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_abbrev  0x0000000000000000      0x25a build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_loc     0x0000000000000000      0x5f7 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_pubnames
+                0x0000000000000000       0xba build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_pubtypes
+                0x0000000000000000      0x107 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_aranges
+                0x0000000000000000       0x60 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_ranges  0x0000000000000000       0x50 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_macro   0x0000000000000000       0x54 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_macro   0x0000000000000000      0xae4 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_macro   0x0000000000000000      0x1a3 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_macro   0x0000000000000000       0x47 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_macro   0x0000000000000000       0x66 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_macro   0x0000000000000000      0x5d9 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_line    0x0000000000000000      0x5ed build/ethernet_mesh_node_Debug/obj/w5500.o
+ .debug_str     0x0000000000000000     0x5ff9 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .comment       0x0000000000000000       0x44 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .ARM.attributes
+                0x0000000000000000       0x39 build/ethernet_mesh_node_Debug/obj/w5500.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .data          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .bss           0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_cris_enter
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_cris_exit
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_cs_select
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_cs_deselect
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_bus_readdata
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_bus_writedata
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_spi_readbyte
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_spi_writebyte
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_spi_readburst
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_spi_writeburst
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.reg_wizchip_cris_cbfunc
+                0x0000000000000000       0x24 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.reg_wizchip_cs_cbfunc
+                0x0000000000000000       0x24 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.reg_wizchip_bus_cbfunc
+                0x0000000000000000       0x30 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.reg_wizchip_spi_cbfunc
+                0x0000000000000000       0x30 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.reg_wizchip_spiburst_cbfunc
+                0x0000000000000000       0x30 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_sw_reset
+                0x0000000000000000       0x78 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_init
+                0x0000000000000000       0x8a build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_clrinterrupt
+                0x0000000000000000       0x1c build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_getinterrupt
+                0x0000000000000000       0x22 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_setinterruptmask
+                0x0000000000000000       0x1a build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_getinterruptmask
+                0x0000000000000000       0x22 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_getphylink
+                0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_getphypmode
+                0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_reset
+                0x0000000000000000       0x2e build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_setphyconf
+                0x0000000000000000       0x4a build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_getphyconf
+                0x0000000000000000       0x56 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_getphystat
+                0x0000000000000000       0x1a build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizphy_setphypmode
+                0x0000000000000000       0x62 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.ctlwizchip
+                0x0000000000000000      0x11c build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_setnetinfo
+                0x0000000000000000       0x5c build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_getnetinfo
+                0x0000000000000000       0x5c build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_setnetmode
+                0x0000000000000000       0x24 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_getnetmode
+                0x0000000000000000        0xa build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_settimeout
+                0x0000000000000000       0x26 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.wizchip_gettimeout
+                0x0000000000000000       0x2c build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .text.ctlnetwork
+                0x0000000000000000       0x52 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .bss._DHCP_    0x0000000000000000        0x1 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .bss._DNS_     0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .data.WIZCHIP  0x0000000000000000       0x28 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_frame   0x0000000000000000      0x380 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_info    0x0000000000000000     0x18d3 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_abbrev  0x0000000000000000      0x342 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_loc     0x0000000000000000      0xc9a build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_pubnames
+                0x0000000000000000      0x588 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_pubtypes
+                0x0000000000000000      0x2ad build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_aranges
+                0x0000000000000000      0x138 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_ranges  0x0000000000000000      0x128 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000       0x5a build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000      0xae4 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000       0x89 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000       0x1c build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000      0x1a3 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000       0x41 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000      0x5d9 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_macro   0x0000000000000000       0x66 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_line    0x0000000000000000      0xc3e build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .debug_str     0x0000000000000000     0x6d01 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .comment       0x0000000000000000       0x44 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
+ .ARM.attributes
+                0x0000000000000000       0x39 build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
  .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/internal_event.o
  .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/internal_event.o
  .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/internal_event.o
@@ -19169,6 +19326,8 @@ LOAD build/ethernet_mesh_node_Debug/obj/ble_softdevice_support.o
 LOAD build/ethernet_mesh_node_Debug/obj/nrf_mesh_weak.o
 LOAD build/ethernet_mesh_node_Debug/obj/app_error_weak.o
 LOAD build/ethernet_mesh_node_Debug/obj/assertion_handler_weak.o
+LOAD build/ethernet_mesh_node_Debug/obj/w5500.o
+LOAD build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
 LOAD build/ethernet_mesh_node_Debug/obj/internal_event.o
 LOAD build/ethernet_mesh_node_Debug/obj/nrf_mesh_configure.o
 LOAD build/ethernet_mesh_node_Debug/obj/aes.o
