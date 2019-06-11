@@ -24,11 +24,11 @@ static const            nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTAN
 // Default Network Configuration //
 ///////////////////////////////////
 wiz_NetInfo gWIZNETINFO = { .mac    = {0x00, 0x08, 0xdc,0x00, 0xab, 0xfe},
-                            .ip     = {192, 168, 14, 88}, 
+                            .ip     = {10, 0, 0, 30}, 
                             .sn     = {255,255,255,0},
-                            .gw     = {192, 168, 14, 5}, 
+                            .gw     = {10, 0, 0, 1}, 
                             .dns    = {8,8,8,8},
-                            .dhcp   = NETINFO_STATIC };
+                            .dhcp   = NETINFO_DHCP };
 
 void wizchip_select(void)
 {
