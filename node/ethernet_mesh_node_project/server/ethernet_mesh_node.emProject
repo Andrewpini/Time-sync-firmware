@@ -45,6 +45,8 @@
     <folder Name="Wiznet">
       <file file_name="../../../external/Wiznet/ioLibrary_Driver/Ethernet/W5500/w5500.c" />
       <file file_name="../../../external/Wiznet/ioLibrary_Driver/Ethernet/wizchip_conf.c" />
+      <file file_name="../../../external/Wiznet/user_ethernet.c" />
+      <file file_name="../../../external/Wiznet/user_spi.c" />
     </folder>
     <folder Name="Core">
       <file file_name="../../../external/nordic_mesh/mesh/core/src/internal_event.c" />

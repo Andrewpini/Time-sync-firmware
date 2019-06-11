@@ -49,6 +49,20 @@ void wizchip_write(uint8_t wb)
 }
 
 
+static void network_init(void)
+{
+	ctlnetwork(CN_SET_NETINFO, (void*)&gWIZNETINFO);
+    if (gWIZNETINFO.dhcp == NETINFO_DHCP) 
+    {
+        printf("Obatining network information using DHCP");
+    }
+    else
+    {
+        print_network_info();
+    }
+}
+
+
 void user_ethernet_init()
 {
     uint8_t tmp;
@@ -96,18 +110,6 @@ void user_ethernet_init()
     network_init();
 }
 
-void network_init(void)
-{
-	ctlnetwork(CN_SET_NETINFO, (void*)&gWIZNETINFO);
-    if (gWIZNETINFO.dhcp == NETINFO_DHCP) 
-    {
-        printf("Obatining network information using DHCP");
-    }
-    else
-    {
-        print_network_info();
-    }
-}
 
 void print_network_info(void)
 {

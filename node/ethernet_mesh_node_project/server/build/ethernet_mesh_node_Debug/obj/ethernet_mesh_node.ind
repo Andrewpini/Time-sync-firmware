@@ -11,6 +11,8 @@
 "build/ethernet_mesh_node_Debug/obj/assertion_handler_weak.o"
 "build/ethernet_mesh_node_Debug/obj/w5500.o"
 "build/ethernet_mesh_node_Debug/obj/wizchip_conf.o"
+"build/ethernet_mesh_node_Debug/obj/user_ethernet.o"
+"build/ethernet_mesh_node_Debug/obj/user_spi.o"
 "build/ethernet_mesh_node_Debug/obj/internal_event.o"
 "build/ethernet_mesh_node_Debug/obj/nrf_mesh_configure.o"
 "build/ethernet_mesh_node_Debug/obj/aes.o"
