@@ -20,7 +20,7 @@
 #include "nrf_gpio.h"
 #include "util.h"
 #include "dhcp.h"
-#include "timer.h"
+#include "time_sync_timer.h"
 #include "dhcp_cb.h"
 #include "user_ethernet.h"
 #include "timer_drift_measurement.h"

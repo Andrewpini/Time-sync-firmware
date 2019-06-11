@@ -63,7 +63,7 @@
 #include "config.h"
 #include "util.h"
 #include "commands.h"
-#include "timer.h"
+#include "time_sync_timer.h"
 #include "gpio.h"
 #include "command_system.h"
 #include "pwm.h"

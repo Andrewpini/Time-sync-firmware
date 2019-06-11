@@ -6,7 +6,7 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "config.h"
-#include "timer.h"
+#include "time_sync_timer.h"
 
 /**@brief Function for initialization of PPI.
  */

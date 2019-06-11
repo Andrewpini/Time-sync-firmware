@@ -13,7 +13,7 @@
 #include "gpio.h"
 #include "dhcp.h"
 #include "dhcp_cb.h"
-#include "timer.h"
+#include "time_sync_timer.h"
 #include "user_ethernet.h"
 
 

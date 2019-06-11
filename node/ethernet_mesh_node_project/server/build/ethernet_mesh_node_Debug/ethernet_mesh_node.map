@@ -1638,6 +1638,217 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x10 build/ethernet_mesh_node_Debug/obj/user_spi.o
  .debug_macro   0x0000000000000000       0x22 build/ethernet_mesh_node_Debug/obj/user_spi.o
  .debug_macro   0x0000000000000000       0x37 build/ethernet_mesh_node_Debug/obj/user_spi.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/socket.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/socket.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/socket.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/socket.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/socket.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/socket.o
+ .text          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/socket.o
+ .data          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/socket.o
+ .bss           0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.close    0x0000000000000000       0x78 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.socket   0x0000000000000000      0x154 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.listen   0x0000000000000000       0x76 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.connect  0x0000000000000000      0x100 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.disconnect
+                0x0000000000000000       0x90 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.send     0x0000000000000000      0x12c build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.recv     0x0000000000000000       0xe4 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.sendto   0x0000000000000000      0x148 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.recvfrom
+                0x0000000000000000      0x1f0 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.ctlsocket
+                0x0000000000000000      0x114 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.setsockopt
+                0x0000000000000000      0x130 build/ethernet_mesh_node_Debug/obj/socket.o
+ .text.getsockopt
+                0x0000000000000000      0x164 build/ethernet_mesh_node_Debug/obj/socket.o
+ .bss.sock_io_mode
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/socket.o
+ .bss.sock_is_sending
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/socket.o
+ .bss.sock_pack_info
+                0x0000000000000000        0x8 build/ethernet_mesh_node_Debug/obj/socket.o
+ .bss.sock_remained_size
+                0x0000000000000000       0x10 build/ethernet_mesh_node_Debug/obj/socket.o
+ .data.sock_any_port
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_frame   0x0000000000000000      0x320 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_info    0x0000000000000000     0x1414 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_abbrev  0x0000000000000000      0x285 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_loc     0x0000000000000000     0x1621 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_pubnames
+                0x0000000000000000      0x2c4 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_pubtypes
+                0x0000000000000000      0x140 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_aranges
+                0x0000000000000000       0x78 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_ranges  0x0000000000000000       0x98 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000       0x6f build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000      0xae4 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000      0x1a3 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000       0x41 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000      0x5d9 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000       0x66 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_macro   0x0000000000000000       0xd7 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_line    0x0000000000000000     0x1160 build/ethernet_mesh_node_Debug/obj/socket.o
+ .debug_str     0x0000000000000000     0x66c2 build/ethernet_mesh_node_Debug/obj/socket.o
+ .comment       0x0000000000000000       0x44 build/ethernet_mesh_node_Debug/obj/socket.o
+ .ARM.attributes
+                0x0000000000000000       0x39 build/ethernet_mesh_node_Debug/obj/socket.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .text          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .data          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .bss           0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .text.w5500_dhcp_assign
+                0x0000000000000000       0x4a build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .text.w5500_dhcp_conflict
+                0x0000000000000000        0x2 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_frame   0x0000000000000000       0x4c build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_info    0x0000000000000000      0x990 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_abbrev  0x0000000000000000      0x20b build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_pubnames
+                0x0000000000000000       0xd6 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_pubtypes
+                0x0000000000000000      0x203 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_aranges
+                0x0000000000000000       0x28 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_ranges  0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000       0x5d build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000      0xae4 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000      0x1a3 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000       0x89 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000       0x10 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000       0x2e build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000       0x47 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000      0x5d9 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_macro   0x0000000000000000       0x66 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_line    0x0000000000000000      0x206 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .debug_str     0x0000000000000000     0x67b9 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .comment       0x0000000000000000       0x44 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .ARM.attributes
+                0x0000000000000000       0x39 build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data          0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss           0x0000000000000000        0x0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.default_ip_assign
+                0x0000000000000000       0x34 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.default_ip_update
+                0x0000000000000000       0x28 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.default_ip_conflict
+                0x0000000000000000       0x24 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.reg_dhcp_cbfunc
+                0x0000000000000000       0x48 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.makeDHCPMSG
+                0x0000000000000000       0xe8 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.send_DHCP_DISCOVER
+                0x0000000000000000      0x168 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.send_DHCP_REQUEST
+                0x0000000000000000      0x22c build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.send_DHCP_DECLINE
+                0x0000000000000000       0xfc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.parseDHCPMSG
+                0x0000000000000000      0x184 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.DHCP_stop
+                0x0000000000000000       0x1c build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.check_DHCP_leasedIP
+                0x0000000000000000       0x6c build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.reset_DHCP_timeout
+                0x0000000000000000       0x20 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.check_DHCP_timeout
+                0x0000000000000000       0x9c build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.DHCP_run
+                0x0000000000000000      0x1d0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.DHCP_init
+                0x0000000000000000       0xb0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.DHCP_time_handler
+                0x0000000000000000       0x10 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.getIPfromDHCP
+                0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.getGWfromDHCP
+                0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.getSNfromDHCP
+                0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.getDNSfromDHCP
+                0x0000000000000000       0x18 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .text.getDHCPLeasetime
+                0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_CHADDR
+                0x0000000000000000        0x6 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_SIP  0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_SOCKET
+                0x0000000000000000        0x1 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_XID  0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_allocated_dns
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_allocated_gw
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_allocated_ip
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.DHCP_allocated_sn
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.OLD_allocated_ip
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.dhcp_retry_count
+                0x0000000000000000        0x1 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.dhcp_state
+                0x0000000000000000        0x1 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.dhcp_tick_1s
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .bss.pDHCPMSG  0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data.HOST_NAME
+                0x0000000000000000        0x8 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data.dhcp_ip_assign
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data.dhcp_ip_conflict
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data.dhcp_ip_update
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data.dhcp_lease_time
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .data.dhcp_tick_next
+                0x0000000000000000        0x4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .rodata.check_DHCP_leasedIP.str1.4
+                0x0000000000000000       0x12 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_frame   0x0000000000000000      0x2a0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_info    0x0000000000000000      0xf47 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_abbrev  0x0000000000000000      0x2f5 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_loc     0x0000000000000000      0xd37 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_pubnames
+                0x0000000000000000      0x872 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_pubtypes
+                0x0000000000000000      0x12a build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_aranges
+                0x0000000000000000       0xc0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_ranges  0x0000000000000000       0xb0 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000       0xfc build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000      0xae4 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000      0x1a3 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000       0x41 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000      0x5d9 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000       0x66 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000       0xd7 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_macro   0x0000000000000000       0x2e build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_line    0x0000000000000000     0x11f7 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .debug_str     0x0000000000000000     0x6c4e build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .comment       0x0000000000000000       0x44 build/ethernet_mesh_node_Debug/obj/dhcp.o
+ .ARM.attributes
+                0x0000000000000000       0x39 build/ethernet_mesh_node_Debug/obj/dhcp.o
  .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/internal_event.o
  .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/internal_event.o
  .group         0x0000000000000000        0xc build/ethernet_mesh_node_Debug/obj/internal_event.o
@@ -19619,6 +19830,9 @@ LOAD build/ethernet_mesh_node_Debug/obj/w5500.o
 LOAD build/ethernet_mesh_node_Debug/obj/wizchip_conf.o
 LOAD build/ethernet_mesh_node_Debug/obj/user_ethernet.o
 LOAD build/ethernet_mesh_node_Debug/obj/user_spi.o
+LOAD build/ethernet_mesh_node_Debug/obj/socket.o
+LOAD build/ethernet_mesh_node_Debug/obj/dhcp_cb.o
+LOAD build/ethernet_mesh_node_Debug/obj/dhcp.o
 LOAD build/ethernet_mesh_node_Debug/obj/internal_event.o
 LOAD build/ethernet_mesh_node_Debug/obj/nrf_mesh_configure.o
 LOAD build/ethernet_mesh_node_Debug/obj/aes.o

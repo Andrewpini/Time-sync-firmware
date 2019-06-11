@@ -7,7 +7,7 @@
 #include "app_error.h"
 #include "config.h"
 #include "dhcp.h"
-#include "timer.h"
+#include "time_sync_timer.h"
 
 
 void dhcp_timer_init(void)

@@ -113,7 +113,7 @@
       <file file_name="src/gpio.c" />
       <file file_name="src/ppi.c" />
       <file file_name="src/pwm.c" />
-      <file file_name="src/timer.c" />
+      <file file_name="src/time_sync_timer.c" />
     </folder>
     <configuration
       Name="Debug"

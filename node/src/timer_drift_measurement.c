@@ -7,7 +7,7 @@
 #include "app_error.h"
 #include "config.h"
 #include "nrf_gpio.h"
-#include "timer.h"
+#include "time_sync_timer.h"
 #include "network.h"
 #include "socket.h"
 #include "w5500.h"
