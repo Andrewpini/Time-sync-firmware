@@ -82,6 +82,9 @@
 #include "clock.h"
 #include "user_ethernet.h"
 #include "user_spi.h"
+#include "ethernet_network.h"
+#include "command_system.h"
+
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -248,19 +251,26 @@ static void initialize(void)
 
 int main(void)
 {
-//    clock_init();
-
-    initialize();
-
-    //NOTE: Trial and error for implementing the init routines from the ethernet node project
-//    clock_init();
+    clock_init();
     leds_init();
     sync_line_init();
     gpiote_init();
     ppi_init();
     spi0_master_init();
     user_ethernet_init();
-//    dhcp_init();
+    dhcp_init();
+    broadcast_init();
+
+    while(!is_server_IP_received())
+    {
+        check_ctrl_cmd();
+    }
+
+    initialize();
+
+    //NOTE: Trial and error for implementing the init routines from the ethernet node project
+//    clock_init();
+
 
     while(1){
         (void)sd_app_evt_wait();

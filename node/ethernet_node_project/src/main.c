@@ -70,7 +70,7 @@
 #include "ppi.h"
 #include "clock.h"
 #include "timer_drift_measurement.h"
-#include "network.h"
+#include "ethernet_network.h"
 #include "boards.h"
 
 /**@brief Function for initializing the nrf log module. */

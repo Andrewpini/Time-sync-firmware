@@ -6,7 +6,7 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "config.h"
-#include "network.h"
+#include "ethernet_network.h"
 #include "w5500.h"
 #include "socket.h"
 #include "pwm.h"
@@ -58,7 +58,7 @@ void broadcast_init(void)
 }
 
 // Function to broadcast data to all nodes on the network
-void broadcast_send(uint8_t * buf, uint8_t len) 
+void ethernet_broadcast_send(uint8_t * buf, uint8_t len) 
 {
     uint8_t broadcast_ip[] = {255, 255, 255, 255};
     uint16_t broadcast_port = 10000;

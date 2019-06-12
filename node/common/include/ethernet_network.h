@@ -11,6 +11,8 @@
 #define MULTICAST_PORT                      3000
 
 
+void ethernet_broadcast_send(uint8_t * buf, uint8_t len);
+
 void dhcp_init(void);
 
 void broadcast_init(void);

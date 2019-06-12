@@ -9,7 +9,7 @@
 #include "config.h"
 #include "nrf_gpio.h"
 #include "time_sync_timer.h"
-#include "network.h"
+#include "ethernet_network.h"
 #include "socket.h"
 #include "w5500.h"
 

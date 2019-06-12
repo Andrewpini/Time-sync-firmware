@@ -53,7 +53,6 @@ extern "C" {
 #define SYNC_IN                             15UL
 #define BUTTON_0                            16UL
 
-#define LEDS_NUMBER    4
 
 #define LED_1          NRF_GPIO_PIN_MAP(0,11)
 #define LED_2          NRF_GPIO_PIN_MAP(0,12)
@@ -80,9 +79,7 @@ extern "C" {
  #define BUTTONS_LIST { BUTTON_1}
 
  #define BSP_BUTTON_0   BUTTON_1
-#define BSP_BUTTON_1   BUTTON_2
-#define BSP_BUTTON_2   BUTTON_3
-#define BSP_BUTTON_3   BUTTON_4
+
 
  #define RX_PIN_NUMBER  8
 #define TX_PIN_NUMBER  6
