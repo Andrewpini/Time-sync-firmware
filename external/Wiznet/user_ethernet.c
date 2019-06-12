@@ -100,7 +100,7 @@ void user_ethernet_init()
     } while(tmp == PHY_LINK_OFF);
 
     timeout_info.retry_cnt = 1;
-    timeout_info.time_100us = 0x3E8;	// timeout value = 10ms
+    timeout_info.time_100us = 1000;	// timeout value = 10ms
 
     wizchip_settimeout(&timeout_info);
     

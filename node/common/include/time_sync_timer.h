@@ -2,7 +2,7 @@
 #ifndef APP_TIMER_H
 #define APP_TIMER_H
 
-#define DRIFT_TIMER_MAX 2000000
+#define DRIFT_TIMER_MAX 1000000
 
 #ifdef MESH_ENABLED
     #define DHCP_TIMER                          NRF_TIMER1
@@ -17,7 +17,7 @@
 #endif
   
 #define DRIFT_TIMER_VALUE DRIFT_TIMER->CC[1]
-#define START_SYNC_TIMER NRF_TIMER4->TASKS_START 
+#define START_SYNC_TIMER SYNC_TIMER->TASKS_START 
 
 
 void dhcp_timer_init(void);
