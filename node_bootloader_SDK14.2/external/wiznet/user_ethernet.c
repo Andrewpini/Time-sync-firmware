@@ -24,7 +24,7 @@ static const            nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTAN
 // Default Network Configuration //
 ///////////////////////////////////
 wiz_NetInfo gWIZNETINFO = { .mac    = {0x00, 0x08, 0xdc,0x00, 0xab, 0xfe},
-                            .ip     = {10, 0, 0, 30}, 
+                            .ip     = {10, 0, 0, 230}, 
                             .sn     = {255,255,255,0},
                             .gw     = {10, 0, 0, 1}, 
                             .dns    = {8,8,8,8},
@@ -106,6 +106,13 @@ void user_ethernet_init(void)
     uint8_t tmp;
     uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
     wiz_NetTimeout timeout_info;
+			
+		gWIZNETINFO.mac[0] = (0xB0                         ) & 0xFF;
+    gWIZNETINFO.mac[1] = (NRF_FICR->DEVICEADDR[0] >>  8) & 0xFF;
+    gWIZNETINFO.mac[2] = (NRF_FICR->DEVICEADDR[0] >> 16) & 0xFF;
+    gWIZNETINFO.mac[3] = (NRF_FICR->DEVICEADDR[0] >> 24)       ;
+    gWIZNETINFO.mac[4] = (NRF_FICR->DEVICEADDR[1]      ) & 0xFF;
+    gWIZNETINFO.mac[5] = (NRF_FICR->DEVICEADDR[1] >>  8) & 0xFF;
 
     spi_drv_init();
 
