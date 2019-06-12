@@ -84,7 +84,7 @@
 #include "user_spi.h"
 #include "ethernet_network.h"
 #include "command_system.h"
-
+#include "timer_drift_measurement.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -265,6 +265,7 @@ int main(void)
     {
         check_ctrl_cmd();
     }
+    connection_init();
 
     initialize();
 
@@ -273,6 +274,14 @@ int main(void)
 
 
     while(1){
+       if (is_connected())
+              {
+                  if (is_server_IP_received())
+                  {
+                      send_drift_timing_sample();
+                  }
+                  check_ctrl_cmd();
+              }
         (void)sd_app_evt_wait();
     }
 }

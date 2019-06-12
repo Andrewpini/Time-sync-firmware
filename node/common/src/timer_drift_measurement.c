@@ -37,8 +37,8 @@ void sync_line_event_handler(void)
 {
     /*Snapshots the value of timer 0 and calculates the current drift*/
     m_current_drift = m_prev_drift - calc_drift_time(DRIFT_TIMER_VALUE);
-    LOG("Raw counter value : %d\n", DRIFT_TIMER_VALUE);
-    LOG("Current timer drift (in relation to sync master) : %d microseconds\n", m_current_drift);
+//    LOG("Raw counter value : %d\n", DRIFT_TIMER_VALUE);
+//    LOG("Current timer drift (in relation to sync master) : %d microseconds\n", m_current_drift);
     m_time_tic++;
     m_prev_drift = m_current_drift;
     m_updated_drift_rdy = true;

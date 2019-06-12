@@ -65,7 +65,7 @@
 
 #define DEBUG_PIN_UINT_BIT_SET                  DEBUG_PIN6
 #define DEBUG_PIN_UINT_BIT_CLEARED              DEBUG_PIN7
-
+#define DEBUG_PINS_ENABLED
 #ifdef DEBUG_PINS_ENABLED
 
 #define DEBUG_PIN_INIT(PIN_NO)                                                                              \
@@ -172,7 +172,7 @@
 
 #endif //DEBUG_PINS_ENABLED
 
-DEBUG_PIN_MODULE(TIMESLOT, false)
+DEBUG_PIN_MODULE(TIMESLOT, true)
 #define DEBUG_PIN_TS_SIGNAL_CALLBACK         DEBUG_PIN0
 #define DEBUG_PIN_TS_IN_TIMESLOT             DEBUG_PIN1
 #define DEBUG_PIN_TS_EXTEND_HANDLER          DEBUG_PIN2
