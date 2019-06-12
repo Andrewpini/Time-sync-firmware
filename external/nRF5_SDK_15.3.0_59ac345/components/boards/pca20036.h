@@ -47,9 +47,15 @@ extern "C" {
  #include "nrf_gpio.h"
 
  // LEDs definitions for PCA20036
+
+#define LED_HP                              13UL
+#define SYNC_OUT                            14UL  
+#define SYNC_IN                             15UL
+#define BUTTON_0                            16UL
+
 #define LEDS_NUMBER    4
 
- #define LED_1          NRF_GPIO_PIN_MAP(0,11)
+#define LED_1          NRF_GPIO_PIN_MAP(0,11)
 #define LED_2          NRF_GPIO_PIN_MAP(0,12)
 #define LED_START      LED_1
 #define LED_STOP       LED_2
