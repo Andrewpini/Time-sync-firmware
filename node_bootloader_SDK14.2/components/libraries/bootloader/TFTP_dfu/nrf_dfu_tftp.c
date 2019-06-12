@@ -22,6 +22,7 @@
 #include "boards.h"
 #include "nrf_bootloader_info.h"
 #include "nrf_dfu_req_handler.h"
+#include "network.h"
 
 //#include "loopback.h"
 #include "w5500.h"
