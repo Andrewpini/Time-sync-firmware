@@ -220,9 +220,13 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_SINGLE_HPLED_ON:
-                        LOG("CMD: Single HP LED ON: ");
+                        LOG("CMD: Single HP LED ON: \n");
+
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
+                            //NOTE: Test function to try out drift compensation
+                            drift_timer_comp();
+
                             pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
                             LOG("IP match -> turning HP LED ON\r\n");
                         }
