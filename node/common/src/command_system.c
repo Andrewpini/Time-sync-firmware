@@ -301,7 +301,7 @@ void check_ctrl_cmd(void)
                         break;
 
                      case CMD_SYNC_NODE_SET:
-                        LOG("CMD: Sync node set: ");
+                        LOG("CMD: Sync node set: \n");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
                             sync_master_set(sync_interval);

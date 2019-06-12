@@ -2,8 +2,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define LOG(...) printf(__VA_ARGS__)
-
+#ifdef MESH_ENABLED
+    #include "log.h"
+    #define LOG(...) __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, __VA_ARGS__);
+#else
+    #define LOG(...) printf(__VA_ARGS__)
+#endif
 
 #define USE_COUNTER_FROM_ADV                1
 

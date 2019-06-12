@@ -49,7 +49,7 @@ void GPIOTE_IRQHandler(void)
 {
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]){
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
-        sync_line_event_handler();
+        sync_line_event_handler(); 
     }
 }
 

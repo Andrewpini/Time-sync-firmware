@@ -105,7 +105,10 @@ static bool m_device_provisioned;
 
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event) 
 {
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- %d RSSI: %d  -----\n", p_event->p_meta_data->p_core_metadata->source, p_event->p_meta_data->p_core_metadata->params.loopback);
+    if(p_event->p_meta_data->p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER){
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- SOURCE: %d RSSI: %d  -----\n", p_event->p_meta_data->src.value, p_event->p_meta_data->p_core_metadata->params.scanner.rssi);
+
+    }
 }
 
 /*************************************************************************************************/
@@ -207,7 +210,6 @@ static void initialize(void)
     nrf_gpio_cfg_output(13);
     nrf_gpio_pin_clear(13);
 
-    __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
     ERROR_CHECK(app_timer_init());
     hal_leds_init();
     ble_stack_init();
@@ -252,6 +254,8 @@ static void initialize(void)
 int main(void)
 {
     clock_init();
+    __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
+
     leds_init();
     sync_line_init();
     gpiote_init();
