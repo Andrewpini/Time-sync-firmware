@@ -1,8 +1,6 @@
 #ifndef USER_ETHERNET_H__
 #define USER_ETHERNET_H__
 
-#include "bsp.h"
-
 #define WIZCHIP_RESET_PIN       5
 /**
  * Copyright (c) 2016 - 2017, Nordic Semiconductor ASA
@@ -67,7 +65,6 @@ void 	wizchip_write	(uint8_t wb);
 
 
 void user_ethernet_init	(void);
-void network_init		(void);
 void print_network_info (void);
 
 

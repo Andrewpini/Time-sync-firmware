@@ -13,7 +13,6 @@
 #include <string.h>
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
-#include "bsp.h"
 #include "nrf_drv_spi.h"
 #include "nrf_log.h"
 

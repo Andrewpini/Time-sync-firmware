@@ -49,6 +49,20 @@ void wizchip_write(uint8_t wb)
 }
 
 
+static void network_init(void)
+{
+	ctlnetwork(CN_SET_NETINFO, (void*)&gWIZNETINFO);
+    if (gWIZNETINFO.dhcp == NETINFO_DHCP) 
+    {
+        //printf("Obatining network information using DHCP");
+    }
+    else
+    {
+        //print_network_info();
+    }
+}
+
+
 void user_ethernet_init()
 {
     uint8_t tmp;
@@ -67,47 +81,35 @@ void user_ethernet_init()
 
     /* WIZCHIP SOCKET Buffer initialize */
 	
-    printf("W5500 memory init\r\n");
+    //printf("W5500 memory init\r\n");
 
     if(ctlwizchip(CW_INIT_WIZCHIP,(void*)memsize) == -1)
     {
-    	printf("WIZCHIP Initialized fail.\r\n");
+    	//printf("WIZCHIP Initialized fail.\r\n");
        while(1);
     }
 
     /* PHY link status check */
-    printf("W5500 PHY Link Status Check\r\n");
+    //printf("W5500 PHY Link Status Check\r\n");
     do
     {
        if(ctlwizchip(CW_GET_PHYLINK, (void*)&tmp) == -1)
-    	   printf("Unknown PHY Link stauts.\r\n");
-       printf("Status: %d\r\n", tmp);
+    	   //printf("Unknown PHY Link stauts.\r\n");
+       //printf("Status: %d\r\n", tmp);
        nrf_delay_ms(50);
     } while(tmp == PHY_LINK_OFF);
 
     timeout_info.retry_cnt = 1;
-    timeout_info.time_100us = 0x3E8;	// timeout value = 10ms
+    timeout_info.time_100us = 1000;	// timeout value = 10ms
 
     wizchip_settimeout(&timeout_info);
     
-    printf("W5500 PHY link status is ON\r\n");
+    //printf("W5500 PHY link status is ON\r\n");
     
     /* Network initialization */
     network_init();
 }
 
-void network_init(void)
-{
-	ctlnetwork(CN_SET_NETINFO, (void*)&gWIZNETINFO);
-    if (gWIZNETINFO.dhcp == NETINFO_DHCP) 
-    {
-        printf("Obatining network information using DHCP");
-    }
-    else
-    {
-        print_network_info();
-    }
-}
 
 void print_network_info(void)
 {
