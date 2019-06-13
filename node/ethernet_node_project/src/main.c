@@ -47,7 +47,6 @@
 #include "app_timer.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 #include "nrf_drv_spi.h"
@@ -78,9 +77,6 @@ static void log_init(void)
 {
     ret_code_t err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-    LOG("Logging initiated\n");
-    NRF_LOG_PROCESS();
 }
 
 int main(void)
@@ -96,21 +92,25 @@ int main(void)
     drift_timer_init();
     dhcp_init();
     broadcast_init();
-    
-    LOG("Establishing contact with server...\n\n");
-    /*Waits until contact with the server is established*/
-    
-    while(!is_server_IP_received())
-    {
-        check_ctrl_cmd();
-    }
+        
+    #ifdef BROADCAST_ENABLED
+        /* Hardcoded 'true' since we are using broadcast*/
+        set_server_IP_received(true);
+
+    #else
+        LOG("Establishing contact with server...\n\n");
+        /*Waits until contact with the server is established*/
+        while(!is_server_IP_received())
+        {
+            check_ctrl_cmd();
+        }
+    #endif
     LOG("Application started and ready for use\n");
     connection_init();
     scan_init();
     
     for (;;)
     {
-        NRF_LOG_PROCESS();
         if (is_connected())
         {
             if (is_server_IP_received())
