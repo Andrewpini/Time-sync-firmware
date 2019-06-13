@@ -5,7 +5,6 @@
 #define DRIFT_TIMER_MAX 1000000
 
 #ifdef MESH_ENABLED
-    #define DHCP_TIMER                          NRF_TIMER1
     #define DRIFT_TIMER                         NRF_TIMER3
     #define SYNC_TIMER                          NRF_TIMER4
 #else

@@ -211,7 +211,6 @@ static void initialize(void)
     nrf_gpio_cfg_output(13);
     nrf_gpio_pin_clear(13);
 
-    ERROR_CHECK(app_timer_init());
     hal_leds_init();
     ble_stack_init();
 
@@ -256,6 +255,8 @@ int main(void)
 {
     clock_init();
     __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
+    ERROR_CHECK(app_timer_init());
+
 
     leds_init();
     sync_line_init();
