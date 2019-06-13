@@ -37,8 +37,6 @@ void sync_line_event_handler(void)
 {
     /*Snapshots the value of timer 0 and calculates the current drift*/
     m_current_drift = m_prev_drift - calc_drift_time(DRIFT_TIMER_VALUE);
-//    LOG("Raw counter value : %d\n", DRIFT_TIMER_VALUE);
-//    LOG("Current timer drift (in relation to sync master) : %d microseconds\n", m_current_drift);
     m_time_tic++;
     m_prev_drift = m_current_drift;
     m_updated_drift_rdy = true;
@@ -53,12 +51,19 @@ void send_drift_timing_sample(void)
 
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
-        uint8_t target_IP[4] = {10, 0, 0, 4};    
-        uint32_t target_port = 15000;
         uint8_t own_MAC[6] = {0};
-        get_target_IP_and_port(target_IP, &target_port);
         get_own_MAC(own_MAC);
- 
+
+
+        #ifdef BROADCAST_ENABLED
+            uint8_t target_IP[4] = {255, 255, 255, 255}; 
+            uint32_t target_port = 11001;;
+        #else
+            uint8_t target_IP[4] = {10, 0, 0, 4};    
+            uint32_t target_port = 15000;
+            get_target_IP_and_port(target_IP, &target_port);
+        #endif
+
         if(!is_network_busy())
         {
             set_network_busy(true);

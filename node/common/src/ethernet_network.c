@@ -61,7 +61,7 @@ void broadcast_init(void)
 void ethernet_broadcast_send(uint8_t * buf, uint8_t len) 
 {
     uint8_t broadcast_ip[] = {255, 255, 255, 255};
-    uint16_t broadcast_port = 10000;
+    uint16_t broadcast_port = 11001;
     
     sendto(SOCKET_UDP, &buf[0], len, broadcast_ip, broadcast_port);
 }

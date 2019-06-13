@@ -18,11 +18,6 @@ void drift_timer_init(void)
     DRIFT_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
 }
 
-//NOTE: Test function to try out drift compensation
-void drift_timer_comp(void)
-{
-    DRIFT_TIMER->CC[0] = DRIFT_TIMER_MAX - 5;                                                                
-}
 
 void drift_timer_reset(void)
 {

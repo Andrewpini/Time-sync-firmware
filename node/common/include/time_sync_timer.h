@@ -27,7 +27,6 @@ void drift_timer_reset(void);
 
 void sync_master_timer_init(uint32_t interval);
 
-//NOTE: Test function to try out drift compensation
-void drift_timer_comp(void);
+
 
 #endif

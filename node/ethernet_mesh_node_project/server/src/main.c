@@ -257,7 +257,6 @@ int main(void)
     __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
     ERROR_CHECK(app_timer_init());
 
-
     leds_init();
     sync_line_init();
     drift_timer_init();
@@ -267,17 +266,22 @@ int main(void)
     user_ethernet_init();
     dhcp_init();
     broadcast_init();
+    
+    #ifdef BROADCAST_ENABLED
+        /* Hardcoded 'true' since we are using broadcast*/
+        set_server_IP_received(true);
 
-    while(!is_server_IP_received())
-    {
-        check_ctrl_cmd();
-    }
+    #else
+        while(!is_server_IP_received())
+        {
+            check_ctrl_cmd();
+        }
+    #endif
+
     connection_init();
 
     initialize();
 
-    //NOTE: Trial and error for implementing the init routines from the ethernet node project
-//    clock_init();
 
 
     while(1){
