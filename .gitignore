@@ -17,6 +17,9 @@ Output
 output
 *.emSession
 
+## VS CODE ##
+.vscode/
+
 
 ## ATOM EDITOR ##
 tags

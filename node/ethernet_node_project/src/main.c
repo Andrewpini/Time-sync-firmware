@@ -79,6 +79,8 @@ static void log_init(void)
     ret_code_t err_code = NRF_LOG_INIT(NULL);
     APP_ERROR_CHECK(err_code);
     NRF_LOG_DEFAULT_BACKENDS_INIT();
+    LOG("Logging initiated\n");
+    NRF_LOG_PROCESS();
 }
 
 int main(void)
@@ -97,6 +99,7 @@ int main(void)
     
     LOG("Establishing contact with server...\n\n");
     /*Waits until contact with the server is established*/
+    
     while(!is_server_IP_received())
     {
         check_ctrl_cmd();
@@ -107,6 +110,7 @@ int main(void)
     
     for (;;)
     {
+        NRF_LOG_PROCESS();
         if (is_connected())
         {
             if (is_server_IP_received())
