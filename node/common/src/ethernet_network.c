@@ -16,7 +16,12 @@
 #include "time_sync_timer.h"
 #include "user_ethernet.h"
 
-
+#ifdef MESH_ENABLED
+    #include "log.h"
+    #define LOG(...) __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, __VA_ARGS__);
+#else
+    #define LOG(...) printf(__VA_ARGS__)
+#endif
 
 #define DHCP_ENABLED                        1
 #define SOCKET_CONFIG                       0
@@ -120,7 +125,7 @@ void get_server_ip(uint8_t * buf, uint8_t len)
         }
         memcpy((char *)target_IP, (const char *)ip, 4);
         target_port = port;
-        //printf("Server IP: %d.%d.%d.%d : %d\r\n", target_IP[0], target_IP[1], target_IP[2], target_IP[3], target_port);
+        LOG("Server IP: %d.%d.%d.%d : %d\r\n", target_IP[0], target_IP[1], target_IP[2], target_IP[3], target_port);
 
     }
 }
@@ -147,8 +152,8 @@ void dhcp_init(void)
                 m_network_is_busy = false;
                 getSHAR(&own_MAC[0]);
                 getIPfromDHCP(&own_IP[0]);
-                //LOG("\r\n\r\nThis device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
-                //print_network_info();
+                LOG("This device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
+                print_network_info();
                 break;
             }
             else if(ret == DHCP_FAILED)
