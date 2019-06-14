@@ -64,7 +64,7 @@ __WEAK bool nrf_dfu_enter_check(void)
 {	
     if (NRF_POWER->GPREGRET == 0xAB)
     {
-				NRF_POWER->GPREGRET = 0x00;
+		NRF_POWER->GPREGRET = 0x00;
         return true;
     }
 
