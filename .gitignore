@@ -45,6 +45,11 @@ tools/rtt_log/logs/
 */_build/*
 *.d
 *.o
+*elf
+*.hex
+*.map
+*.ind
+*.ld
 
 # Doxygen generated files #
 /source/doc/html/
