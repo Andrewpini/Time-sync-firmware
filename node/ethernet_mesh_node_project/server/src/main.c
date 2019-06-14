@@ -86,6 +86,7 @@
 #include "command_system.h"
 #include "timer_drift_measurement.h"
 #include "time_sync_timer.h"
+#include "dfu_common.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -281,8 +282,7 @@ int main(void)
     connection_init();
 
     initialize();
-
-
+    ERROR_CHECK(dfu_clear_flag());
 
     while(1){
        if (is_connected())

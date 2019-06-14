@@ -27,7 +27,7 @@
 #include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
-
+#include "dfu_common.h"
 
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
@@ -174,7 +174,7 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_NEW_FIRMWARE:
-                        LOG("CMD: New firmware available\r\n");
+                        dfu_initiate_and_reset();
                         break;
 
                     case CMD_NEW_ACCESS_ADDRESS:

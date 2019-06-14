@@ -61,10 +61,10 @@ uint8_t targetIP[4] = {10, 0, 0, 13};
  *          Default behaviour is to enter DFU when BOOTLOADER_BUTTON is pressed.
  */
 __WEAK bool nrf_dfu_enter_check(void)
-{
-		NRF_POWER->GPREGRET = 0xab;
-    if (*p_enter_dfu_shared_flag == 1)
+{	
+    if (NRF_POWER->GPREGRET == 0xAB)
     {
+				NRF_POWER->GPREGRET = 0x00;
         return true;
     }
 
