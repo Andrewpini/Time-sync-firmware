@@ -34,6 +34,7 @@
 #include "tftp_config.h"
 //#include "ConfigData.h"
 //#include "ConfigMessage.h"
+#include "dfu_config.h"
 
 #define SCHED_MAX_EVENT_DATA_SIZE       MAX(APP_TIMER_SCHED_EVT_SIZE, 0)                        /**< Maximum size of scheduler events. */
 
@@ -61,7 +62,8 @@ uint8_t targetIP[4] = {10, 0, 0, 13};
  */
 __WEAK bool nrf_dfu_enter_check(void)
 {
-    if (nrf_gpio_pin_read(BOOTLOADER_BUTTON) == 0)
+		NRF_POWER->GPREGRET = 0xab;
+    if (*p_enter_dfu_shared_flag == 1)
     {
         return true;
     }
@@ -136,7 +138,7 @@ uint32_t nrf_dfu_init()
     if (nrf_dfu_app_is_valid())
     {
         NRF_LOG_INFO("Jumping to: 0x%08x\r\n", MAIN_APPLICATION_START_ADDR);
-        nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
+				nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
     }
 
     // Should not be reached!

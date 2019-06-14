@@ -28,7 +28,7 @@ wiz_NetInfo gWIZNETINFO = { .mac    = {0x00, 0x08, 0xdc,0x00, 0xab, 0xfe},
                             .sn     = {255,255,255,0},
                             .gw     = {10, 0, 0, 1}, 
                             .dns    = {8,8,8,8},
-                            .dhcp   = NETINFO_DHCP };
+                            .dhcp   = NETINFO_STATIC };
 
 void wizchip_select(void)
 {
