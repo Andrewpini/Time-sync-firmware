@@ -60,6 +60,7 @@
 /* Models */
 #include "rssi_server.h"
 #include "rssi_util.h"
+#include "rssi_common.h"
 #include "health_client.h"
 
 /* Logging and RTT */
@@ -86,6 +87,8 @@
 #include "command_system.h"
 #include "timer_drift_measurement.h"
 #include "time_sync_timer.h"
+#include "config.h"
+#include "socket.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -106,10 +109,48 @@ static bool m_device_provisioned;
 
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event) 
 {
-    if(p_event->p_meta_data->p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER){
-        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- SOURCE: %d RSSI: %d  -----\n", p_event->p_meta_data->src.value, p_event->p_meta_data->p_core_metadata->params.scanner.rssi);
-
+    if(p_event->p_meta_data->p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    {
+        dsm_local_unicast_address_t element_addr;
+        rssi_util_mac_to_element_addr_find(&m_rssi_util, p_event->p_meta_data->p_core_metadata->params.scanner.adv_addr.addr, &element_addr);
+        rssi_server_add_rssi_data(element_addr.address_start, p_event->p_meta_data->p_core_metadata->params.scanner.rssi);
     }
+}
+
+static void app_health_rssi_server_cb(const rssi_data_entry_t* p_data)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- hei hei!  -----\n");
+
+        uint8_t buf[SCAN_REPORT_LENGTH];
+        uint8_t len = 0;
+        uint8_t own_MAC[6] = {0};
+        get_own_MAC(own_MAC);
+
+
+        #ifdef BROADCAST_ENABLED
+            uint8_t target_IP[4] = {255, 255, 255, 255}; 
+            uint32_t target_port = 11001;;
+        #else
+            uint8_t target_IP[4] = {10, 0, 0, 4};    
+            uint32_t target_port = 15000;
+            get_target_IP_and_port(target_IP, &target_port);
+        #endif
+
+        if(!is_network_busy())
+        {
+            set_network_busy(true);
+        
+            sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"src_addr\" : %d, \"mean_RSSI\" : %d, \"msg_count\" : %d}", 
+                            own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
+                            p_data->src_addr,
+                            p_data->mean_rssi,
+                            p_data->msg_count);
+        
+            len = strlen((const char *)&buf[0]);
+            uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+
+            set_network_busy(false);
+        }
 }
 
 /*************************************************************************************************/
@@ -195,7 +236,7 @@ static void provisioning_complete_cb(void)
 static void models_init_cb(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
-    ERROR_CHECK(rssi_server_init(&m_rssi_server, 0));
+    ERROR_CHECK(rssi_server_init(&m_rssi_server, 0, app_health_rssi_server_cb));
 
     ERROR_CHECK(rssi_util_init(&m_rssi_util));
     ERROR_CHECK(access_model_subscription_list_alloc(m_rssi_util.model_handle));
