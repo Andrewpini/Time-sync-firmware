@@ -27,7 +27,7 @@
 #include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
-#include "dfu_common.h"
+#include "ethernet_dfu.h"
 
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
@@ -174,7 +174,16 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_NEW_FIRMWARE:
-                        dfu_initiate_and_reset();
+                        if(own_IP[0] != 1)
+                        {
+                          dfu_write_own_ip(own_IP);
+                          dfu_write_server_ip(&broadcast_ip[0]);
+                          dfu_initiate_and_reset();
+                        }
+                        else
+                        {
+                          LOG("CMD: Own IP not valid - can not start DFU");
+                        }
                         break;
 
                     case CMD_NEW_ACCESS_ADDRESS:

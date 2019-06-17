@@ -226,8 +226,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\config\dfu_config.h</PathWithFileName>
-      <FilenameWithoutPath>dfu_config.h</FilenameWithoutPath>
+      <PathWithFileName>..\config\ethernet_dfu.h</PathWithFileName>
+      <FilenameWithoutPath>ethernet_dfu.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

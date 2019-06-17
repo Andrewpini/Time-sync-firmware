@@ -393,9 +393,9 @@
               <FilePath>..\config\sdk_config.h</FilePath>
             </File>
             <File>
-              <FileName>dfu_config.h</FileName>
+              <FileName>ethernet_dfu.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\config\dfu_config.h</FilePath>
+              <FilePath>..\config\ethernet_dfu.h</FilePath>
             </File>
           </Files>
         </Group>
