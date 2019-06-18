@@ -29,32 +29,56 @@ static void dfu_initiate_and_reset()
 static void dfu_write_own_ip(uint8_t * p_own_ip_uint8)
 {
   uint32_t * p_dfu_own_ip = (uint32_t *)0xFE004;
+
+  uint8_t stored_own_ip[4];
+
+  stored_own_ip[0] = (uint8_t)*p_dfu_own_ip;
+  stored_own_ip[1] = (uint8_t)*(p_dfu_own_ip + 1);
+  stored_own_ip[2] = (uint8_t)*(p_dfu_own_ip + 2);
+  stored_own_ip[3] = (uint8_t)*(p_dfu_own_ip + 3);
+
+  if((stored_own_ip[0] != *p_own_ip_uint8) || (stored_own_ip[1] != (*p_own_ip_uint8 + 1)) || 
+    (stored_own_ip[2] != (*p_own_ip_uint8 + 2)) || (stored_own_ip[3] != (*p_own_ip_uint8 + 3)))
+  {
   
-  uint32_t own_ip_uint32[4];
+    uint32_t own_ip_uint32[4];
 
-  own_ip_uint32[0] = (uint32_t)*p_own_ip_uint8;
-  own_ip_uint32[1] = (uint32_t)*(p_own_ip_uint8 + 1);
-  own_ip_uint32[2] = (uint32_t)*(p_own_ip_uint8 + 2);
-  own_ip_uint32[3] = (uint32_t)*(p_own_ip_uint8 + 3);
+    own_ip_uint32[0] = (uint32_t)*p_own_ip_uint8;
+    own_ip_uint32[1] = (uint32_t)*(p_own_ip_uint8 + 1);
+    own_ip_uint32[2] = (uint32_t)*(p_own_ip_uint8 + 2);
+    own_ip_uint32[3] = (uint32_t)*(p_own_ip_uint8 + 3);
 
-  flash_operation_t flash_parameters;
+    flash_operation_t flash_parameters;
 
-  flash_parameters.type = FLASH_OP_TYPE_WRITE;
+    flash_parameters.type = FLASH_OP_TYPE_WRITE;
 
-  flash_parameters.params.write.p_start_addr = p_dfu_own_ip;
-  flash_parameters.params.write.length = 16;
-  flash_parameters.params.write.p_data = own_ip_uint32;
+    flash_parameters.params.write.p_start_addr = p_dfu_own_ip;
+    flash_parameters.params.write.length = 16;
+    flash_parameters.params.write.p_data = own_ip_uint32;
 
-  const flash_operation_t * p_flash_parameters = &flash_parameters;
+    const flash_operation_t * p_flash_parameters = &flash_parameters;
   
-  ERROR_CHECK(mesh_flash_op_push(MESH_FLASH_USER_APP, p_flash_parameters, NULL));
+    ERROR_CHECK(mesh_flash_op_push(MESH_FLASH_USER_APP, p_flash_parameters, NULL));
 
-//  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully written own IP to flash\n");
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully written own IP to flash\n");
+
+  }
 }
 
 static void dfu_write_server_ip(uint8_t * p_server_ip_uint8)
 {
   uint32_t * p_dfu_server_ip = (uint32_t *)0xFE014;
+
+  uint8_t stored_server_ip[4];
+
+  stored_server_ip[0] = (uint8_t)*p_dfu_server_ip;
+  stored_server_ip[1] = (uint8_t)*(p_dfu_server_ip + 1);
+  stored_server_ip[2] = (uint8_t)*(p_dfu_server_ip + 2);
+  stored_server_ip[3] = (uint8_t)*(p_dfu_server_ip + 3);
+
+  if((stored_server_ip[0] != *p_server_ip_uint8) || (stored_server_ip[1] != (*p_server_ip_uint8 + 1)) || 
+    (stored_server_ip[2] != (*p_server_ip_uint8 + 2)) || (stored_server_ip[3] != (*p_server_ip_uint8 + 3)))
+  {
   
   uint32_t server_ip_uint32[4];
 
@@ -76,4 +100,6 @@ static void dfu_write_server_ip(uint8_t * p_server_ip_uint8)
   ERROR_CHECK(mesh_flash_op_push(MESH_FLASH_USER_APP, p_flash_parameters, NULL));
 
 //  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully written server IP to flash\n");
+
+  }
 }
