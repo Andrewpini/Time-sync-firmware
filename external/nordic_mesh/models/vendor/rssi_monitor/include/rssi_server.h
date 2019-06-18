@@ -5,6 +5,7 @@
 #include <stdint.h> 
 
 #include "access.h"
+#include "rssi_common.h"
 
 /* Structure for holding the raw rssi data from each node before it is handled and sent to the rssi client */
 typedef struct
@@ -17,10 +18,14 @@ typedef struct
 /* Object type for rssi server instances. */
 typedef struct __rssi_server_t rssi_server_t;
 
+/** Event callback function type */ 
+typedef void (*rssi_server_evt_cb_t)(const rssi_data_entry_t* p_data);
+
 /* Rssi server instance structure */
 struct __rssi_server_t
 {
-    access_model_handle_t            model_handle;     
+    access_model_handle_t model_handle;
+    rssi_server_evt_cb_t rssi_server_handler;
 };
 
 /* Initializes the health server model.
@@ -33,7 +38,7 @@ struct __rssi_server_t
  *
  * @see access_model_add()
  */
-uint32_t rssi_server_init(rssi_server_t * p_server, uint16_t element_index);
+uint32_t rssi_server_init(rssi_server_t * p_server, uint16_t element_index, rssi_server_evt_cb_t rssi_server_handler);
 
 /* Initializes the health server model.
  *

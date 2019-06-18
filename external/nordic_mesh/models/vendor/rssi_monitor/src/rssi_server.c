@@ -84,19 +84,25 @@ static uint32_t send_rssi_data(rssi_server_t * p_server)
         m_outgoing_rssi_data[i].mean_rssi = m_rssi_entries[i].rssi_sum / m_rssi_entries[i].msg_count;
         m_outgoing_rssi_data[i].msg_count = m_rssi_entries[i].msg_count;
     }
-
-    uint32_t error_code = send_reliable_message(p_server, RSSI_OPCODE_SEND_RSSI_DATA, (const uint8_t*) m_outgoing_rssi_data, sizeof(m_outgoing_rssi_data[0]) * m_rssi_entry_counter);
-
-    if (error_code == NRF_SUCCESS)
-    {
-        m_active_transfer = true;
+    #ifdef RSSI_OVER_ETHERNET_ENABLED
+        p_server->rssi_server_handler(m_outgoing_rssi_data);
 
         /* Reset the local RSSI data buffer */
         memset(m_rssi_entries, NULL, sizeof(m_rssi_entries));
         m_rssi_entry_counter = 0;
-    }
+    #else
+        uint32_t error_code = send_reliable_message(p_server, RSSI_OPCODE_SEND_RSSI_DATA, (const uint8_t*) m_outgoing_rssi_data, sizeof(m_outgoing_rssi_data[0]) * m_rssi_entry_counter);
 
-    return error_code;
+        if (error_code == NRF_SUCCESS)
+        {
+            m_active_transfer = true;
+
+            /* Reset the local RSSI data buffer */
+            memset(m_rssi_entries, NULL, sizeof(m_rssi_entries));
+            m_rssi_entry_counter = 0;
+        }
+        return error_code;
+    #endif
 }
 
 /* Handler needed for the acknowledgement messages from the client */
@@ -148,12 +154,14 @@ uint32_t rssi_server_add_rssi_data(uint16_t address, int8_t rssi)
     }
 }
 
-uint32_t rssi_server_init(rssi_server_t * p_server, uint16_t element_index)
+uint32_t rssi_server_init(rssi_server_t * p_server, uint16_t element_index, rssi_server_evt_cb_t rssi_server_handler)
 {
     if (p_server == NULL)
     {
         return NRF_ERROR_NULL;
     }   
+
+    p_server->rssi_server_handler = rssi_server_handler;
     access_model_add_params_t add_params =
     {
         .element_index = element_index,
