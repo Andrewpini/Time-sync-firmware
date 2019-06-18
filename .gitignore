@@ -13,6 +13,7 @@ EventRecorderStub.scvd
 *.uvguix*
 
 ## SES ##
+build
 Output
 output
 *.emSession
@@ -46,7 +47,6 @@ tools/rtt_log/logs/
 *.d
 *.o
 *elf
-*.hex
 *.map
 *.ind
 *.ld
