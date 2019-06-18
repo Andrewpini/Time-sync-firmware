@@ -43,7 +43,7 @@
 #define APP_TIMER_PRESCALER             0                                                       /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                                       /**< Size of timer operation queues. */
 
-#define FILE_NAME "firmware.bin"
+#define FILE_NAME "ethernet_mesh_node.bin"
 
 uint8_t g_socket_rcv_buf[MAX_MTU_SIZE];
 uint8_t g_op_mode = NORMAL_MODE;

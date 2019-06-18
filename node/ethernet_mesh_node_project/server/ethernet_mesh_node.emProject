@@ -20,7 +20,7 @@
       debug_additional_load_file="$(SDK_ROOT:../../../../nRF5_SDK_15.2.0_9412b96)/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex"
       debug_start_from_entry_point_symbol="No"
       debug_target_connection="J-Link"
-      linker_output_format="hex"
+      linker_output_format="bin"
       linker_printf_width_precision_supported="Yes"
       linker_section_placement_file="$(ProjectDir)/flash_placement.xml"
       linker_section_placement_macros="FLASH_PH_START=0x0;FLASH_PH_SIZE=0x78000;RAM_PH_START=0x20000000;RAM_PH_SIZE=0xf000;FLASH_START=0x26000;RAM_START=0x20002da0"
