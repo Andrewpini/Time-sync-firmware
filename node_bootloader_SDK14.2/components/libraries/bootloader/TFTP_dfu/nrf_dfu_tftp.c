@@ -34,6 +34,7 @@
 #include "tftp_config.h"
 //#include "ConfigData.h"
 //#include "ConfigMessage.h"
+#include "ethernet_dfu.h"
 
 #define SCHED_MAX_EVENT_DATA_SIZE       MAX(APP_TIMER_SCHED_EVT_SIZE, 0)                        /**< Maximum size of scheduler events. */
 
@@ -48,7 +49,7 @@ uint8_t g_socket_rcv_buf[MAX_MTU_SIZE];
 uint8_t g_op_mode = NORMAL_MODE;
 uint32_t g_wirite_addr;
 
-uint8_t targetIP[4] = {10, 0, 0, 13};
+uint8_t targetIP[4] = {1, 1, 1, 1};
 //uint32_t tcp_targetPort = 69;
 
 
@@ -60,9 +61,10 @@ uint8_t targetIP[4] = {10, 0, 0, 13};
  *          Default behaviour is to enter DFU when BOOTLOADER_BUTTON is pressed.
  */
 __WEAK bool nrf_dfu_enter_check(void)
-{
-    if (nrf_gpio_pin_read(BOOTLOADER_BUTTON) == 0)
+{	
+    if (NRF_POWER->GPREGRET == 0xAB)
     {
+		NRF_POWER->GPREGRET = 0x00;
         return true;
     }
 
@@ -73,6 +75,14 @@ __WEAK bool nrf_dfu_enter_check(void)
         return true;
     }
     return false;
+}
+
+void set_target_ip()
+{
+	targetIP[0] = (uint8_t)*P_DFU_SERVER_IP;
+	targetIP[1] = (uint8_t)*(P_DFU_SERVER_IP + 1);
+	targetIP[2] = (uint8_t)*(P_DFU_SERVER_IP + 2);
+	targetIP[3] = (uint8_t)*(P_DFU_SERVER_IP + 3);
 }
 
 int application_update(void)
@@ -130,13 +140,14 @@ uint32_t nrf_dfu_init()
         NRF_LOG_INFO("Enter Boot Mode\r\n");
         user_ethernet_init();
         TFTP_init(SOCK_TFTP, g_socket_rcv_buf);
+				set_target_ip();
         application_update();
     }
 
     if (nrf_dfu_app_is_valid())
     {
         NRF_LOG_INFO("Jumping to: 0x%08x\r\n", MAIN_APPLICATION_START_ADDR);
-        nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
+				nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
     }
 
     // Should not be reached!

@@ -134,11 +134,11 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4099</DriverSelection>
+            <DriverSelection>4100</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>Segger\JL2CM3.dll</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -274,8 +274,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>0xef5a0</StartAddress>
-                <Size>0xea60</Size>
+                <StartAddress>0xf8000</StartAddress>
+                <Size>0x6000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -338,7 +338,7 @@
               <MiscControls>--reduce_paths</MiscControls>
               <Define>BLE_STACK_SUPPORT_REQD BOARD_WIZBLE52840 CONFIG_GPIO_AS_PINRESET FLOAT_ABI_HARD NRF52840_XXAA NRF_DFU_SETTINGS_VERSION=1 NRF_DFU_SVCI_ENABLED NRF_SD_BLE_API_VERSION=5 S140 SOFTDEVICE_PRESENT SVC_INTERFACE_CALL_AS_NORMAL_FUNCTION SWI_DISABLE0 __HEAP_SIZE=0 ETH_GATEWAY</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\config;..\..\..\..\..\components\ble\common;..\..\..\..\..\components\boards;..\..\..\..\..\components\drivers_nrf\clock;..\..\..\..\..\components\drivers_nrf\common;..\..\..\..\..\components\drivers_nrf\delay;..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\components\drivers_nrf\rng;..\..\..\..\..\components\libraries\atomic;..\..\..\..\..\components\libraries\atomic_fifo;..\..\..\..\..\components\libraries\balloc;..\..\..\..\..\components\libraries\bootloader;..\..\..\..\..\components\libraries\bootloader\ble_dfu;..\..\..\..\..\components\libraries\bootloader\dfu;..\..\..\..\..\components\libraries\crc32;..\..\..\..\..\components\libraries\crypto;..\..\..\..\..\components\libraries\crypto\backend\micro_ecc;..\..\..\..\..\components\libraries\crypto\backend\nrf_crypto_sw;..\..\..\..\..\components\libraries\experimental_log;..\..\..\..\..\components\libraries\experimental_log\src;..\..\..\..\..\components\libraries\experimental_memobj;..\..\..\..\..\components\libraries\experimental_section_vars;..\..\..\..\..\components\libraries\fstorage;..\..\..\..\..\components\libraries\hci;..\..\..\..\..\components\libraries\mem_manager;..\..\..\..\..\components\libraries\queue;..\..\..\..\..\components\libraries\scheduler;..\..\..\..\..\components\libraries\sha256;..\..\..\..\..\components\libraries\strerror;..\..\..\..\..\components\libraries\svc;..\..\..\..\..\components\libraries\timer;..\..\..\..\..\components\libraries\util;..\..\..\..\..\components\softdevice\common;..\..\..\..\..\components\softdevice\s140\headers;..\..\..\..\..\components\softdevice\s140\headers\nrf52;..\..\..\..\..\components\toolchain;..\..;..\..\..\dfu_req_handling;..\..\..\..\..\external\micro-ecc\micro-ecc;..\..\..\..\..\external\nano-pb;..\config;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Application\loopback;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Ethernet\W5500;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Ethernet;..\..\..\..\..\external\wiznet;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Internet\tftp;..\..\..\..\..\components\drivers_nrf\spi_master;..\..\..\..\..\components\drivers_nrf\uart;..\..\..\..\..\components\drivers_nrf\gpiote;..\..\..\..\..\components\drivers_nrf\clock;..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\..\external\SDK\external\fprintf</IncludePath>
+              <IncludePath>..\..\config;..\..\..\..\..\components\ble\common;..\..\..\..\..\components\boards;..\..\..\..\..\components\drivers_nrf\clock;..\..\..\..\..\components\drivers_nrf\common;..\..\..\..\..\components\drivers_nrf\delay;..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\components\drivers_nrf\rng;..\..\..\..\..\components\libraries\atomic;..\..\..\..\..\components\libraries\atomic_fifo;..\..\..\..\..\components\libraries\balloc;..\..\..\..\..\components\libraries\bootloader;..\..\..\..\..\components\libraries\bootloader\ble_dfu;..\..\..\..\..\components\libraries\bootloader\dfu;..\..\..\..\..\components\libraries\crc32;..\..\..\..\..\components\libraries\crypto;..\..\..\..\..\components\libraries\crypto\backend\micro_ecc;..\..\..\..\..\components\libraries\crypto\backend\nrf_crypto_sw;..\..\..\..\..\components\libraries\experimental_log;..\..\..\..\..\components\libraries\experimental_log\src;..\..\..\..\..\components\libraries\experimental_memobj;..\..\..\..\..\components\libraries\experimental_section_vars;..\..\..\..\..\components\libraries\fstorage;..\..\..\..\..\components\libraries\hci;..\..\..\..\..\components\libraries\mem_manager;..\..\..\..\..\components\libraries\queue;..\..\..\..\..\components\libraries\scheduler;..\..\..\..\..\components\libraries\sha256;..\..\..\..\..\components\libraries\strerror;..\..\..\..\..\components\libraries\svc;..\..\..\..\..\components\libraries\timer;..\..\..\..\..\components\libraries\util;..\..\..\..\..\components\softdevice\common;..\..\..\..\..\components\softdevice\s140\headers;..\..\..\..\..\components\softdevice\s140\headers\nrf52;..\..\..\..\..\components\toolchain;..\..;..\..\..\dfu_req_handling;..\..\..\..\..\external\micro-ecc\micro-ecc;..\..\..\..\..\external\nano-pb;..\config;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Application\loopback;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Ethernet\W5500;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Ethernet;..\..\..\..\..\external\wiznet;..\..\..\..\..\external\wiznet\ioLibrary_Driver\Internet\tftp;..\..\..\..\..\components\drivers_nrf\spi_master;..\..\..\..\..\components\drivers_nrf\uart;..\..\..\..\..\components\drivers_nrf\gpiote;..\..\..\..\..\components\drivers_nrf\clock;..\..\..\..\..\components\drivers_nrf\hal</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -354,9 +354,9 @@
             <uClangAs>0</uClangAs>
             <VariousControls>
               <MiscControls> --cpreproc_opts=-DBLE_STACK_SUPPORT_REQD,-DBOARD_PCA10056,-DCONFIG_GPIO_AS_PINRESET,-DFLOAT_ABI_HARD,-DNRF52840_XXAA,-DNRF_DFU_SETTINGS_VERSION=1,-DNRF_DFU_SVCI_ENABLED,-DNRF_SD_BLE_API_VERSION=5,-DS140,-DSOFTDEVICE_PRESENT,-DSVC_INTERFACE_CALL_AS_NORMAL_FUNCTION,-DSWI_DISABLE0,-D__HEAP_SIZE=0</MiscControls>
-              <Define>BLE_STACK_SUPPORT_REQD BOARD_PCA10056 CONFIG_GPIO_AS_PINRESET FLOAT_ABI_HARD NRF52840_XXAA NRF_DFU_SETTINGS_VERSION=1 NRF_DFU_SVCI_ENABLED NRF_SD_BLE_API_VERSION=5 S140 SOFTDEVICE_PRESENT SVC_INTERFACE_CALL_AS_NORMAL_FUNCTION SWI_DISABLE0 __HEAP_SIZE=0</Define>
+              <Define> BLE_STACK_SUPPORT_REQD BOARD_PCA10056 CONFIG_GPIO_AS_PINRESET FLOAT_ABI_HARD NRF52840_XXAA NRF_DFU_SETTINGS_VERSION=1 NRF_DFU_SVCI_ENABLED NRF_SD_BLE_API_VERSION=5 S140 SOFTDEVICE_PRESENT SVC_INTERFACE_CALL_AS_NORMAL_FUNCTION SWI_DISABLE0 __HEAP_SIZE=0</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\config;..\..\..\..\..\components\ble\common;..\..\..\..\..\components\boards;..\..\..\..\..\components\drivers_nrf\clock;..\..\..\..\..\components\drivers_nrf\common;..\..\..\..\..\components\drivers_nrf\delay;..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\components\drivers_nrf\rng;..\..\..\..\..\components\libraries\atomic;..\..\..\..\..\components\libraries\atomic_fifo;..\..\..\..\..\components\libraries\balloc;..\..\..\..\..\components\libraries\bootloader;..\..\..\..\..\components\libraries\bootloader\ble_dfu;..\..\..\..\..\components\libraries\bootloader\dfu;..\..\..\..\..\components\libraries\crc32;..\..\..\..\..\components\libraries\crypto;..\..\..\..\..\components\libraries\crypto\backend\micro_ecc;..\..\..\..\..\components\libraries\crypto\backend\nrf_crypto_sw;..\..\..\..\..\components\libraries\experimental_log;..\..\..\..\..\components\libraries\experimental_log\src;..\..\..\..\..\components\libraries\experimental_memobj;..\..\..\..\..\components\libraries\experimental_section_vars;..\..\..\..\..\components\libraries\fstorage;..\..\..\..\..\components\libraries\hci;..\..\..\..\..\components\libraries\mem_manager;..\..\..\..\..\components\libraries\queue;..\..\..\..\..\components\libraries\scheduler;..\..\..\..\..\components\libraries\sha256;..\..\..\..\..\components\libraries\strerror;..\..\..\..\..\components\libraries\svc;..\..\..\..\..\components\libraries\timer;..\..\..\..\..\components\libraries\util;..\..\..\..\..\components\softdevice\common;..\..\..\..\..\components\softdevice\s140\headers;..\..\..\..\..\components\softdevice\s140\headers\nrf52;..\..\..\..\..\components\toolchain;..\..;..\..\..\dfu_req_handling;..\..\..\..\..\external\micro-ecc\micro-ecc;..\..\..\..\..\external\nano-pb;..\config;..\..\..\..\..\..\external\SDK\components\drivers_nrf\uart;..\..\..\..\..\..\external\SDK\components\libraries\experimental_log;..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src;..\..\..\..\..\..\external\SDK\external\fprintf;..\..\..\..\..\..\external\SDK\components\libraries\experimental_memobj;..\..\..\..\..\..\external\SDK\components\libraries\balloc</IncludePath>
+              <IncludePath>..\..\config;..\..\..\..\..\components\ble\common;..\..\..\..\..\components\boards;..\..\..\..\..\components\drivers_nrf\clock;..\..\..\..\..\components\drivers_nrf\common;..\..\..\..\..\components\drivers_nrf\delay;..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\components\drivers_nrf\rng;..\..\..\..\..\components\libraries\atomic;..\..\..\..\..\components\libraries\atomic_fifo;..\..\..\..\..\components\libraries\balloc;..\..\..\..\..\components\libraries\bootloader;..\..\..\..\..\components\libraries\bootloader\ble_dfu;..\..\..\..\..\components\libraries\bootloader\dfu;..\..\..\..\..\components\libraries\crc32;..\..\..\..\..\components\libraries\crypto;..\..\..\..\..\components\libraries\crypto\backend\micro_ecc;..\..\..\..\..\components\libraries\crypto\backend\nrf_crypto_sw;..\..\..\..\..\components\libraries\experimental_log;..\..\..\..\..\components\libraries\experimental_log\src;..\..\..\..\..\components\libraries\experimental_memobj;..\..\..\..\..\components\libraries\experimental_section_vars;..\..\..\..\..\components\libraries\fstorage;..\..\..\..\..\components\libraries\hci;..\..\..\..\..\components\libraries\mem_manager;..\..\..\..\..\components\libraries\queue;..\..\..\..\..\components\libraries\scheduler;..\..\..\..\..\components\libraries\sha256;..\..\..\..\..\components\libraries\strerror;..\..\..\..\..\components\libraries\svc;..\..\..\..\..\components\libraries\timer;..\..\..\..\..\components\libraries\util;..\..\..\..\..\components\softdevice\common;..\..\..\..\..\components\softdevice\s140\headers;..\..\..\..\..\components\softdevice\s140\headers\nrf52;..\..\..\..\..\components\toolchain;..\..;..\..\..\dfu_req_handling;..\..\..\..\..\external\micro-ecc\micro-ecc;..\..\..\..\..\external\nano-pb;..\config</IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
@@ -391,6 +391,11 @@
               <FileName>sdk_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\config\sdk_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>ethernet_dfu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\config\ethernet_dfu.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -510,11 +515,6 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\components\drivers_nrf\spi_master\nrf_drv_spi.c</FilePath>
             </File>
-            <File>
-              <FileName>nrf_drv_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\drivers_nrf\uart\nrf_drv_uart.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -599,26 +599,6 @@
               <FileName>sha256.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\components\libraries\sha256\sha256.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_fprintf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\external\fprintf\nrf_fprintf.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_fprintf_format.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\external\fprintf\nrf_fprintf_format.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_memobj.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_memobj\nrf_memobj.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_balloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\balloc\nrf_balloc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -709,41 +689,6 @@
               <FileName>user_ethernet.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\external\wiznet\user_ethernet.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>nRF_Log</GroupName>
-          <Files>
-            <File>
-              <FileName>nrf_log_backend_rtt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src\nrf_log_backend_rtt.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_log_backend_serial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src\nrf_log_backend_serial.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_log_backend_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src\nrf_log_backend_uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_log_default_backends.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src\nrf_log_default_backends.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_log_frontend.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src\nrf_log_frontend.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_log_str_formatter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\external\SDK\components\libraries\experimental_log\src\nrf_log_str_formatter.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -59,6 +59,9 @@
 #include "app_error_weak.h"
 #include "nrf_bootloader_info.h"
 
+#include "app_timer.h"
+#include "nrf_drv_clock.h"
+
 #ifdef ETH_GATEWAY
 #include "loopback.h"
 #include "w5500.h"
@@ -72,6 +75,8 @@
 //#include "ConfigData.h"
 //#include "ConfigMessage.h"
 #endif
+
+APP_TIMER_DEF(m_timeout_timer_id);
 
 void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
 {
@@ -117,6 +122,35 @@ bool nrf_dfu_button_enter_check(void)
     return false;
 }
 
+static void timeout_timer_handler(void * p_context)
+{
+	NRF_POWER->GPREGRET = 0x00;
+	NVIC_SystemReset();
+}
+
+static void lfclk_request(void)
+{
+    ret_code_t err_code = nrf_drv_clock_init();
+    APP_ERROR_CHECK(err_code);
+    nrf_drv_clock_lfclk_request(NULL);
+}
+
+static void timer_init(void)
+{
+	lfclk_request();
+	app_timer_init();
+	
+	uint32_t err_code = app_timer_create(&m_timeout_timer_id,
+                                APP_TIMER_MODE_SINGLE_SHOT,
+                                timeout_timer_handler);
+  APP_ERROR_CHECK(err_code);
+}
+
+static void timeout_timer_start(void)
+{
+	uint32_t err_code = app_timer_start(m_timeout_timer_id, APP_TIMER_TICKS(120000), NULL);
+  APP_ERROR_CHECK(err_code);
+}
 
 /**@brief Function for application main entry. */
 int main(void)
@@ -130,6 +164,9 @@ int main(void)
 
     //leds_init();
     buttons_init();
+	
+		timer_init();
+		timeout_timer_start();
 
     ret_val = nrf_bootloader_init();
     APP_ERROR_CHECK(ret_val);

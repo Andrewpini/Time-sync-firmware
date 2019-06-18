@@ -87,6 +87,7 @@
 #include "command_system.h"
 #include "timer_drift_measurement.h"
 #include "time_sync_timer.h"
+#include "ethernet_dfu.h"
 #include "config.h"
 #include "socket.h"
 
@@ -322,8 +323,7 @@ int main(void)
     connection_init();
 
     initialize();
-
-
+    ERROR_CHECK(dfu_clear_flag());
 
     while(1){
        if (is_connected())
