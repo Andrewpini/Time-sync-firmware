@@ -173,12 +173,25 @@ void check_ctrl_cmd(void)
                         set_server_IP_received(false);
                         break;
 
-                    case CMD_NEW_FIRMWARE:
+                    case CMD_NEW_FIRMWARE_ALL:
                         if(own_IP[0] != 1)
                         {
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
                           dfu_initiate_and_reset();
+                        }
+                        else
+                        {
+                          LOG("CMD: Own IP not valid - can not start DFU");
+                        }
+                        break;
+
+                    case CMD_NEW_FIRMWARE_BUTTON:
+                        if(own_IP[0] != 1)
+                        {
+                          dfu_write_own_ip(own_IP);
+                          dfu_write_server_ip(&broadcast_ip[0]);
+                          dfu_button_initiate_and_reset();
                         }
                         else
                         {

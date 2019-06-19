@@ -12,13 +12,29 @@ static uint32_t dfu_clear_flag()
 
 static void dfu_initiate_and_reset()
 { 
-    ERROR_CHECK(sd_power_gpregret_set(0, 0xAB));
+    ERROR_CHECK(sd_power_gpregret_set(0, 0xAA));
 
     uint32_t gpreget_info = 0x00;
 		
     sd_power_gpregret_get(0, &gpreget_info);
     
-    while(gpreget_info != 0xAB)
+    while(gpreget_info != 0xAA)
+    {
+      sd_power_gpregret_get(0, &gpreget_info);
+    }
+
+    ERROR_CHECK(sd_nvic_SystemReset());
+}
+
+static void dfu_button_initiate_and_reset()
+{ 
+    ERROR_CHECK(sd_power_gpregret_set(0, 0xBB));
+
+    uint32_t gpreget_info = 0x00;
+		
+    sd_power_gpregret_get(0, &gpreget_info);
+    
+    while(gpreget_info != 0xBB)
     {
       sd_power_gpregret_get(0, &gpreget_info);
     }
