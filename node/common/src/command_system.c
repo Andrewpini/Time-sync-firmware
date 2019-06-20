@@ -173,7 +173,7 @@ void check_ctrl_cmd(void)
                         set_server_IP_received(false);
                         break;
 
-                    case CMD_NEW_FIRMWARE:
+                    case CMD_NEW_FIRMWARE_ALL:
                         if(own_IP[0] != 1)
                         {
                           dfu_write_own_ip(own_IP);
@@ -182,8 +182,50 @@ void check_ctrl_cmd(void)
                         }
                         else
                         {
-                          LOG("CMD: Own IP not valid - can not start DFU");
+                          LOG("CMD: Own IP not valid - can not start DFU\r\n");
                         }
+                        break;
+
+                    case CMD_NEW_FIRMWARE_MAC:
+                        if(own_IP[0] != 1)
+                        {
+                          uint8_t own_mac[6];
+                          getSHAR(own_mac);
+
+                          if(recv_len == 24)
+                          {
+                            if(own_mac[0] == received_data[18] && own_mac[1] == received_data[19] && own_mac[2] == received_data[20] && 
+                            own_mac[3] == received_data[21] && own_mac[4] == received_data[22] && own_mac[5] == received_data[23])
+                            {
+                              dfu_write_own_ip(own_IP);
+                              dfu_write_server_ip(&broadcast_ip[0]);
+                              dfu_initiate_and_reset();
+                            }  
+                          }  
+                        }
+                        else
+                        {
+                          LOG("CMD: Own IP not valid - can not start DFU\r\n");
+                        }
+                        break;
+
+                    case CMD_NEW_FIRMWARE_BUTTON_ENABLE:
+                        if(own_IP[0] != 1)
+                        {
+                          LOG("CMD: Set button DFU flag\r\n")
+                          dfu_write_own_ip(own_IP);
+                          dfu_write_server_ip(&broadcast_ip[0]);
+                          dfu_set_button_flag();
+                        }
+                        else
+                        {
+                          LOG("CMD: Own IP not valid - can not start DFU\r\n");
+                        }             
+                        break;
+
+                    case CMD_NEW_FIRMWARE_BUTTON_DISABLE:
+                        LOG("CMD: Clear button DFU flag\r\n")
+                        dfu_clear_button_flag();
                         break;
 
                     case CMD_NEW_ACCESS_ADDRESS:

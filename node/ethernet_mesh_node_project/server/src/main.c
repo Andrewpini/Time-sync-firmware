@@ -75,6 +75,9 @@
 #include "ble_softdevice_support.h"
 #include "example_network_config.h"
 
+/* Ethernet DFU*/
+#include "ethernet_dfu.h"
+
 //NOTE: Trial and error for implementing the init routines from the ethernet node project
 #include "gpio.h"
 #include "command_system.h"
@@ -87,7 +90,6 @@
 #include "command_system.h"
 #include "timer_drift_measurement.h"
 #include "time_sync_timer.h"
-#include "ethernet_dfu.h"
 #include "config.h"
 #include "socket.h"
 
@@ -106,7 +108,7 @@ static dsm_handle_t rssi_util_subscribe_handle;
 static dsm_handle_t rssi_util_publish_handle;
 static dsm_handle_t rssi_server_publish_handle;
 
-static bool m_device_provisioned; 
+static bool m_device_provisioned;
 
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event) 
 {
@@ -300,6 +302,7 @@ int main(void)
     ERROR_CHECK(app_timer_init());
 
     leds_init();
+    button_init_dfu();
     sync_line_init();
     drift_timer_init();
     gpiote_init();
@@ -323,7 +326,7 @@ int main(void)
     connection_init();
 
     initialize();
-    ERROR_CHECK(dfu_clear_flag());
+    ERROR_CHECK(dfu_clear_bootloader_flag());
 
     while(1){
        if (is_connected())

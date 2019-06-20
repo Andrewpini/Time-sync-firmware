@@ -16,7 +16,6 @@ typedef enum
     WHOAMI_START                    = 1,
     WHOAMI_STOP                     = 2,
     CMD_SERVER_IP_BROADCAST         = 10,
-    CMD_NEW_FIRMWARE                = 11,
     CMD_NEW_SERVER_IP               = 12,
     CMD_NEW_ACCESS_ADDRESS          = 13,
     CMD_ADVERTISING_START           = 14,
@@ -34,7 +33,11 @@ typedef enum
     CMD_SINGLE_ADVERTISING_OFF      = 61,
     CMD_SYNC_NODE_SET               = 70,
     CMD_SYNC_SET_INTERVAL           = 71,
-    CMD_SYNC_RESET                  = 72
+    CMD_SYNC_RESET                  = 72,
+    CMD_NEW_FIRMWARE_ALL            = 80,
+    CMD_NEW_FIRMWARE_MAC            = 81,
+    CMD_NEW_FIRMWARE_BUTTON_ENABLE  = 82,
+    CMD_NEW_FIRMWARE_BUTTON_DISABLE = 83
 } ctrl_cmd_t;
 
 
