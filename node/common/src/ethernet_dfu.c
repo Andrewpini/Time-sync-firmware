@@ -3,6 +3,7 @@
 #include "ethernet_dfu.h"
 #include "mesh_app_utils.h"
 #include "mesh_flash.h"
+#include "boards.h"
 
 //  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "HEI\r\n");
 
@@ -10,12 +11,16 @@ void dfu_set_button_flag()
 {
   NVIC_SetPriority(GPIOTE_IRQn, 6);
   dfu_button_flag = true;
+  nrf_gpio_pin_clear(LED_1);
+  nrf_gpio_pin_clear(LED_2);
 }
 
 void dfu_clear_button_flag()
 {
   dfu_button_flag = false;
   NVIC_SetPriority(GPIOTE_IRQn, 1);
+  nrf_gpio_pin_set(LED_1);
+  nrf_gpio_pin_set(LED_2);
 }
 
 uint32_t dfu_clear_bootloader_flag()

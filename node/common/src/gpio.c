@@ -82,6 +82,7 @@ void leds_init(void)
     nrf_gpio_cfg_output(LED_2);
     nrf_gpio_cfg_output(LED_HP);
     
+    nrf_gpio_pin_clear(LED_1);
     nrf_gpio_pin_clear(LED_2);
     nrf_gpio_pin_clear(LED_HP);
 }
