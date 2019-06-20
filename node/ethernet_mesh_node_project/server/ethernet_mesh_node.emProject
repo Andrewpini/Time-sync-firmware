@@ -65,6 +65,7 @@
       <file file_name="../../common/src/util.c" />
       <file file_name="../../ethernet_node_project/drivers/advertise.c" />
       <file file_name="../../ethernet_node_project/drivers/radio.c" />
+      <file file_name="../../common/src/ethernet_dfu.c" />
     </folder>
     <folder Name="Core">
       <file file_name="../../../external/nordic_mesh/mesh/core/src/internal_event.c" />

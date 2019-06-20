@@ -29,6 +29,7 @@
 #define GPIOTE_CHANNEL_SYNC_IN              0
 #define GPIOTE_CHANNEL_SYNC_OUT             1
 #define GPIOTE_CHANNEL_SYNC_LED             2
+#define GPIOTE_CHANNEL_DFU_BUTTON           3
 
 // PPI channels
 #define PPI_CHANNEL_SYNC_IN                 0
