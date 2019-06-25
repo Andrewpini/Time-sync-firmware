@@ -122,6 +122,7 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
 {
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "*** RSSI server callback ** %d\n", p_data->msg_count);
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
         uint8_t own_MAC[6] = {0};
@@ -144,12 +145,6 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
         {
             set_network_busy(true);
         
-//            sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"src_addr\" : %d, \"mean_RSSI\" : %d, \"msg_count\" : %d}", 
-//                            own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
-//                            p_data->src_addr,
-//                            p_data->mean_rssi,
-//                            p_data->msg_count);
-
             buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
             buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
             buf[2] = (uint8_t)((p_data->src_addr & 0xFF00) >> 8);
@@ -158,9 +153,7 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
             buf[5] = p_data->msg_count;
 
             len = 6;
-        
-//            len = strlen((const char *)&buf[0]);
-            
+                 
             uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
             set_network_busy(false);
