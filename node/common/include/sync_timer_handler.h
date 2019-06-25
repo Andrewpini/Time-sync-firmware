@@ -5,7 +5,7 @@ uint32_t sync_timer_get_adjusted_timestamp(void);
 
 uint32_t sync_timer_get_raw_timestamp(void);
 
-void sync_timer_set_timer_offset(int32_t new_offset);
+int32_t sync_timer_set_timer_offset(int32_t incoming_timestamp);
 
 void sync_timer_increment_timer_offset(int32_t increment);
 

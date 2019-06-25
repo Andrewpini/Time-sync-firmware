@@ -29,6 +29,11 @@ static nrf_mesh_tx_token_t m_current_token;
 static time_snapshot_t m_time_outgoing_snapshot;
 static time_snapshot_t m_time_incoming_snapshot;
 
+static int32_t m_current_drift_offset;
+
+static uint8_t m_teller_ut = 16*8;
+static volatile uint8_t m_kontroll;
+
 
 /** Event handler callback sends the pending triggered message on the TX complete */
 static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
@@ -61,30 +66,6 @@ static void time_sync_publish_timeout_handler(access_model_handle_t handle, void
         m_active_transfer = true;
     }
 }
- 
-//static void reliable_status_cb(access_model_handle_t model_handle, void * p_args, access_reliable_status_t status)
-//{
-//    switch (status)
-//    {
-//        case ACCESS_RELIABLE_TRANSFER_SUCCESS:
-//            break;
-//
-//        case ACCESS_RELIABLE_TRANSFER_TIMEOUT:
-//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Reliable transfer of RSSI data has timed out\n");
-//            break;
-//
-//        case ACCESS_RELIABLE_TRANSFER_CANCELLED:
-//            break;
-//
-//        default:
-//            /* Should not be possible. */
-//            NRF_MESH_ASSERT(false);
-//            break;
-//    }
-// 
-//    /* Allow new data to be sent */
-//    m_active_transfer = false;
-//}
 
 /* Sends a database beacon to nearby nodes */
 static uint32_t send_own_timestamp(time_sync_controller_t * p_server)
@@ -101,47 +82,13 @@ static uint32_t send_own_timestamp(time_sync_controller_t * p_server)
 
     m_current_token = nrf_mesh_unique_token_get();
     message.access_token = m_current_token;
-
+    
     m_time_outgoing_snapshot.initial_timestamp = own_timestamp;
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
    
     return error_code;
 }
 
-//static uint32_t send_reliable_message(const time_sync_controller_t * p_server, uint16_t opcode, const uint8_t * p_data, uint16_t length)
-//{
-//    const access_reliable_t reliable = {
-//        .model_handle = p_server->model_handle,
-//        .message = {
-//            .p_buffer = p_data,
-//            .length = length,
-//            .opcode = ACCESS_OPCODE_VENDOR(opcode, ACCESS_COMPANY_ID_NORDIC),
-//            .force_segmented = false,
-//            .transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT,
-//            .access_token = nrf_mesh_unique_token_get(),
-//        },
-//        .reply_opcode = {
-//            .opcode = TIME_SYNC_OPCODE_ACK,
-//            .company_id = ACCESS_COMPANY_ID_NORDIC,
-//        },
-//        .timeout = SEC_TO_US(30),
-//        .status_cb = reliable_status_cb,
-//    };
-//
-//    NRF_TIMER3->TASKS_CAPTURE[1] = 1;
-//    m_time_outgoing_snapshot.initial_timestamp = NRF_TIMER3->CC[1];
-//    m_current_token = reliable.message.access_token;
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "TOKEN: %d\n", reliable.message.access_token);
-//    return access_model_reliable_publish(&reliable);
-//}
-
-
-
-///* Handler needed for the acknowledgement messages */
-//static void acknowledgement_handler(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
-//{
-//    
-//} 
 
 static void handle_incoming_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
@@ -150,11 +97,17 @@ static void handle_incoming_timestamp(access_model_handle_t handle, const access
         uint32_t incoming_timestamp;
         memcpy(&incoming_timestamp, p_message->p_data, p_message->length);
 
-        m_time_incoming_snapshot.initial_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
-        m_time_incoming_snapshot.end_timestamp = sync_timer_get_adjusted_timestamp();
-        m_time_incoming_snapshot.diff = m_time_incoming_snapshot.end_timestamp - m_time_incoming_snapshot.initial_timestamp;
+//        m_time_incoming_snapshot.initial_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
+//        m_time_incoming_snapshot.end_timestamp = sync_timer_get_adjusted_timestamp();
+//        m_time_incoming_snapshot.diff = m_time_incoming_snapshot.end_timestamp - m_time_incoming_snapshot.initial_timestamp;
 
-//        sync_timer_set_timer_offset(incoming_timestamp + m_time_incoming_snapshot.diff);
+        m_current_drift_offset = sync_timer_set_timer_offset(m_teller_ut /*+ m_time_incoming_snapshot.diff*/);
+        m_kontroll = sync_timer_get_adjusted_timestamp();
+
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "KONTROLL: %d\n", m_teller_ut - m_kontroll);
+        m_teller_ut +=16;
+
+
 //        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "INCOMING: (Initial timestamp: %d, end_timestamp: %d, Diff: %d)\n", m_time_incoming_snapshot.initial_timestamp, m_time_incoming_snapshot.end_timestamp, m_time_incoming_snapshot.diff);
     }
 }
