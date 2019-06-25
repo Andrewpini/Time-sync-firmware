@@ -62,9 +62,19 @@ uint8_t targetIP[4] = {1, 1, 1, 1};
  */
 __WEAK bool nrf_dfu_enter_check(void)
 {	
-    if (NRF_POWER->GPREGRET == 0xAB)
+    if (NRF_POWER->GPREGRET == 0xAA)
     {
 		NRF_POWER->GPREGRET = 0x00;
+        return true;
+    }
+		
+		if (NRF_POWER->GPREGRET == 0xBB)
+    {
+		NRF_POWER->GPREGRET = 0x00;
+			
+		while (nrf_gpio_pin_read(BOOTLOADER_BUTTON) != 0)
+    {
+    }
         return true;
     }
 
