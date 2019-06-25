@@ -11,6 +11,9 @@
 #include "timeslot_timer.h"
 #include "sync_timer_handler.h"
 
+#include "rand.h"
+
+
 static bool m_active_transfer; /**< Indicates if there is an active transfer going on between the controllers */
 
 /* Forward declaration */
@@ -31,8 +34,9 @@ static time_snapshot_t m_time_incoming_snapshot;
 
 static int32_t m_current_drift_offset;
 
-static uint8_t m_teller_ut = 16*8;
-static volatile uint8_t m_kontroll;
+static uint32_t m_teller_ut = 16*8;
+static volatile uint32_t m_kontroll;
+static volatile uint32_t ran_num;
 
 
 /** Event handler callback sends the pending triggered message on the TX complete */
@@ -59,7 +63,7 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
 static void time_sync_publish_timeout_handler(access_model_handle_t handle, void * p_args) 
 {
     uint32_t error_code = send_own_timestamp((time_sync_controller_t *)p_args);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "timestamp: %d)\n",sync_timer_get_adjusted_timestamp());
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "timestamp: %d)\n",sync_timer_get_adjusted_timestamp());
 
     if (error_code == NRF_SUCCESS)
     {
@@ -105,7 +109,10 @@ static void handle_incoming_timestamp(access_model_handle_t handle, const access
         m_kontroll = sync_timer_get_adjusted_timestamp();
 
         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "KONTROLL: %d\n", m_teller_ut - m_kontroll);
-        m_teller_ut +=16;
+      
+        prng_t rand;
+        ran_num = rand_prng_get(&rand);
+        m_teller_ut = (ran_num) %1000000;
 
 
 //        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "INCOMING: (Initial timestamp: %d, end_timestamp: %d, Diff: %d)\n", m_time_incoming_snapshot.initial_timestamp, m_time_incoming_snapshot.end_timestamp, m_time_incoming_snapshot.diff);
