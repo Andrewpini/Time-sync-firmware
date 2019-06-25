@@ -6,23 +6,14 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "time_sync_timer.h"
-#include "rand.h"
 
 static int32_t m_offset;
-static uint32_t m_teller_inn = 0;
-static volatile uint32_t ran_num;
 
 uint32_t sync_timer_get_adjusted_timestamp(void)
 {
-//    DRIFT_TIMER->TASKS_CAPTURE[3] = 1;
-//    uint32_t timer_val = DRIFT_TIMER->CC[3];
-    uint32_t ans = (1000000 + m_teller_inn + m_offset) % 1000000;
-    prng_t rand;
-    ran_num = rand_prng_get(&rand);
-
-    m_teller_inn = (ran_num) %1000000;
-    return ans;
-//    return timer_val;
+    DRIFT_TIMER->TASKS_CAPTURE[3] = 1;
+    uint32_t timer_val = DRIFT_TIMER->CC[3];
+    return (DRIFT_TIMER_MAX + timer_val + m_offset) % DRIFT_TIMER_MAX;
 }
 
 uint32_t sync_timer_get_raw_timestamp(void)
@@ -34,7 +25,8 @@ uint32_t sync_timer_get_raw_timestamp(void)
 
 int32_t sync_timer_set_timer_offset(int32_t incoming_timestamp)
 {
-    m_offset = (1000000 + incoming_timestamp - m_teller_inn) % 1000000;
+    uint32_t raw_timestamp = sync_timer_get_raw_timestamp();
+    m_offset = (DRIFT_TIMER_MAX + incoming_timestamp - raw_timestamp) % DRIFT_TIMER_MAX;
     return m_offset;
 }
 

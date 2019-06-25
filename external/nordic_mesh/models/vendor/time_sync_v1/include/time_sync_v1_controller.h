@@ -44,7 +44,7 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
  *         NRF_ERROR_INTERNAL Overflow on one of the entries message counters
  *         NRF_ERROR_INVALID_PARAM Invalid address parameter
  */
-uint32_t time_sync_controller_add_time_sync_data(uint16_t test_address, int8_t rssi);
+void send_timestamp(void);
 
 /** @} */
 

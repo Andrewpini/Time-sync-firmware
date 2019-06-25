@@ -93,6 +93,7 @@
 #include "time_sync_timer.h"
 #include "config.h"
 #include "socket.h"
+#include "time_sync_v1_controller.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -250,7 +251,7 @@ static void provisioning_complete_cb(void)
     ERROR_CHECK(access_model_publish_application_set(m_time_sync_controller.model_handle, m_appkey_handle));
     ERROR_CHECK(access_model_subscription_add(m_time_sync_controller.model_handle, rssi_util_subscribe_handle));
     ERROR_CHECK(access_model_publish_address_set(m_time_sync_controller.model_handle, rssi_util_publish_handle));
-    ERROR_CHECK(access_model_publish_period_set(m_time_sync_controller.model_handle, ACCESS_PUBLISH_RESOLUTION_100MS, 3));
+    ERROR_CHECK(access_model_publish_period_set(m_time_sync_controller.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 1));
 
     access_flash_config_store();
 }
@@ -317,6 +318,20 @@ static void initialize(void)
     hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
 }
 
+static void app_rtt_input_handler(int key)
+{
+    switch(key)
+    {
+        case '0':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "KNAPP\n");
+            send_timestamp();
+            break;
+
+
+        default:
+            break;
+    }
+}
 
 int main(void)
 {
@@ -348,6 +363,7 @@ int main(void)
 
     connection_init();
 
+    rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
     initialize();
     ERROR_CHECK(dfu_clear_bootloader_flag());
 
