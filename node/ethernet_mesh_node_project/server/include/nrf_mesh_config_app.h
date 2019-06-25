@@ -79,7 +79,7 @@
  * @note To fit the configuration and health models, this value must equal at least
  * the number of models needed by the application plus two.
  */
-#define ACCESS_MODEL_COUNT (6)
+#define ACCESS_MODEL_COUNT (7)
 
 /**
  * The number of elements in the application.
@@ -95,7 +95,7 @@
  * @note This value must equal @ref ACCESS_MODEL_COUNT minus the number of
  * models operating on shared states.
  */
-#define ACCESS_SUBSCRIPTION_LIST_COUNT (3)
+#define ACCESS_SUBSCRIPTION_LIST_COUNT (4)
 
 /**
  * The number of pages of flash storage reserved for the access layer for persistent data storage.
@@ -134,7 +134,7 @@
  * - Health publication
  * - Subscription address
  */
-#define DSM_NONVIRTUAL_ADDR_MAX                         (3)
+#define DSM_NONVIRTUAL_ADDR_MAX                         (4)
 /** Number of flash pages reserved for the DSM storage. */
 #define DSM_FLASH_PAGE_COUNT                            (1)
 /** @} end of DSM_CONFIG */
@@ -165,7 +165,7 @@
  *
  * @{
  */
-#define GAP_DEVICE_NAME                 "nRF5x Mesh Light"
+#define GAP_DEVICE_NAME                 "Time sync node"
 /** @} end of BLE_SOFTDEVICE_SUPPORT_CONFIG */
 
 /** @} end of NRF_MESH_CONFIG_CORE */

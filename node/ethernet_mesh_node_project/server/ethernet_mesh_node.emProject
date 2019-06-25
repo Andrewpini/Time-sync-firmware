@@ -217,6 +217,10 @@
       debug_additional_load_file="../../../external/nRF5_SDK_15.3.0_59ac345/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex"
       debug_additional_load_file1="../../../node_bootloader_SDK14.2/examples/dfu/bootloader_secure_ble/pca10056/arm5_no_packs/_build/nrf52840_xxaa_s140.hex" />
     <folder Name="Board_support" />
+    <folder Name="Sync timer handler">
+      <file file_name="../../common/src/sync_timer_handler.c" />
+      <file file_name="../../common/include/sync_timer_handler.h" />
+    </folder>
   </project>
   <configuration
     Name="Debug"

@@ -62,6 +62,7 @@
 #include "rssi_util.h"
 #include "rssi_common.h"
 #include "health_client.h"
+#include "time_sync_v1_controller.h"
 
 /* Logging and RTT */
 #include "log.h"
@@ -102,6 +103,11 @@ static rssi_server_t m_rssi_server;
 static health_client_t m_health_client;
 static rssi_util_t m_rssi_util;
 
+/* Time sync v1 */
+static time_sync_controller_t m_time_sync_controller;
+static dsm_handle_t m_time_sync_subscribe_handle;
+static dsm_handle_t m_time_sync_publish_handle;
+
 static dsm_handle_t health_subscribe_handle;
 static dsm_handle_t health_publish_handle;
 static dsm_handle_t rssi_util_subscribe_handle;
@@ -120,9 +126,13 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
     }
 }
 
+static void app_time_sync_event_cb(void) 
+{
+
+}
+
 static void app_health_rssi_server_cb(const rssi_data_entry_t* p_data)
 {
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- hei hei!  -----\n");
 
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
@@ -232,6 +242,16 @@ static void provisioning_complete_cb(void)
     ERROR_CHECK(access_model_publish_address_set(m_rssi_server.model_handle, rssi_server_publish_handle));
     ERROR_CHECK(access_model_publish_period_set(m_rssi_server.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 10));
 
+    /*Time sync model*/
+    ERROR_CHECK(dsm_address_subscription_add(TIME_SYNC_GROUP_ADDRESS, &m_time_sync_subscribe_handle));
+    ERROR_CHECK(dsm_address_publish_add(TIME_SYNC_GROUP_ADDRESS, &m_time_sync_publish_handle));
+
+    ERROR_CHECK(access_model_application_bind(m_time_sync_controller.model_handle, m_appkey_handle));
+    ERROR_CHECK(access_model_publish_application_set(m_time_sync_controller.model_handle, m_appkey_handle));
+    ERROR_CHECK(access_model_subscription_add(m_time_sync_controller.model_handle, rssi_util_subscribe_handle));
+    ERROR_CHECK(access_model_publish_address_set(m_time_sync_controller.model_handle, rssi_util_publish_handle));
+    ERROR_CHECK(access_model_publish_period_set(m_time_sync_controller.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 3));
+
     access_flash_config_store();
 }
 
@@ -246,6 +266,9 @@ static void models_init_cb(void)
 
     ERROR_CHECK(health_client_init(&m_health_client, 0, app_health_event_cb));
     ERROR_CHECK(access_model_subscription_list_alloc(m_health_client.model_handle));
+
+    ERROR_CHECK(time_sync_controller_init(&m_time_sync_controller, 0, app_time_sync_event_cb));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_time_sync_controller.model_handle));
 }
 
 
@@ -269,7 +292,7 @@ static void initialize(void)
         .core.lfclksrc           = DEV_BOARD_LF_CLK_CFG,
         .core.p_uuid             = NULL,
         .models.models_init_cb   = models_init_cb,
-        .models.config_server_cb = config_server_evt_cb
+        .models.config_server_cb = config_server_evt_cb 
     };
     ERROR_CHECK(mesh_stack_init(&init_params, &m_device_provisioned));
 

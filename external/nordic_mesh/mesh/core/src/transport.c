@@ -1620,7 +1620,7 @@ static void abort_timeout(timestamp_t timestamp, void * p_context)
     trs_sar_ctx_t * p_sar_ctx = p_context;
     sar_ctx_cancel(p_sar_ctx, NRF_MESH_SAR_CANCEL_REASON_TIMEOUT);
 }
-
+ 
 static void tx_complete(core_tx_role_t role, uint32_t bearer_index, uint32_t timestamp, nrf_mesh_tx_token_t token)
 {
     if (role == CORE_TX_ROLE_ORIGINATOR && token != NRF_MESH_SAR_TOKEN)
