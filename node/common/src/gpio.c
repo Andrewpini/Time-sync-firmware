@@ -42,8 +42,15 @@ void gpiote_init(void)
                                                 | (0 << GPIOTE_CONFIG_PORT_Pos)
                                                 | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
 
+    // GPIOTE configuration for Wiznet INTn
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_WIZNET_INTN]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
+                                                | (6UL << GPIOTE_CONFIG_PSEL_Pos)
+                                                | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
+
     NVIC_EnableIRQ(GPIOTE_IRQn);
-    NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos);
+    NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | 
+    (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos) | (GPIOTE_INTENSET_IN4_Enabled << GPIOTE_INTENSET_IN4_Pos);
     NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
 
@@ -63,6 +70,11 @@ void GPIOTE_IRQHandler(void)
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]){
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
         sync_line_event_handler(); 
+    }
+
+    if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_WIZNET_INTN]){
+        NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_WIZNET_INTN] = 0;
+//        LOG("MAGIC HANDLER\n");
     }
 
     #ifdef MESH_ENABLED
@@ -92,6 +104,11 @@ void leds_init(void)
     nrf_gpio_pin_clear(LED_1);
     nrf_gpio_pin_clear(LED_2);
     nrf_gpio_pin_clear(LED_HP);
+}
+
+void wiznet_intn_init(void)
+{
+    nrf_gpio_cfg_input(6UL, NRF_GPIO_PIN_NOPULL);
 }
 
 void button_init_dfu(void)

@@ -83,6 +83,7 @@ int main(void)
 {   
     clock_init();
     leds_init();
+    wiznet_intn_init();
     sync_line_init();
     gpiote_init();
     ppi_init();
