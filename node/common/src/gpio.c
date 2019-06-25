@@ -10,7 +10,10 @@
 #include "gpio.h"
 #include "boards.h"
 #include "timer_drift_measurement.h"
+
+#ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
+#endif
 
 #define DFU_BUTTON_PRESS_FREQUENCY (((uint64_t) (400) << 15ULL) / 1000ULL) // 400 ms
 
@@ -62,6 +65,8 @@ void GPIOTE_IRQHandler(void)
         sync_line_event_handler(); 
     }
 
+    #ifdef MESH_ENABLED
+    
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_DFU_BUTTON]){
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_DFU_BUTTON] = 0;
 
@@ -73,6 +78,8 @@ void GPIOTE_IRQHandler(void)
           }
         }
     }
+
+    #endif
 }
 
 
