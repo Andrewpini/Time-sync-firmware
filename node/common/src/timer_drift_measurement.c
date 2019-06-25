@@ -12,6 +12,7 @@
 #include "ethernet_network.h"
 #include "socket.h"
 #include "w5500.h"
+#include "sync_timer_handler.h"
 
 
 /* Variables for calculating drift */
@@ -20,6 +21,7 @@ static volatile int m_prev_drift;
 static volatile int m_current_drift;
 static volatile uint32_t m_time_tic;
 static volatile bool m_updated_drift_rdy;
+static uint32_t m_adjusted_sync_timer;
 
 
 static int calc_drift_time(uint32_t counter_val){
@@ -32,7 +34,7 @@ static int calc_drift_time(uint32_t counter_val){
 }
 
 
-/*Shuold triggers each time the sync-line is set high by the master node*/
+/*Should triggers each time the sync-line is set high by the master node*/
 void sync_line_event_handler(void)
 {
     /*Snapshots the value of timer 0 and calculates the current drift*/
@@ -41,6 +43,7 @@ void sync_line_event_handler(void)
     m_prev_drift = m_current_drift;
     m_updated_drift_rdy = true;
     m_prev_counter_val = DRIFT_TIMER_VALUE;
+    m_adjusted_sync_timer = sync_timer_get_adjusted_timestamp();
 }
 
 
@@ -70,7 +73,7 @@ void send_drift_timing_sample(void)
         
             sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
                             own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
-                            m_current_drift,
+                            m_adjusted_sync_timer,
                             m_time_tic);
         
             len = strlen((const char *)&buf[0]);

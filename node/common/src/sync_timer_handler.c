@@ -32,5 +32,5 @@ int32_t sync_timer_set_timer_offset(int32_t incoming_timestamp)
 
 void sync_timer_increment_timer_offset(int32_t increment)
 {
-    m_offset += increment;
+    m_offset = (DRIFT_TIMER_MAX + increment + m_offset) % DRIFT_TIMER_MAX;
 }
