@@ -120,19 +120,21 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
     }
 }
 
-static void app_health_rssi_server_cb(const rssi_data_entry_t* p_data)
+static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
 {
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- hei hei!  -----\n");
-
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "*** RSSI server callback ** %d\n", p_data->msg_count);
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
         uint8_t own_MAC[6] = {0};
         get_own_MAC(own_MAC);
 
+        dsm_local_unicast_address_t local_addr;
+        dsm_local_unicast_addresses_get(&local_addr);
+
 
         #ifdef BROADCAST_ENABLED
             uint8_t target_IP[4] = {255, 255, 255, 255}; 
-            uint32_t target_port = 11001;;
+            uint32_t target_port = 11035;;
         #else
             uint8_t target_IP[4] = {10, 0, 0, 4};    
             uint32_t target_port = 15000;
@@ -143,13 +145,15 @@ static void app_health_rssi_server_cb(const rssi_data_entry_t* p_data)
         {
             set_network_busy(true);
         
-            sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"src_addr\" : %d, \"mean_RSSI\" : %d, \"msg_count\" : %d}", 
-                            own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
-                            p_data->src_addr,
-                            p_data->mean_rssi,
-                            p_data->msg_count);
-        
-            len = strlen((const char *)&buf[0]);
+            buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
+            buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
+            buf[2] = (uint8_t)((p_data->src_addr & 0xFF00) >> 8);
+            buf[3] = (uint8_t)(p_data->src_addr & 0x00FF);
+            buf[4] = p_data->mean_rssi;
+            buf[5] = p_data->msg_count;
+
+            len = 6;
+                 
             uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
             set_network_busy(false);
@@ -239,7 +243,7 @@ static void provisioning_complete_cb(void)
 static void models_init_cb(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
-    ERROR_CHECK(rssi_server_init(&m_rssi_server, 0, app_health_rssi_server_cb));
+    ERROR_CHECK(rssi_server_init(&m_rssi_server, 0, app_rssi_server_cb));
 
     ERROR_CHECK(rssi_util_init(&m_rssi_util));
     ERROR_CHECK(access_model_subscription_list_alloc(m_rssi_util.model_handle));
