@@ -68,7 +68,7 @@
 
 /** Enable support for LEDs. */
 #ifndef SIMPLE_HAL_LEDS_ENABLED
-#define SIMPLE_HAL_LEDS_ENABLED 1
+#define SIMPLE_HAL_LEDS_ENABLED 0
 #endif
 
 /** @} end of SIMPLE_HAL_CONFIG */
