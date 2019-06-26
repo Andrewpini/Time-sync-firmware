@@ -31,6 +31,7 @@
 #ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
 #include "time_sync_v1_controller.h"
+#endif
 
 
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;

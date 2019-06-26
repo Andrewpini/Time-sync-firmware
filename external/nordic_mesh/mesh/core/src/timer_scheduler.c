@@ -211,7 +211,7 @@ void timer_sch_abort(timer_event_t* p_timer_evt)
 
 void timer_sch_reschedule(timer_event_t* p_timer_evt, timestamp_t new_timeout)
 {
-//    NRF_MESH_ASSERT_DEBUG(bearer_event_in_correct_irq_priority());
+    NRF_MESH_ASSERT_DEBUG(bearer_event_in_correct_irq_priority());
     NRF_MESH_ASSERT(p_timer_evt != NULL);
     remove_evt(p_timer_evt);
     p_timer_evt->p_next = NULL;
