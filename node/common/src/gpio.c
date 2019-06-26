@@ -8,12 +8,18 @@
 #include "config.h"
 #include "nrf_gpio.h"
 #include "gpio.h"
+#include "app_timer.h"
 #include "boards.h"
 #include "timer_drift_measurement.h"
 
 #ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
 #endif
+
+APP_TIMER_DEF(m_blink_timer);
+static uint32_t m_blink_count;
+static uint32_t m_blink_mask;
+static uint32_t m_prev_state;
 
 #define DFU_BUTTON_PRESS_FREQUENCY (((uint64_t) (400) << 15ULL) / 1000ULL) // 400 ms
 
@@ -82,6 +88,42 @@ void GPIOTE_IRQHandler(void)
     #endif
 }
 
+static void led_timeout_handler(void * p_context)
+{
+    APP_ERROR_CHECK_BOOL(m_blink_count > 0);
+    nrf_gpio_pin_toggle(LED_2);
+
+    m_blink_count--;
+    if (m_blink_count == 0)
+    {
+        (void) app_timer_stop(m_blink_timer);
+        NRF_GPIO->OUT = m_prev_state;
+    }
+}
+
+void led_blink_ms(uint32_t delay_ms, uint32_t blink_count)
+{
+    if (blink_count == 0 || delay_ms < 20) // Minimum blink period = 20 ms
+    {
+        return;
+    }
+
+    m_blink_count = blink_count * 2 - 1;
+    m_prev_state = NRF_GPIO->OUT;
+
+    if (app_timer_start(m_blink_timer, APP_TIMER_TICKS(delay_ms), NULL) == NRF_SUCCESS)
+    {
+        /* Start by "clearing" the LED, i.e., turn the LED on -- in case a user calls the
+         * function twice. */
+        nrf_gpio_pin_clear(LED_2);
+    }
+}
+
+void led_blink_stop(void)
+{
+    (void) app_timer_stop(m_blink_timer);
+    nrf_gpio_pin_clear(LED_2);
+}
 
 void leds_init(void)
 {
@@ -92,6 +134,8 @@ void leds_init(void)
     nrf_gpio_pin_clear(LED_1);
     nrf_gpio_pin_clear(LED_2);
     nrf_gpio_pin_clear(LED_HP);
+
+    APP_ERROR_CHECK(app_timer_create(&m_blink_timer, APP_TIMER_MODE_REPEATED, led_timeout_handler));
 }
 
 void button_init_dfu(void)

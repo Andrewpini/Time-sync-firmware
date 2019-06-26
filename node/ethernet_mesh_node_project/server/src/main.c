@@ -38,9 +38,7 @@
 #include <stdint.h>
 #include <string.h>
 
-/* HAL */
-#include "boards.h"
-#include "simple_hal.h"
+/* GPIO */
 #include "app_timer.h"
 
 /* Core */
@@ -165,20 +163,19 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
 static void config_server_evt_cb(const config_server_evt_t * p_evt)
 {
     if (p_evt->type == CONFIG_SERVER_EVT_NODE_RESET){
-        hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_RESET);
+        led_blink_ms(LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_RESET);
         mesh_stack_device_reset();
     }
 }
 
 static void device_identification_start_cb(uint8_t attention_duration_s)
 {
-    hal_led_mask_set(LEDS_MASK, false);
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_ATTENTION_INTERVAL_MS, LED_BLINK_ATTENTION_COUNT(attention_duration_s));
+    led_blink_ms(LED_BLINK_ATTENTION_INTERVAL_MS, LED_BLINK_ATTENTION_COUNT(attention_duration_s));
 }
 
 static void provisioning_aborted_cb(void)
 {
-    hal_led_blink_stop();
+     led_blink_stop();
 }
 
 static void provisioning_complete_cb(void)
@@ -196,9 +193,8 @@ static void provisioning_complete_cb(void)
     dsm_local_unicast_addresses_get(&node_address);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Node Address: 0x%04x \n", node_address.address_start);
 
-    hal_led_blink_stop();
-    hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF);
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
+    led_blink_stop();
+    led_blink_ms(LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
 
     m_netkey_handle = dsm_net_key_index_to_subnet_handle(0);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "NETKEYHANDLE: %d\n", m_netkey_handle);
@@ -259,7 +255,6 @@ static void initialize(void)
     nrf_gpio_cfg_output(13);
     nrf_gpio_pin_clear(13);
 
-    hal_leds_init();
     ble_stack_init();
 
     #if MESH_FEATURE_GATT_ENABLED
@@ -294,8 +289,7 @@ static void initialize(void)
     ERROR_CHECK(mesh_stack_start());
 
     mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());
-    hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF); 
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
+    led_blink_ms(LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
 }
 
 

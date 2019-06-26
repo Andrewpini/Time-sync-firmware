@@ -33,7 +33,6 @@
       <file file_name="../../../external/nordic_mesh/examples/common/src/app_onoff.c" />
       <file file_name="../../../external/nordic_mesh/examples/common/src/mesh_provisionee.c" />
       <file file_name="../../../external/nordic_mesh/examples/common/src/rtt_input.c" />
-      <file file_name="../../../external/nordic_mesh/examples/common/src/simple_hal.c" />
       <file file_name="../../../external/nordic_mesh/examples/common/src/mesh_app_utils.c" />
       <file file_name="../../../external/nordic_mesh/examples/common/src/mesh_adv.c" />
       <file file_name="../../../external/nordic_mesh/examples/common/src/ble_softdevice_support.c" />
