@@ -28,6 +28,8 @@
 #include "ppi.h"
 #include "gpio.h"
 #include "ethernet_dfu.h"
+#include "time_sync_v1_controller.h"
+
 
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
@@ -277,6 +279,7 @@ void check_ctrl_cmd(void)
                         {
                             pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
                             LOG("IP match -> turning HP LED ON\r\n");
+                            send_timestamp();
                         }
                         else 
                         {

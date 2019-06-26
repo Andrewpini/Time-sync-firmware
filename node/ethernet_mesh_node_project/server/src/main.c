@@ -143,7 +143,7 @@ static void app_health_rssi_server_cb(const rssi_data_entry_t* p_data)
 
         #ifdef BROADCAST_ENABLED
             uint8_t target_IP[4] = {255, 255, 255, 255}; 
-            uint32_t target_port = 11001;;
+            uint32_t target_port = 11035;;
         #else
             uint8_t target_IP[4] = {10, 0, 0, 4};    
             uint32_t target_port = 15000;
