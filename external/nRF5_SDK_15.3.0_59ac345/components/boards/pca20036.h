@@ -70,7 +70,7 @@ extern "C" {
 
  #define BUTTONS_NUMBER 1
 
-// #define BUTTON_1       11
+ #define BUTTON_1       16
 
  #define BUTTON_PULL    NRF_GPIO_PIN_PULLUP
 

@@ -27,6 +27,8 @@
 #include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
+
+#ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
 #include "time_sync_v1_controller.h"
 
@@ -175,6 +177,8 @@ void check_ctrl_cmd(void)
                         set_server_IP_received(false);
                         break;
 
+                    #ifdef MESH_ENABLED
+
                     case CMD_NEW_FIRMWARE_ALL:
                         if(own_IP[0] != 1)
                         {
@@ -214,7 +218,7 @@ void check_ctrl_cmd(void)
                     case CMD_NEW_FIRMWARE_BUTTON_ENABLE:
                         if(own_IP[0] != 1)
                         {
-                          LOG("CMD: Set button DFU flag\r\n")
+                          LOG("CMD: Set button DFU flag\r\n");
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
                           dfu_set_button_flag();
@@ -226,9 +230,11 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_NEW_FIRMWARE_BUTTON_DISABLE:
-                        LOG("CMD: Clear button DFU flag\r\n")
+                        LOG("CMD: Clear button DFU flag\r\n");
                         dfu_clear_button_flag();
                         break;
+
+                    #endif
 
                     case CMD_NEW_ACCESS_ADDRESS:
                         LOG("CMD: New access address set\r\n");
