@@ -1,0 +1,11 @@
+# *.hex
+# !nrf52840_xxaa_s140.hex
+*.iex
+*.crf
+*.lst
+*.axf
+*.htm
+*.lnp
+*.sct
+*.dep
+*.Bak

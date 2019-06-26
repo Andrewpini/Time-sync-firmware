@@ -5,7 +5,6 @@ external/sdk13/external/micro-ecc/micro-ecc
 *micro_ecc_lib_nrf52.lib
 
 ## KEIL AND JLINK ##
-_build
 RTE
 JLinkSettings.ini
 JLinkLog.txt
