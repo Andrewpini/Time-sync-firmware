@@ -6,6 +6,7 @@ external/sdk13/external/micro-ecc/micro-ecc
 
 ## KEIL AND JLINK ##
 _build
+!node_bootloader_SDK14.2/examples/dfu/bootloader_secure_ble/pca10056/arm5_no_packs/_build/nrf52840_xxaa_s140.hex
 RTE
 JLinkSettings.ini
 JLinkLog.txt
