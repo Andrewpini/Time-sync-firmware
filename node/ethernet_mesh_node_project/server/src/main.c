@@ -323,6 +323,8 @@ int main(void)
 
     connection_init();
 
+    wiznet_intn_init();
+
     initialize();
     ERROR_CHECK(dfu_clear_bootloader_flag());
 

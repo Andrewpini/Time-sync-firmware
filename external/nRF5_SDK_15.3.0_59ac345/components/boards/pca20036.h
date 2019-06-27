@@ -52,6 +52,7 @@ extern "C" {
 #define SYNC_OUT                            14UL  
 #define SYNC_IN                             15UL
 #define BUTTON_0                            16UL
+#define WIZ_INTN                            6UL
 
 
 #define LED_1          NRF_GPIO_PIN_MAP(0,11)

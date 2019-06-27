@@ -1,4 +1,3 @@
-
 #ifndef APP_GPIO_H
 #define APP_GPIO_H
 
@@ -13,6 +12,8 @@ void led_blink_stop(void);
 void leds_init(void);
 
 void button_init_dfu(void);
+
+void wiznet_intn_init(void);
 
 void sync_line_init(void);
 

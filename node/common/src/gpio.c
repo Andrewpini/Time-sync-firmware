@@ -10,6 +10,7 @@
 #include "gpio.h"
 #include "app_timer.h"
 #include "boards.h"
+#include "w5500.h"
 #include "timer_drift_measurement.h"
 
 #ifdef MESH_ENABLED
@@ -48,8 +49,15 @@ void gpiote_init(void)
                                                 | (0 << GPIOTE_CONFIG_PORT_Pos)
                                                 | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
 
+    // GPIOTE configuration for INTn
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_WIZNET_INTN]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
+                                                | (WIZ_INTN << GPIOTE_CONFIG_PSEL_Pos)
+                                                | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos);
+
     NVIC_EnableIRQ(GPIOTE_IRQn);
-    NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos);
+    NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos)
+    | (GPIOTE_INTENSET_IN4_Enabled << GPIOTE_INTENSET_IN4_Pos);
     NVIC_SetPriority(GPIOTE_IRQn, 1);
 }
 
@@ -86,6 +94,12 @@ void GPIOTE_IRQHandler(void)
     }
 
     #endif
+
+    if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_WIZNET_INTN]){
+        NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_WIZNET_INTN] = 0;
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAGIC PACKET\n");
+        wizchip_clrinterrupt(IK_WOL);
+    }
 }
 
 static void led_timeout_handler(void * p_context)
@@ -141,6 +155,27 @@ void leds_init(void)
 void button_init_dfu(void)
 {
     nrf_gpio_cfg_input(BUTTON_0, BUTTON_PULL);
+}
+
+void wiznet_intn_init(void)
+{
+    //  Enable WOL mode
+    setMR( getMR( ) | MR_WOL );
+
+
+    // Enable WOL interrupt
+    //
+    // Each bit of SIMR corresponds to each bit of SIR. When a bit of SIMR is ‘1’ and the
+    // corresponding bit of SIR is ‘1’, Interrupt will be issued. In other words, if a bit of
+    // SIMR is ‘0’, an interrupt will be not issued even if the corresponding bit of SIR is ‘1’.
+    //
+    // IM_IR4 = Magic Packet Interrupt Mask
+    setIMR( getIMR( ) | IM_IR4 );
+
+    // Enable interrupt for socket 0
+    setSIMR( 1 << 0);
+
+    nrf_gpio_cfg_input(WIZ_INTN, NRF_GPIO_PIN_NOPULL);
 }
 
 // Initializes time synchronization
