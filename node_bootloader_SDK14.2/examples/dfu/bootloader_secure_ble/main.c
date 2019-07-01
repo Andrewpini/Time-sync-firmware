@@ -94,11 +94,11 @@ void app_error_handler_bare(uint32_t error_code)
 
 
 /**@brief Function for initialization of LEDs. */
-static void leds_init(void)
-{
-    bsp_board_leds_init();
-    bsp_board_led_on(BSP_BOARD_LED_2);
-}
+//static void leds_init(void)
+//{
+//    bsp_board_leds_init();
+//    bsp_board_led_on(BSP_BOARD_LED_2);
+//}
 
 
 /**@brief Function for initializing the button module. */
@@ -161,6 +161,7 @@ int main(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
     NRF_LOG_INFO("Inside main");
+		NRF_LOG_PROCESS();
 
     //leds_init();
     buttons_init();
@@ -174,6 +175,14 @@ int main(void)
     // Either there was no DFU functionality enabled in this project or the DFU module detected
     // no ongoing DFU operation and found a valid main application.
     // Boot the main application.
+	
+//		NRF_LOG_FLUSH();
+//		NRF_LOG_PROCESS();
+//		NRF_LOG_PROCESS();
+//		NRF_LOG_PROCESS();
+//		NRF_LOG_PROCESS();
+//		NRF_LOG_PROCESS();
+		NRF_LOG_FINAL_FLUSH();
     nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
 
     // Should never be reached.

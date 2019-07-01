@@ -7,8 +7,6 @@
 
 /* Includes -----------------------------------------------------*/
 
-#define NRF_LOG_MODULE_NAME "TFTP"
-#include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
 #include <string.h>
@@ -29,6 +27,12 @@
 #include "nrf_delay.h"
 
 /* define -------------------------------------------------------*/
+
+#define NRF_LOG_MODULE_NAME tftp
+
+#include "nrf_log.h"
+
+NRF_LOG_MODULE_REGISTER();
 
 /* typedef ------------------------------------------------------*/
 
