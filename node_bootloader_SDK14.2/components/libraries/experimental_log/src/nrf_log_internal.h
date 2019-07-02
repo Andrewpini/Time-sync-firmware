@@ -312,7 +312,7 @@ typedef struct
     uint8_t      compiled_lvl;
 } nrf_log_module_const_data_t;
 
-//extern nrf_log_module_dynamic_data_t NRF_LOG_MODULE_DATA_DYNAMIC; //wiznet
+extern nrf_log_module_dynamic_data_t NRF_LOG_MODULE_DATA_DYNAMIC; //wiznet
 
 /**
  * Set of macros for encoding and decoding header for log entries.

@@ -7,7 +7,7 @@
 
 /* Includes -----------------------------------------------------*/
 
-#define NRF_LOG_MODULE_NAME "TFTP"
+#define NRF_LOG_MODULE_NAME TFTP
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
@@ -27,6 +27,8 @@
 #include "nrf_bootloader_info.h"
 
 #include "nrf_delay.h"
+
+NRF_LOG_MODULE_REGISTER();
 
 /* define -------------------------------------------------------*/
 

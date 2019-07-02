@@ -19,6 +19,7 @@
 #include "app_scheduler.h"
 //#include "app_timer_appsh.h"
 #include "nrf_log.h"
+#include "nrf_log_ctrl.h"
 #include "boards.h"
 #include "nrf_bootloader_info.h"
 #include "nrf_dfu_req_handler.h"
@@ -157,6 +158,8 @@ uint32_t nrf_dfu_init()
     if (nrf_dfu_app_is_valid())
     {
         NRF_LOG_INFO("Jumping to: 0x%08x\r\n", MAIN_APPLICATION_START_ADDR);
+			
+				NRF_LOG_FLUSH();
 				nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
     }
 
