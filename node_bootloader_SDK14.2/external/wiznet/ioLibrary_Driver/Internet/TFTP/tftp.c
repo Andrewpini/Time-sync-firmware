@@ -16,6 +16,7 @@
 #include "socket.h"
 #include "netutil.h"
 #include "tftp_config.h"
+#include "ethernet_dfu.h"
 
 #include "nrf_dfu.h"
 #include "nrf_dfu_types.h"
@@ -444,7 +445,7 @@ static void recv_tftp_data(uint8_t *msg, uint32_t msg_len)
 				set_tftp_state(STATE_DATA);
 				set_block_number(data->block_num);
 #ifdef F_STORAGE
-        if (nrf_dfu_flash_erase((uint32_t)MAIN_APPLICATION_START_ADDR, CEIL_DIV(BOOTLOADER_START_ADDR-MAIN_APPLICATION_START_ADDR, CODE_PAGE_SIZE), NULL) != NRF_SUCCESS)
+        if (nrf_dfu_flash_erase((uint32_t)MAIN_APPLICATION_START_ADDR, CEIL_DIV((BOOTLOADER_START_ADDR-MESH_INFO_FLASH_SIZE)-MAIN_APPLICATION_START_ADDR, CODE_PAGE_SIZE), NULL) != NRF_SUCCESS)
         {
           NRF_LOG_INFO("Erase operation failed");
           break;
