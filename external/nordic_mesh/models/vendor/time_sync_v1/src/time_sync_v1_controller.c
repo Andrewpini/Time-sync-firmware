@@ -71,7 +71,7 @@ void send_timestamp(void)
 
 static void time_sync_publish_timeout_handler(access_model_handle_t handle, void * p_args) 
 {
-//    uint32_t error_code = send_own_timestamp((time_sync_controller_t *)p_args);
+    uint32_t error_code = send_own_timestamp((time_sync_controller_t *)p_args);
 
 //    if (error_code == NRF_SUCCESS)
 //    {
