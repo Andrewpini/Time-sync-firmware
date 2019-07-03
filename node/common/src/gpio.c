@@ -27,7 +27,7 @@ void gpiote_init(void)
     NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_IN]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
                                                 | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
                                                 | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                                | (GPIOTE_CONFIG_POLARITY_LoToHi << GPIOTE_CONFIG_POLARITY_Pos);
+                                                | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos);
 
     // GPIOTE configuration for LED pin
     NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_LED] = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
