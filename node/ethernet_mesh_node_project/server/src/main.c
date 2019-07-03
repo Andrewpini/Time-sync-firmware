@@ -256,7 +256,7 @@ static void provisioning_complete_cb(void)
     ERROR_CHECK(access_model_publish_application_set(m_time_sync_controller.model_handle, m_appkey_handle));
     ERROR_CHECK(access_model_subscription_add(m_time_sync_controller.model_handle, rssi_util_subscribe_handle));
     ERROR_CHECK(access_model_publish_address_set(m_time_sync_controller.model_handle, rssi_util_publish_handle));
-    ERROR_CHECK(access_model_publish_period_set(m_time_sync_controller.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 5));
+    ERROR_CHECK(access_model_publish_period_set(m_time_sync_controller.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 1));
 
     access_flash_config_store();
 }
