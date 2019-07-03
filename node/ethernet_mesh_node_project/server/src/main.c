@@ -328,10 +328,19 @@ static void app_rtt_input_handler(int key)
     switch(key)
     {
         case '0':
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "KNAPP\n");
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SENDING TIMESTAMP\n");
             send_timestamp();
             break;
 
+        case '1':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER ON\n");
+            sync_set_pub_timer(true);
+            break;
+
+        case '2':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER OFF\n");
+            sync_set_pub_timer(false);
+            break;
 
         default:
             break;

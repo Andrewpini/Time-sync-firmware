@@ -69,9 +69,12 @@ void send_timestamp(void)
     send_own_timestamp(mp_controller);
 }
 
-static void time_sync_publish_timeout_handler(access_model_handle_t handle, void * p_args) 
+
+//TODO Remove or make better
+void sync_set_pub_timer(bool on_off)
 {
-    uint32_t error_code = send_own_timestamp((time_sync_controller_t *)p_args);
+    m_publish_timer_active = on_off;
+}
 
 //    if (error_code == NRF_SUCCESS)
 //    {
