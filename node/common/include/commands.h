@@ -37,7 +37,8 @@ typedef enum
     CMD_NEW_FIRMWARE_ALL            = 80,
     CMD_NEW_FIRMWARE_MAC            = 81,
     CMD_NEW_FIRMWARE_BUTTON_ENABLE  = 82,
-    CMD_NEW_FIRMWARE_BUTTON_DISABLE = 83
+    CMD_NEW_FIRMWARE_BUTTON_DISABLE = 83,
+    RESET_SYNC                      = 3
 } ctrl_cmd_t;
 
 

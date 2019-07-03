@@ -27,6 +27,8 @@
 #include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
+#include "sync_timer_handler.h"
+
 
 #ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
@@ -156,6 +158,10 @@ void check_ctrl_cmd(void)
                 // Choose the right action according to command
                 switch (cmd)
                 {
+                    case RESET_SYNC:
+                        LOG("CMD: RESETING TIME SYNC\r\n");
+                        sync_timer_reset();
+                        break;
                     case WHOAMI_START:
                         LOG("CMD: WHO AM I start\r\n");
                         m_who_am_i_enabled = true;
