@@ -6,31 +6,36 @@
 #include "nordic_common.h"
 #include "app_error.h"
 #include "time_sync_timer.h"
+#include "timer.h"
 
 static int32_t m_offset;
 
 uint32_t sync_timer_get_adjusted_timestamp(void)
 {
-    DRIFT_TIMER->TASKS_CAPTURE[3] = 1;
-    uint32_t timer_val = DRIFT_TIMER->CC[3];
-    return timer_val + m_offset;
+    return timer_now() - m_offset;
 }
 
 uint32_t sync_timer_get_raw_timestamp(void)
 {
-    DRIFT_TIMER->TASKS_CAPTURE[3] = 1;
-    return DRIFT_TIMER->CC[3];
-
+    return timer_now();
 }
 
-int32_t sync_timer_set_timer_offset(int32_t incoming_timestamp)
+int32_t sync_timer_set_timer_offset(int32_t offset)
 {
-    uint32_t raw_timestamp = sync_timer_get_raw_timestamp();
-    m_offset = incoming_timestamp - raw_timestamp;
-    return m_offset;
+    m_offset = offset;
 }
 
 void sync_timer_increment_timer_offset(int32_t increment)
 {
     m_offset = increment + m_offset;
+}
+
+int32_t sync_timer_get_current_offset(void)
+{
+    return m_offset;
+}
+
+void sync_timer_reset(void)
+{
+    m_offset = 0;
 }

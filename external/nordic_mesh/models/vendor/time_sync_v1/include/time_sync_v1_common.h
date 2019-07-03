@@ -7,8 +7,8 @@
 /* Time sync model common opcode */
 typedef enum
 {
-    TIME_SYNC_OPCODE_SEND_OWN_TIMESTAMP = 0xF7,
-    TIME_SYNC_OPCODE_SEND_TX_DELAY_COMPENSATION = 0xF6
+    TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG = 0xF7,
+    TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP = 0xF6
 
 } time_sync_common_opcode_t;
 

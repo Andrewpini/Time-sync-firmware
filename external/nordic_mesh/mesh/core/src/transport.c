@@ -1629,6 +1629,7 @@ static void tx_complete(core_tx_role_t role, uint32_t bearer_index, uint32_t tim
         nrf_mesh_evt_t evt;
         evt.type = NRF_MESH_EVT_TX_COMPLETE;
         evt.params.tx_complete.token = token;
+        evt.params.tx_complete.timestamp = timestamp;
         event_handle(&evt);
     }
     bearer_event_flag_set(m_sar_process_flag);
