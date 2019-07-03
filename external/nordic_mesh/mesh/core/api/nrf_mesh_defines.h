@@ -71,7 +71,7 @@
 #define NRF_MESH_UNSEG_PAYLOAD_SIZE_MAX (11)
 
 /** All advertisement channels */
-#define NRF_MESH_ADV_CHAN_ALL {37, 38, 39}
+#define NRF_MESH_ADV_CHAN_ALL {37}
 
 /** Default advertisement channel map (37, 38 and 39). */
 #define NRF_MESH_ADV_CHAN_DEFAULT NRF_MESH_ADV_CHAN_ALL

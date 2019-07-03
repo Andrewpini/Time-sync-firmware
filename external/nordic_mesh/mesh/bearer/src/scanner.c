@@ -173,7 +173,7 @@ static void radio_configure(void)
 
     /* Set up timestamp capture */
     NRF_PPI->CH[SCANNER_PPI_CH].EEP = (uint32_t) &NRF_RADIO->EVENTS_ADDRESS;
-    NRF_PPI->CH[SCANNER_PPI_CH].TEP = (uint32_t) &NRF_TIMER3->TASKS_CAPTURE[SCANNER_TIMER_INDEX_TIMESTAMP];
+    NRF_PPI->CH[SCANNER_PPI_CH].TEP = (uint32_t) &NRF_TIMER0->TASKS_CAPTURE[SCANNER_TIMER_INDEX_TIMESTAMP];
     NRF_PPI->CHENSET = (1UL << SCANNER_PPI_CH);
 }
 
@@ -262,8 +262,8 @@ static void radio_handle_end_event(void)
         p_packet->metadata.access_addr = m_scanner.config.access_addresses[NRF_RADIO->RXMATCH];
         /* The 6 lowest bit of the datawhite IV is the same as the channel number in BLE: */
         p_packet->metadata.channel = NRF_RADIO->DATAWHITEIV & 0x3F;
-        ts_timestamp_t rx_timestamp_ts = NRF_TIMER3->CC[SCANNER_TIMER_INDEX_TIMESTAMP];
-        p_packet->metadata.timestamp = rx_timestamp_ts;
+        ts_timestamp_t rx_timestamp_ts = NRF_TIMER0->CC[SCANNER_TIMER_INDEX_TIMESTAMP];
+        p_packet->metadata.timestamp = ts_timer_to_device_time(rx_timestamp_ts);
 
         memcpy(p_packet->metadata.adv_addr.addr, p_packet->packet.addr, BLE_GAP_ADDR_LEN);
         p_packet->metadata.adv_addr.addr_type = p_packet->packet.header.addr_type;
@@ -652,3 +652,4 @@ void scanner_config_reset(void)
     scanner_config_radio_mode_set(RADIO_MODE_BLE_1MBIT);
     scanner_config_scan_time_set(MS_TO_US(BEARER_SCAN_INT_DEFAULT_MS), MS_TO_US(BEARER_SCAN_WINDOW_DEFAULT_MS));
 }
+

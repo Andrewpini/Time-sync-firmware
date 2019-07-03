@@ -44,6 +44,8 @@
 #include "radio_config.h"
 #include "packet.h"
 #include "bearer_event.h"
+#include "nrf_mesh_defines.h"
+
 
 /**
  * @defgroup SCANNER Scanner
@@ -59,7 +61,7 @@
 
 #define SCANNER_CHANNELS_MAX           (3)
 #define SCANNER_ACCESS_ADDR_INVALID    (0x00000000)
-#define SCANNER_CHANNELS_DEFAULT       {37, 38, 39}
+#define SCANNER_CHANNELS_DEFAULT       NRF_MESH_ADV_CHAN_ALL
 
 /** Content of a packet received by the scanner. */
 typedef struct
