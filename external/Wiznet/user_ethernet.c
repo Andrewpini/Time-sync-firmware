@@ -98,13 +98,28 @@ void user_ethernet_init()
 
     /* PHY link status check */
     LOG("W5500 PHY Link Status Check\r\n");
+
+    uint8_t phy_conf_test;
+
+    setPHYCFGR(0b11011000);
+    setPHYCFGR(0b01011000);
+    nrf_delay_ms(200);
+    setPHYCFGR(0b11011000);
+    
     do
     {
-       if(ctlwizchip(CW_GET_PHYLINK, (void*)&tmp) == -1)
-    	   LOG("Unknown PHY Link stauts.\r\n");
-       LOG("Status: %d\r\n", tmp);
-       nrf_delay_ms(50);
-    } while(tmp == PHY_LINK_OFF);
+      phy_conf_test = getPHYCFGR();
+      LOG("PHY conf: %d\r\n", phy_conf_test);
+      nrf_delay_ms(50);
+    } while((phy_conf_test & (1<<0)) == 0);
+
+//    do
+//    {
+//       if(ctlwizchip(CW_GET_PHYLINK, (void*)&tmp) == -1)
+//    	   LOG("Unknown PHY Link stauts.\r\n");
+//       LOG("Status: %d\r\n", tmp);
+//       nrf_delay_ms(50);
+//    } while(tmp == PHY_LINK_OFF);
 
     timeout_info.retry_cnt = 1;
     timeout_info.time_100us = 1000;	// timeout value = 10ms
