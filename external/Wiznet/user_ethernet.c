@@ -55,6 +55,15 @@ void wizchip_write(uint8_t wb)
 	spi_master_tx(SPI0, 1, &wb);
 }
 
+//void wizchip_readburst(uint8_t* pBuf, uint16_t len)
+//{
+//	Chip_SSP_ReadFrames_Blocking(SPI0, pBuf, len);
+//}
+//
+//void  wizchip_writeburst(uint8_t* pBuf, uint16_t len)
+//{
+//	Chip_SSP_WriteFrames_Blocking(SPI0, pBuf, len);
+//}
 
 static void network_init(void)
 {
@@ -85,6 +94,7 @@ void user_ethernet_init()
 
     reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
     reg_wizchip_spi_cbfunc(wizchip_read, wizchip_write);
+//    reg_wizchip_spiburst_cbfunc(wizchip_readburst, wizchip_writeburst);
 
     /* WIZCHIP SOCKET Buffer initialize */
 	
@@ -127,6 +137,8 @@ void user_ethernet_init()
     wizchip_settimeout(&timeout_info);
     
     LOG("W5500 PHY link status is ON\r\n");
+
+    setRCR(3);
     
     /* Network initialization */
     network_init();
