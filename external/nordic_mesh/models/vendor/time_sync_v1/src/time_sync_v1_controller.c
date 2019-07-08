@@ -12,64 +12,29 @@
 #include "sync_timer_handler.h"
 
 
-static bool m_active_transfer; /**< Indicates if there is an active transfer going on between the controllers */
-
-/* Forward declaration */
-static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server);
-uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token);
-
-typedef struct
-{
-    uint32_t initial_timestamp;
-    uint32_t end_timestamp;
-    uint32_t diff;
-} time_snapshot_t;
-
-typedef struct
-{
-    uint32_t sender_timestamp;
-    uint32_t reciver_timestamp;
-} sync_timestamp_pair_t;
-
 typedef struct
 {
     uint32_t tx_timestamp;
     uint32_t token;
 } sync_tx_timestamp_t;
 
+static const uint32_t CHANNEL_COMPENSATION = 367;
+static const uint8_t LAST_ADV_CHANNEL = 39;
+
 static nrf_mesh_evt_handler_t m_time_sync_core_evt_handler;
 static nrf_mesh_tx_token_t m_own_token;
-static sync_timestamp_pair_t m_sync_timestamp_pair;
 static uint32_t m_reciver_timestamp;
-static uint32_t m_recived_token;
-
-
-static volatile int32_t m_current_drift_offset;
-static volatile uint32_t m_controll;
+static uint32_t m_incoming_tid;
 static time_sync_controller_t* mp_controller;
 static bool m_initial_timestamp_sent;
 static bool m_publish_timer_active;
+static uint32_t m_channel_compensation;
+static uint32_t m_outgoing_tid;
 
 
-
-
-
-/** Event handler callback sends the pending triggered message on the TX complete */
-static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
-{
-    switch (p_evt->type)
-    {
-        case NRF_MESH_EVT_TX_COMPLETE:
-            if(m_own_token == p_evt->params.tx_complete.token && m_initial_timestamp_sent)
-            {
-                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp, p_evt->params.tx_complete.token);
-            }
-            break;
-
-        default:
-            break;
-    }
-}
+/* Forward declaration */
+static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server);
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token);
 
 
 //TODO Remove or make better
@@ -86,6 +51,14 @@ void sync_set_pub_timer(bool on_off)
 }
 
 
+/*Calculates the time compensation for which channel the packet was recived on*/
+static uint32_t compensate_for_channel(uint8_t channel)
+{
+    return CHANNEL_COMPENSATION * (LAST_ADV_CHANNEL - channel);
+}
+
+
+
 /* Perodic model timeout handle */
 static void time_sync_publish_timeout_handler(access_model_handle_t handle, void * p_args) 
 {
@@ -96,27 +69,31 @@ static void time_sync_publish_timeout_handler(access_model_handle_t handle, void
 }
 
 
-uint32_t send_initial_sync_msg(time_sync_controller_t * p_server)
+/** Event handler callback sends the pending triggered message on the TX complete */
+static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
 {
-    m_own_token = nrf_mesh_unique_token_get();
+    switch (p_evt->type)
+    {
+        case NRF_MESH_EVT_TX_COMPLETE:
+            if(m_own_token == p_evt->params.tx_complete.token && m_initial_timestamp_sent)
+            {
+                static uint32_t last_found_token = 0xFFFFFFFF;
+                if (last_found_token == m_own_token) 
+                {
+                  __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "################# GOT SAME TOKEN TWICE: %u\n", m_own_token);
+                }
+                last_found_token = m_own_token;
+                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp, m_outgoing_tid);
+            }
+            break;
 
-    access_message_tx_t message;
-    message.opcode.opcode = TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG;
-    message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
-    message.p_buffer = (const uint8_t*) &m_own_token;
-    message.length = sizeof(m_own_token);
-    message.force_segmented = false;
-    message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
-    message.access_token = m_own_token;
-    
-    uint32_t error_code = access_model_publish(p_server->model_handle, &message);
-    m_initial_timestamp_sent = true;
-   
-    return error_code;
+        default:
+            break;
+    }
 }
 
 
-uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token)
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token)
 {
     sync_tx_timestamp_t msg;
     msg.tx_timestamp = tx_timestamp;
@@ -131,18 +108,21 @@ uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
 
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
-   
     return error_code;
 }
 
+
 static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
+
     if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
     {
-        memcpy(&m_recived_token, p_message->p_data, p_message->length);
+        memcpy(&m_incoming_tid, p_message->p_data, p_message->length);
         m_reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
+        m_channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
     }
 }
+
 
 static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
@@ -151,12 +131,13 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
         sync_tx_timestamp_t sender_timestamp;
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
 
-        if(m_recived_token == sender_timestamp.token)
+        if(m_incoming_tid == sender_timestamp.token)
         {
-            sync_timer_set_timer_offset(m_reciver_timestamp - sender_timestamp.tx_timestamp);
+            sync_timer_set_timer_offset(m_reciver_timestamp - sender_timestamp.tx_timestamp + m_channel_compensation);
         }
     }
 }
+
 
 static const access_opcode_handler_t m_opcode_handlers[] =
 {
@@ -164,7 +145,9 @@ static const access_opcode_handler_t m_opcode_handlers[] =
     { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG, ACCESS_COMPANY_ID_NORDIC),   handle_msg_initial_sync },
 };
 
+
 /********** Interface functions **********/
+
 
 uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t element_index, time_sync_controller_evt_cb_t time_sync_controller_handler)
 {
@@ -190,3 +173,22 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
     return access_model_add(&add_params, &p_server->model_handle);
 }
 
+
+uint32_t send_initial_sync_msg(time_sync_controller_t * p_server)
+{
+    m_own_token = nrf_mesh_unique_token_get();
+    m_outgoing_tid++;
+
+    access_message_tx_t message;
+    message.opcode.opcode = TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG;
+    message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
+    message.p_buffer = (const uint8_t*) &m_outgoing_tid;
+    message.length = sizeof(m_outgoing_tid);
+    message.force_segmented = false;
+    message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
+    message.access_token = m_own_token;
+    
+    uint32_t error_code = access_model_publish(p_server->model_handle, &message);
+    m_initial_timestamp_sent = true;
+    return error_code;
+}
