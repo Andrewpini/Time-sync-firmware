@@ -87,12 +87,6 @@ register" */
 static uint8_t m_next_channel_index;
 static timestamp_t m_action_start_time; /**< Start of the action (in device time, not timeslot time) */
 
-//TODO: REMOVE
-static volatile uint32_t debug_counter;
-static volatile uint32_t debug_prev_val;
-static volatile uint32_t debug_current_val;
-static volatile uint32_t debug_buffer[1000];
-
 static void configure_timer_capture(void)
 {
     /* Capture the timestamp when the packet address has been sent, to use in reporting. */
@@ -193,17 +187,10 @@ static void radio_irq_handler(void* p_args)
 
     mesh_pa_lna_disable_start();
 
-
-    debug_current_val = BEARER_ACTION_TIMER->CC[BROADCAST_TIMER_INDEX_TIMESTAMP];
-    debug_buffer[debug_counter] = debug_current_val - debug_prev_val;
-    debug_prev_val = debug_current_val;
-    debug_counter++;
-
     if (m_next_channel_index > p_broadcast->params.channel_count)
     {
         tx_complete_notify_user(p_broadcast);
         end_action(p_broadcast);
-        debug_prev_val = 0;
     }
     else
     {

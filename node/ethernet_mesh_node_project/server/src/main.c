@@ -134,7 +134,6 @@ static void app_time_sync_event_cb(void)
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
 {
-        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "*** RSSI server callback ** %d\n", p_data->msg_count);
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
         uint8_t own_MAC[6] = {0};
