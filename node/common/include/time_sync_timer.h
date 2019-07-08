@@ -6,7 +6,7 @@
 
 #ifdef MESH_ENABLED
     #define DRIFT_TIMER                         NRF_TIMER3
-    #define SYNC_TIMER                          NRF_TIMER4
+    #define SYNC_TIMER                          NRF_TIMER1
 #else
     #define DRIFT_TIMER                         NRF_TIMER0
     #define DHCP_TIMER                          NRF_TIMER1
