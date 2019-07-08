@@ -94,6 +94,7 @@
 #include "config.h"
 #include "socket.h"
 #include "time_sync_v1_controller.h"
+#include "sync_timer_handler.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -127,9 +128,12 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
     }
 }
 
-static void app_time_sync_event_cb(void) 
+static void app_time_sync_event_cb(sync_event_t sync_event) 
 {
-
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src: %d\n", sync_event.sender.addr);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst: %d\n", sync_event.reciver.addr);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src timestamp: %d\n", sync_event.sender.timestamp);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
 }
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
@@ -339,6 +343,11 @@ static void app_rtt_input_handler(int key)
         case '2':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER OFF\n");
             sync_set_pub_timer(false);
+            break;
+
+        case '3':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SET TIMER OFFSET TO 2000 \n");
+            sync_timer_set_timer_offset(2000);
             break;
 
         default:

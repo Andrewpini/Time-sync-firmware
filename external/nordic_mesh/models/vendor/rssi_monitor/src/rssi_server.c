@@ -56,6 +56,7 @@ static uint32_t send_reliable_message(const rssi_server_t * p_server, uint16_t o
             .opcode = ACCESS_OPCODE_VENDOR(opcode, ACCESS_COMPANY_ID_NORDIC),
             .force_segmented = false,
             .transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT,
+            .access_token = nrf_mesh_unique_token_get(),
         },
         .reply_opcode = {
             .opcode = RSSI_OPCODE_RSSI_ACK,

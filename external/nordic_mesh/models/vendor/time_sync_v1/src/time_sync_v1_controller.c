@@ -83,7 +83,7 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
                   __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "################# GOT SAME TOKEN TWICE: %u\n", m_own_token);
                 }
                 last_found_token = m_own_token;
-                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp, m_outgoing_tid);
+                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_current_offset(), m_outgoing_tid);
             }
             break;
 
@@ -106,6 +106,7 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
     message.length = sizeof(msg);
     message.force_segmented = false;
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
+    message.access_token = nrf_mesh_unique_token_get();
 
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
     return error_code;
@@ -134,6 +135,13 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
         if(m_incoming_tid == sender_timestamp.token)
         {
             sync_timer_set_timer_offset(m_reciver_timestamp - sender_timestamp.tx_timestamp + m_channel_compensation);
+            
+            sync_event_t sync_event;
+            sync_event.sender.addr = p_message->meta_data.src.value;
+            sync_event.sender.timestamp = sender_timestamp.tx_timestamp + m_channel_compensation;
+            sync_event.reciver.addr = p_message->meta_data.dst.value;
+            sync_event.reciver.timestamp = m_reciver_timestamp;
+            mp_controller->time_sync_controller_handler(sync_event);
         }
     }
 }
@@ -192,3 +200,5 @@ uint32_t send_initial_sync_msg(time_sync_controller_t * p_server)
     m_initial_timestamp_sent = true;
     return error_code;
 }
+
+

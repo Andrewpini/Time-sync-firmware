@@ -30,6 +30,7 @@ static uint32_t send_database_beacon(rssi_util_t * p_util)
     message.length = sizeof(m_local_unicast_address);
     message.force_segmented = false;
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
+    message.access_token = nrf_mesh_unique_token_get();
 
     /* To assure that the message can't make more than one jump */
     uint32_t error_code = access_model_publish_ttl_set(p_util->model_handle, 0);
@@ -50,6 +51,7 @@ static uint32_t database_beacon_req(const rssi_util_t * p_util)
     message.length = 0;
     message.force_segmented = false;
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
+    message.access_token = nrf_mesh_unique_token_get();
     
     /* To assure that the message can't make more than one jump */
     uint32_t error_code = access_model_publish_ttl_set(p_util->model_handle, 0);

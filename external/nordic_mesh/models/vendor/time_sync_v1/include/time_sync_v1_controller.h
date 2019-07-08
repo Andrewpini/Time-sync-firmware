@@ -7,13 +7,23 @@
 #include "access.h"
 #include "time_sync_v1_common.h"
 
+typedef struct
+{
+    timestamp_t timestamp;
+    uint16_t addr;
+} sync_data_t;
 
+typedef struct
+{
+    sync_data_t sender;
+    sync_data_t reciver;
+} sync_event_t;
 
 /* Object type for rssi server instances. */
 typedef struct __time_sync_controller_t time_sync_controller_t;
 
 /** Event callback function type */ 
-typedef void (*time_sync_controller_evt_cb_t)(void);
+typedef void (*time_sync_controller_evt_cb_t)(sync_event_t sync_event);
 
 /* Rssi server instance structure */
 struct __time_sync_controller_t
