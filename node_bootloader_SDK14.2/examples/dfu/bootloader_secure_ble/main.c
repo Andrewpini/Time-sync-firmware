@@ -174,7 +174,9 @@ int main(void)
     // Either there was no DFU functionality enabled in this project or the DFU module detected
     // no ongoing DFU operation and found a valid main application.
     // Boot the main application.
-    nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
+    
+		NRF_LOG_FLUSH();
+		nrf_bootloader_app_start(MAIN_APPLICATION_START_ADDR);
 
     // Should never be reached.
     NRF_LOG_INFO("After main");

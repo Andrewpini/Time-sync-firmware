@@ -7,7 +7,7 @@
 
 /* Includes -----------------------------------------------------*/
 
-#define NRF_LOG_MODULE_NAME "TFTP"
+#define NRF_LOG_MODULE_NAME TFTP
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
@@ -16,6 +16,7 @@
 #include "socket.h"
 #include "netutil.h"
 #include "tftp_config.h"
+#include "ethernet_dfu.h"
 
 #include "nrf_dfu.h"
 #include "nrf_dfu_types.h"
@@ -27,6 +28,8 @@
 #include "nrf_bootloader_info.h"
 
 #include "nrf_delay.h"
+
+NRF_LOG_MODULE_REGISTER();
 
 /* define -------------------------------------------------------*/
 
@@ -82,7 +85,7 @@ static void set_filename(uint8_t *file, uint32_t file_size)
 static inline void set_server_ip(uint32_t ipaddr)
 {
 	g_server_ip = ipaddr;
-  NRF_LOG_DEBUG("[set_server_ip] set ip = %x\r\n", ipaddr);
+  NRF_LOG_DEBUG("[set_server_ip] set ip = %x", ipaddr);
 }
 
 static inline uint32_t get_server_ip()
@@ -152,7 +155,7 @@ static int open_tftp_socket(uint8_t sock)
 
 	sd = socket(sock, Sn_MR_UDP, 51000, SF_IO_NONBLOCK);
 	if(sd != sock) {
-		NRF_LOG_DEBUG("[open_tftp_socket] socket error\r\n");
+		NRF_LOG_DEBUG("[open_tftp_socket] socket error");
 		return -1;
 	}
 
@@ -171,7 +174,7 @@ static int send_udp_packet(int socket, uint8_t *packet, uint32_t len, uint32_t i
 
 	snd_len = sendto(socket, packet, len, (uint8_t *)&ip, port);
 	if(snd_len != len) {
-		NRF_LOG_DEBUG("[send_udp_packet] sendto error\r\n");
+		NRF_LOG_DEBUG("[send_udp_packet] sendto error");
 		return -1;
 	}
 
@@ -187,21 +190,21 @@ static int recv_udp_packet(int socket, uint8_t *packet, uint32_t len, uint32_t *
 	/* Receive Packet Process */
 	ret = getsockopt(socket, SO_STATUS, &sck_state);
 	if(ret != SOCK_OK) {
-		NRF_LOG_DEBUG("[recv_udp_packet] getsockopt SO_STATUS error\r\n");
+		NRF_LOG_DEBUG("[recv_udp_packet] getsockopt SO_STATUS error");
 		return -1;
 	}
 
 	if(sck_state == SOCK_UDP) {
 		ret = getsockopt(socket, SO_RECVBUF, &recv_len);
 		if(ret != SOCK_OK) {
-			NRF_LOG_DEBUG("[recv_udp_packet] getsockopt SO_RECVBUF error\r\n");
+			NRF_LOG_DEBUG("[recv_udp_packet] getsockopt SO_RECVBUF error");
 			return -1;
 		}
     
 		if(recv_len) {
 			recv_len = recvfrom(socket, packet, len, (uint8_t *)ip, port);
 			if(recv_len < 0) {
-				NRF_LOG_DEBUG("[recv_udp_packet] recvfrom error\r\n");
+				NRF_LOG_DEBUG("[recv_udp_packet] recvfrom error");
 				return -1;
 			}
 
@@ -285,7 +288,7 @@ static void send_tftp_rrq(uint8_t *filename, uint8_t *mode, TFTP_OPTION *opt, ui
 	set_filename(filename, strlen((char *)filename) + 1);
 	tftp_reg_timeout();
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG(">> TFTP RRQ : FileName(%s), Mode(%s)\r\n", (uint32_t)filename, (uint32_t)mode);
+	NRF_LOG_DEBUG(">> TFTP RRQ : FileName(%s), Mode(%s)", (uint32_t)filename, (uint32_t)mode);
 #endif
 }
 
@@ -317,7 +320,7 @@ static void send_tftp_wrq(uint8_t *filename, uint8_t *mode, TFTP_OPTION *opt, ui
 	set_filename(filename, strlen((char *)filename) + 1);
 	tftp_reg_timeout();
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG(">> TFTP WRQ : FileName(%s), Mode(%s)\r\n", filename, mode);
+	NRF_LOG_DEBUG(">> TFTP WRQ : FileName(%s), Mode(%s)", filename, mode);
 #endif
 }
 #endif
@@ -341,7 +344,7 @@ static void send_tftp_data(uint16_t block_number, uint8_t *data, uint16_t data_l
 	send_udp_packet(g_tftp_socket , snd_buf, len, get_server_ip(), get_server_port());
 	tftp_reg_timeout();
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG(">> TFTP DATA : Block Number(%d), Data Length(%d)\r\n", block_number, data_len);
+	NRF_LOG_DEBUG(">> TFTP DATA : Block Number(%d), Data Length(%d)", block_number, data_len);
 #endif
 }
 #endif
@@ -359,7 +362,7 @@ static void send_tftp_ack(uint16_t block_number)
 	send_udp_packet(g_tftp_socket , snd_buf, 4, get_server_ip(), get_server_port());
 	tftp_reg_timeout();
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG(">> TFTP ACK : Block Number(%d)\r\n", block_number);
+	NRF_LOG_DEBUG(">> TFTP ACK : Block Number(%d)", block_number);
 #endif
 }
 
@@ -385,7 +388,7 @@ static void send_tftp_oack(TFTP_OPTION *opt, uint8_t opt_len)
 	send_udp_packet(g_tftp_socket , snd_buf, len, get_server_ip(), get_server_port());
 	tftp_reg_timeout();
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG(">> TFTP OACK \r\n");
+	NRF_LOG_DEBUG(">> TFTP OACK ");
 #endif
 }
 #endif
@@ -409,7 +412,7 @@ static void send_tftp_error(uint16_t error_number, uint8_t *error_message)
 	send_udp_packet(g_tftp_socket , snd_buf, len, get_server_ip(), get_server_port());
 	tftp_reg_timeout();
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG(">> TFTP ERROR : Error Number(%d)\r\n", error_number);
+	NRF_LOG_DEBUG(">> TFTP ERROR : Error Number(%d)", error_number);
 #endif
 }
 #endif
@@ -431,7 +434,7 @@ static void recv_tftp_data(uint8_t *msg, uint32_t msg_len)
 	data->opcode = ntohs(data->opcode);
 	data->block_num = ntohs(data->block_num);
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG("<< TFTP_DATA : opcode(%d), block_num(%d)\r\n", data->opcode, data->block_num);
+	NRF_LOG_DEBUG("<< TFTP_DATA : opcode(%d), block_num(%d)", data->opcode, data->block_num);
 #endif
   
 	switch(get_tftp_state())
@@ -442,9 +445,9 @@ static void recv_tftp_data(uint8_t *msg, uint32_t msg_len)
 				set_tftp_state(STATE_DATA);
 				set_block_number(data->block_num);
 #ifdef F_STORAGE
-        if (nrf_dfu_flash_erase((uint32_t)MAIN_APPLICATION_START_ADDR, CEIL_DIV(BOOTLOADER_START_ADDR-MAIN_APPLICATION_START_ADDR, CODE_PAGE_SIZE), NULL) != NRF_SUCCESS)
+        if (nrf_dfu_flash_erase((uint32_t)MAIN_APPLICATION_START_ADDR, CEIL_DIV((BOOTLOADER_START_ADDR-MESH_INFO_FLASH_SIZE)-MAIN_APPLICATION_START_ADDR, CODE_PAGE_SIZE), NULL) != NRF_SUCCESS)
         {
-          NRF_LOG_INFO("Erase operation failed\r\n");
+          NRF_LOG_INFO("Erase operation failed");
           break;
         }
 
@@ -473,7 +476,7 @@ static void recv_tftp_data(uint8_t *msg, uint32_t msg_len)
             nrf_delay_ms(10);
             if ((nrf_dfu_flash_store((uint32_t)(MAIN_APPLICATION_START_ADDR+(((data->block_num-1)/8) *  CODE_PAGE_SIZE)), (uint32_t *)write_data, CODE_PAGE_SIZE/*CEIL_DIV(CODE_PAGE_SIZE, sizeof(uint32_t))*/, NULL)) != NRF_SUCCESS)
             {
-                    NRF_LOG_INFO("WRITE ERROR\r\n");
+                    NRF_LOG_INFO("WRITE ERROR");
             }
             memset (write_data, 0xFF, CODE_PAGE_SIZE);
         }
@@ -498,7 +501,7 @@ static void recv_tftp_data(uint8_t *msg, uint32_t msg_len)
 static void recv_tftp_ack(uint8_t *msg, uint32_t msg_len)
 {
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG("<< TFTP_ACK : \r\n");
+	NRF_LOG_DEBUG("<< TFTP_ACK : ");
 #endif
 
 	switch(get_tftp_state())
@@ -518,7 +521,7 @@ static void recv_tftp_ack(uint8_t *msg, uint32_t msg_len)
 static void recv_tftp_oack(uint8_t *msg, uint32_t msg_len)
 {
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG("<< TFTP_OACK : \r\n");
+	NRF_LOG_DEBUG("<< TFTP_OACK : ");
 #endif
 
 	switch(get_tftp_state())
@@ -553,8 +556,8 @@ static void recv_tftp_error(uint8_t *msg, uint32_t msg_len)
 	data->error_code = ntohs(data->error_code);
 
 #ifdef __TFTP_DEBUG__
-	NRF_LOG_DEBUG("<< TFTP_ERROR : %d (%s)\r\n", data->error_code, (uint32_t)data->error_msg);
-	NRF_LOG_DEBUG("[recv_tftp_error] Error Code : %d (%s)\r\n", data->error_code, (uint32_t)data->error_msg);
+	NRF_LOG_DEBUG("<< TFTP_ERROR : %d (%s)", data->error_code, (uint32_t)data->error_msg);
+	NRF_LOG_DEBUG("[recv_tftp_error] Error Code : %d (%s)", data->error_code, (uint32_t)data->error_msg);
 #endif
 	init_tftp();
 	g_progress_state = TFTP_FAIL;
@@ -567,8 +570,8 @@ static void recv_tftp_packet(uint8_t *packet, uint32_t packet_len, uint32_t from
 	/* Verify Server IP */
 	if(from_ip != get_server_ip()) {
 #ifdef __TFTP_DEBUG__
-		NRF_LOG_DEBUG("[recv_tftp_packet] Server IP faults\r\n");
-		NRF_LOG_DEBUG("from IP : %08x, Server IP : %08x, From port : %x\r\n", from_ip, get_server_ip(), from_port);
+		NRF_LOG_DEBUG("[recv_tftp_packet] Server IP faults");
+		NRF_LOG_DEBUG("from IP : %08x, Server IP : %08x, From port : %x", from_ip, get_server_ip(), from_port);
 #endif
 		return;
 	}
@@ -579,7 +582,7 @@ static void recv_tftp_packet(uint8_t *packet, uint32_t packet_len, uint32_t from
 	if((get_tftp_state() == STATE_WRQ) || (get_tftp_state() == STATE_RRQ)) {
 		set_server_port(from_port);
 #ifdef __TFTP_DEBUG__
-		DBG_PRINT(INFO_DBG, "[recv_tftp_packet] Set Server Port : %d\r\n", from_port);
+		DBG_PRINT(INFO_DBG, "[recv_tftp_packet] Set Server Port : %d", from_port);
 #endif
 	}
 
@@ -672,7 +675,7 @@ int TFTP_run(void)
 	len = recv_udp_packet(g_tftp_socket, g_tftp_rcv_buf, MAX_MTU_SIZE, &from_ip, &from_port);
 	if(len < 0) {
 #ifdef __TFTP_DEBUG__
-		NRF_LOG_DEBUG("[recv_udp_packet] recv_udp_packet error\r\n");
+		NRF_LOG_DEBUG("[recv_udp_packet] recv_udp_packet error");
 #endif
 		return g_progress_state;
 	}
@@ -685,7 +688,7 @@ void TFTP_read_request(uint32_t server_ip, uint8_t *filename)
 {
 	set_server_ip(server_ip);
 #ifdef __TFTP_DEBUG__
-	DBG_PRINT(INFO_DBG, "[TFTP_read_request] Set Tftp Server : %x\r\n", server_ip);
+	DBG_PRINT(INFO_DBG, "[TFTP_read_request] Set Tftp Server : %x", server_ip);
 #endif
 
 	g_progress_state = TFTP_PROGRESS;

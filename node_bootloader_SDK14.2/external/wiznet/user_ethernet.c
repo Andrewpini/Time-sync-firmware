@@ -45,7 +45,7 @@ void wizchip_read_burst(uint8_t *pBuf, uint16_t len)
 {
     if(nrf_drv_spi_transfer(&spi_inst, NULL, 0, pBuf, len) != NRF_SUCCESS)
     {
-        NRF_LOG_ERROR("SPI failed\r\n"); 
+        NRF_LOG_ERROR("SPI failed"); 
     }
 }
 
@@ -53,7 +53,7 @@ void wizchip_write_burst(uint8_t *pBuf, uint16_t len)
 {
     if(nrf_drv_spi_transfer(&spi_inst, pBuf, len, NULL, 0) != NRF_SUCCESS)
     {
-        NRF_LOG_ERROR("SPI failed\r\n"); 
+        NRF_LOG_ERROR("SPI failed"); 
     }
 }
 
@@ -63,7 +63,7 @@ uint8_t wizchip_read()
 #ifdef NRF_DRV_SPI
     if(nrf_drv_spi_transfer(&spi_inst, NULL, 0, &rx_buf, 1) != NRF_SUCCESS)
     {
-        NRF_LOG_ERROR("SPI failed\r\n"); 
+        NRF_LOG_ERROR("SPI failed"); 
     }
 #else
 	spi_master_rx(SPI0, 1, &rx_buf);
@@ -76,7 +76,7 @@ void wizchip_write(uint8_t wb)
 #ifdef NRF_DRV_SPI
     if(nrf_drv_spi_transfer(&spi_inst, &wb, 1, NULL, 0) != NRF_SUCCESS)
     {
-        NRF_LOG_ERROR("SPI failed\r\n"); 
+        NRF_LOG_ERROR("SPI failed"); 
     }
 #else
 	spi_master_tx(SPI0, 1, &wb);
@@ -131,20 +131,20 @@ void user_ethernet_init(void)
 
     /* WIZCHIP SOCKET Buffer initialize */
 
-    NRF_LOG_RAW_INFO("W5500 memory init\r\n");
+    NRF_LOG_RAW_INFO("W5500 memory init");
 
     if(ctlwizchip(CW_INIT_WIZCHIP,(void*)memsize) == -1)
     {
-        NRF_LOG_RAW_INFO("WIZCHIP Initialized fail.\r\n");
+        NRF_LOG_RAW_INFO("WIZCHIP Initialized fail");
         while(1);
     }
 
     /* PHY link status check */
-    NRF_LOG_RAW_INFO("W5500 PHY Link Status Check\r\n");
+    NRF_LOG_RAW_INFO("W5500 PHY Link Status Check");
     do
     {
         if(ctlwizchip(CW_GET_PHYLINK, (void*)&tmp) == -1)
-            NRF_LOG_RAW_INFO("Unknown PHY Link stauts.\r\n");
+            NRF_LOG_RAW_INFO("Unknown PHY Link stauts");
     }while(tmp == PHY_LINK_OFF);
 
     timeout_info.retry_cnt = 1;
