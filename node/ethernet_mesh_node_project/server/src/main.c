@@ -104,6 +104,8 @@ static health_client_t m_health_client;
 static rssi_util_t m_rssi_util;
 
 /* Time sync v1 */
+static uint8_t own_MAC[6] = {0};
+static uint8_t mesh_node_gap_name[17];
 static time_sync_controller_t m_time_sync_controller;
 static dsm_handle_t m_time_sync_subscribe_handle;
 static dsm_handle_t m_time_sync_publish_handle;
@@ -138,8 +140,6 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
 {
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
-        uint8_t own_MAC[6] = {0};
-        get_own_MAC(own_MAC);
 
         dsm_local_unicast_address_t local_addr;
         dsm_local_unicast_addresses_get(&local_addr);
@@ -200,7 +200,7 @@ static void provisioning_complete_cb(void)
 #if MESH_FEATURE_GATT_ENABLED
     /* Restores the application parameters after switching from the Provisioning
      * service to the Proxy  */
-    gap_params_init();
+    gap_params_init(mesh_node_gap_name);
     conn_params_init();
 #endif
 
@@ -277,7 +277,7 @@ static void models_init_cb(void)
 }
 
 
-static void initialize(void)
+static void initialize(uint8_t * gap_name)
 {
     /* Make sure that high power LED is disabled */
     nrf_gpio_cfg_output(13);
@@ -286,7 +286,7 @@ static void initialize(void)
     ble_stack_init();
 
     #if MESH_FEATURE_GATT_ENABLED
-        gap_params_init();
+        gap_params_init(gap_name);
         conn_params_init();
     #endif
 
@@ -380,7 +380,11 @@ int main(void)
     connection_init();
 
     rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
-    initialize();
+
+    get_own_MAC(own_MAC);
+    sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
+
+    initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
 
     while(1){

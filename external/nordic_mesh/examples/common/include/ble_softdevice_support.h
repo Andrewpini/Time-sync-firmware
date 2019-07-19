@@ -65,7 +65,7 @@ void ble_stack_init(void);
  * parameters of the device, including the device name and the preferred
  * connection parameters.
  */
-void gap_params_init(void);
+void gap_params_init(uint8_t * gap_name);
 
 /**
  * Initializes the Connection Parameters Negotiation module.

@@ -49,8 +49,8 @@ extern "C" {
  // LEDs definitions for PCA20036
 
 #define LED_HP                              13UL
-#define SYNC_OUT                            19UL  
-#define SYNC_IN                             17UL
+#define SYNC_OUT                            14UL  
+#define SYNC_IN                             15UL
 #define BUTTON_0                            16UL
 
 

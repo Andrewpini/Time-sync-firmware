@@ -169,7 +169,7 @@ void ble_stack_init(void)
 }
 
 #if MESH_FEATURE_GATT_ENABLED
-void gap_params_init(void)
+void gap_params_init(uint8_t * gap_name)
 {
     uint32_t                err_code;
     ble_gap_conn_sec_mode_t sec_mode;
@@ -177,9 +177,7 @@ void gap_params_init(void)
 
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
-    err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *) GAP_DEVICE_NAME,
-                                          strlen(GAP_DEVICE_NAME));
+    err_code = sd_ble_gap_device_name_set(&sec_mode, gap_name, 17);
     APP_ERROR_CHECK(err_code);
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
