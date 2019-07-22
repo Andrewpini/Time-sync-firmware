@@ -124,6 +124,7 @@ bool nrf_dfu_button_enter_check(void)
 
 static void timeout_timer_handler(void * p_context)
 {
+	NRF_LOG_FLUSH();
 	NRF_POWER->GPREGRET = 0x00;
 	NVIC_SystemReset();
 }
