@@ -93,6 +93,7 @@
 #include "socket.h"
 #include "time_sync_v1_controller.h"
 #include "sync_timer_handler.h"
+#include "i_am_alive.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -386,6 +387,7 @@ int main(void)
 
     initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
+    i_am_alive_timer_init();
 
     while(1){
        if (is_connected())

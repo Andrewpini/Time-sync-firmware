@@ -56,6 +56,7 @@
       <file file_name="../../common/src/ppi.c" />
       <file file_name="../../common/src/pwm.c" />
       <file file_name="../../common/src/time_sync_timer.c" />
+      <file file_name="../../common/src/i_am_alive.c" />
     </folder>
     <folder Name="Ethernet backend">
       <file file_name="../../common/src/timer_drift_measurement.c" />
