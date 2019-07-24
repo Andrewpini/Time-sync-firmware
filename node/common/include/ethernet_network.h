@@ -30,7 +30,11 @@ bool is_server_IP_received(void);
 
 void set_server_IP_received(bool val);
 
+void set_target_IP(uint8_t* p_IP); // TODO: Is "server" and "target" the same?
+
 void get_target_IP_and_port(uint8_t* p_IP, uint32_t* p_port);
+
+void get_target_IP(uint8_t* p_IP);
 
 void get_own_IP(uint8_t* p_IP);
 

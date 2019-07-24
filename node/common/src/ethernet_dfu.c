@@ -61,7 +61,7 @@ void dfu_button_initiate_and_reset() // Not used now - will go into bootloader a
   ERROR_CHECK(sd_nvic_SystemReset());
 }
 
-void dfu_erase_flash_page()
+void dfu_erase_flash_page() // TODO: Write to rising flash address untill the whole page is written - check for 0xFF 0xFF (...). Only erase when flash page is "full"
 {
   flash_operation_t flash_parameters_erase;
 

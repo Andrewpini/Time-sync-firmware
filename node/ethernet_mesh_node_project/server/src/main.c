@@ -137,7 +137,7 @@ static void app_time_sync_event_cb(sync_event_t sync_event)
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
 }
 
-static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
+static void app_rssi_server_cb(const rssi_data_entry_t* p_data) // TODO: Seems like packets almost only are sent one way?
 {
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
@@ -150,9 +150,9 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
             uint8_t target_IP[4] = {255, 255, 255, 255}; 
             uint32_t target_port = 11035;;
         #else
-            uint8_t target_IP[4] = {10, 0, 0, 4};    
-            uint32_t target_port = 15000;
-            get_target_IP_and_port(target_IP, &target_port);
+            uint8_t target_IP[4];
+            get_target_IP(target_IP);       
+            uint32_t target_port = 11035;
         #endif
 
         if(!is_network_busy())

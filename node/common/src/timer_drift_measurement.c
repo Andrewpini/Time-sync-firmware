@@ -56,9 +56,9 @@ void send_drift_timing_sample(void)
             uint8_t target_IP[4] = {255, 255, 255, 255}; 
             uint32_t target_port = 11001;;
         #else
-            uint8_t target_IP[4] = {10, 0, 0, 4};    
-            uint32_t target_port = 15000;
-            get_target_IP_and_port(target_IP, &target_port);
+            uint8_t target_IP[4];
+            get_target_IP(target_IP);       
+            uint32_t target_port = 11001;
         #endif
 
         if(!is_network_busy())

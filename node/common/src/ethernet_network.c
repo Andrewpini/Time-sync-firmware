@@ -194,9 +194,17 @@ void set_server_IP_received(bool val){
     m_server_ip_received = val;
 }
 
+void set_target_IP(uint8_t* p_IP){
+    memcpy(target_IP, p_IP, 4);
+}
+
 void get_target_IP_and_port(uint8_t* p_IP, uint32_t* p_port){ 
     memcpy(p_IP, target_IP, 4);
     *p_port = target_port;
+}
+
+void get_target_IP(uint8_t* p_IP){
+    memcpy(p_IP, target_IP, 4);
 }
 
 void get_own_IP(uint8_t* p_IP){ 

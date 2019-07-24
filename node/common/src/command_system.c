@@ -181,7 +181,8 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_NEW_SERVER_IP:
-                        set_server_IP_received(false);
+                        set_target_IP(&broadcast_ip[0]);
+                        set_server_IP_received(true);
                         break;
 
                     #ifdef MESH_ENABLED
