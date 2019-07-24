@@ -17,7 +17,7 @@
 #define TX_POWER                            RADIO_TXPOWER_TXPOWER_0dBm
 
 #define ADVERTISING_INTERVAL                300
-#define SYNC_INTERVAL_MS                    100
+#define SYNC_INTERVAL_MS                    1000
 
 #define LED_HP_CONNECTED_DUTY_CYCLE         0.1f
 #define LED_HP_ON_DUTY_CYCLE                1.0f

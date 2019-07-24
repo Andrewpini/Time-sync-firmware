@@ -189,6 +189,7 @@ void check_ctrl_cmd(void)
                     case CMD_NEW_FIRMWARE_ALL:
                         if(own_IP[0] != 1)
                         {
+                          dfu_erase_flash_page();
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
                           dfu_initiate_and_reset();
@@ -210,6 +211,7 @@ void check_ctrl_cmd(void)
                             if(own_mac[0] == received_data[18] && own_mac[1] == received_data[19] && own_mac[2] == received_data[20] && 
                             own_mac[3] == received_data[21] && own_mac[4] == received_data[22] && own_mac[5] == received_data[23])
                             {
+                              dfu_erase_flash_page();
                               dfu_write_own_ip(own_IP);
                               dfu_write_server_ip(&broadcast_ip[0]);
                               dfu_initiate_and_reset();
@@ -226,6 +228,7 @@ void check_ctrl_cmd(void)
                         if(own_IP[0] != 1)
                         {
                           LOG("CMD: Set button DFU flag\r\n");
+                          dfu_erase_flash_page();
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
                           dfu_set_button_flag();
