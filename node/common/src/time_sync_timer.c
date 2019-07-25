@@ -59,7 +59,7 @@ void dhcp_timer_init(void)
 void TIMER1_IRQHandler(void)
 {
     SYNC_TIMER->EVENTS_COMPARE[0] = 0;
-    sync_line_event_handler(); 
+//    sync_line_event_handler(); 
 }
 #else
 void dhcp_timer_init(void)
