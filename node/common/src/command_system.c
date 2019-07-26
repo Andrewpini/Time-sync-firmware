@@ -158,6 +158,9 @@ void check_ctrl_cmd(void)
                 // Choose the right action according to command
                 switch (cmd)
                 {
+                    case RESET_NODE:
+                        ERROR_CHECK(sd_nvic_SystemReset());
+                        break;
                     case RESET_SYNC:
                         LOG("CMD: RESETING TIME SYNC\r\n");
                         sync_timer_reset();
@@ -283,11 +286,11 @@ void check_ctrl_cmd(void)
                         pwm_set_duty_cycle(LED_HP, led_hp_default_value);
                         break;
 
-                    case CMD_ALL_HPLED_CUSTOM:
-                        LOG("CMD: All HP LEDs set to value: %d.%d\r\n", p_payload[0], (p_payload[1] / 10.0f));
-                        float duty_cycle = p_payload[0] + (p_payload[1] / 10.0f);
-                        pwm_set_duty_cycle(LED_HP, duty_cycle);
-                        break;
+//                    case CMD_ALL_HPLED_CUSTOM:
+//                        LOG("CMD: All HP LEDs set to value: %d.%d\r\n", p_payload[0], (p_payload[1] / 10.0f));
+//                        float duty_cycle = p_payload[0] + (p_payload[1] / 10.0f);
+//                        pwm_set_duty_cycle(LED_HP, duty_cycle);
+//                        break;
 
                     case CMD_SINGLE_HPLED_ON:
                         LOG("CMD: Single HP LED ON: \n");
@@ -330,19 +333,19 @@ void check_ctrl_cmd(void)
                         }
                         break;
 
-                    case CMD_SINGLE_HPLED_CUSTOM:
-                        LOG("CMD: Single HP LED custom value: ");
-                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
-                        {
-                            float duty_cycle = p_payload [4] + (p_payload[5] / 10.0f);
-                            pwm_set_duty_cycle(LED_HP, duty_cycle);
-                            LOG("IP match -> setting HP LED duty cycle to %d.%d \% \r\n", p_payload[4], p_payload[5]);
-                        }
-                        else 
-                        {
-                            LOG("no IP match -> no action \r\n");
-                        }
-                        break;
+//                    case CMD_SINGLE_HPLED_CUSTOM:
+//                        LOG("CMD: Single HP LED custom value: ");
+//                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+//                        {
+//                            float duty_cycle = p_payload [4] + (p_payload[5] / 10.0f);
+//                            pwm_set_duty_cycle(LED_HP, duty_cycle);
+//                            LOG("IP match -> setting HP LED duty cycle to %d.%d \% \r\n", p_payload[4], p_payload[5]);
+//                        }
+//                        else 
+//                        {
+//                            LOG("no IP match -> no action \r\n");
+//                        }
+//                        break;
 
                     case CMD_SINGLE_ADVERTISING_ON:
                         LOG("CMD: Single advertising START: ");

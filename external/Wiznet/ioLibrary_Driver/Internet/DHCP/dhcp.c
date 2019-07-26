@@ -574,7 +574,7 @@ int8_t parseDHCPMSG(void)
 
 	uint8_t * p;
 	uint8_t * e;
-	uint8_t type;
+	uint8_t type = 0;
 	uint8_t opt_len;
    
    if((len = getSn_RX_RSR(DHCP_SOCKET)) > 0)
@@ -584,7 +584,7 @@ int8_t parseDHCPMSG(void)
       printf("DHCP message : %d.%d.%d.%d(%d) %d received. \r\n",svr_addr[0],svr_addr[1],svr_addr[2], svr_addr[3],svr_port, len);
    #endif   
    }
-   else return 0;
+   else {return 0;}
 	if (svr_port == DHCP_SERVER_PORT) {
       // compare mac address
 		if ( (pDHCPMSG->chaddr[0] != DHCP_CHADDR[0]) || (pDHCPMSG->chaddr[1] != DHCP_CHADDR[1]) ||

@@ -76,7 +76,6 @@ void ethernet_broadcast_send(uint8_t * buf, uint8_t len)
 void on_connect(void)
 {
     m_connected = true;
-    pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
 }
 
 void on_disconnect(void)

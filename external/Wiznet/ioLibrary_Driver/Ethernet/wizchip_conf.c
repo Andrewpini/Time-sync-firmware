@@ -166,15 +166,23 @@ _WIZCHIP  WIZCHIP =
       {
       _WIZCHIP_IO_MODE_,
       _WIZCHIP_ID_ ,
-      wizchip_cris_enter,
-      wizchip_cris_exit,
-      wizchip_cs_select,
-      wizchip_cs_deselect,
+      {
+        wizchip_cris_enter,
+        wizchip_cris_exit,
+      },
+      {
+        wizchip_cs_select,
+        wizchip_cs_deselect,
+      },
       //M20150601 : Rename the function 
       //wizchip_bus_readbyte,
       //wizchip_bus_writebyte
-      wizchip_bus_readdata,
-      wizchip_bus_writedata,
+      {
+        {
+          wizchip_bus_readdata,
+          wizchip_bus_writedata,
+        }
+      },
 //    wizchip_spi_readbyte,
 //    wizchip_spi_writebyte
       };

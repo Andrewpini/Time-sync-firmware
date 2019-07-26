@@ -20,7 +20,7 @@ uint32_t sync_timer_get_raw_timestamp(void)
     return timer_now();
 }
 
-int32_t sync_timer_set_timer_offset(int32_t offset)
+void sync_timer_set_timer_offset(int32_t offset)
 {
     m_offset = offset;
 }

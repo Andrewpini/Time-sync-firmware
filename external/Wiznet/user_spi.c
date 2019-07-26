@@ -23,7 +23,7 @@ static volatile bool triggered_count = 0;
 
 static SPIConfig_t spi_config_table[2];
 static NRF_SPI_Type *spi_base[2] = {NRF_SPI0, NRF_SPI1};
-static NRF_SPI_Type *SPI;
+// static NRF_SPI_Type *SPI;
 
 
 #define SPI_INSTANCE    0 /**< SPI instance index. */
@@ -47,10 +47,10 @@ void TIMER4_IRQHandler(void)
     //NRF_TIMER4->INTENSET            = TIMER_INTENSET_COMPARE0_Disabled << TIMER_INTENSET_COMPARE0_Pos;
     timeout_triggered = true;
     triggered_count += 1;
-    if (triggered_count > 10)
-    {
-        triggered_count = 0;
-    }
+//    if (triggered_count > 10) *** ALWAYS RETURNS FALSE
+//    {
+//        triggered_count = 0;
+//    }
 }
 
 void spi_master_timeout_start(void)
@@ -130,7 +130,7 @@ uint32_t* spi_master_init(SPIModuleNumber spi_num, SPIConfig_t *spi_config)
 
 bool spi_master_tx(SPIModuleNumber spi_num, uint16_t transfer_size, const uint8_t *tx_data)
 {
-    volatile uint32_t dummyread;
+    // volatile uint32_t dummyread;
 
     if(tx_data == 0)
     {

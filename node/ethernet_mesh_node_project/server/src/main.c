@@ -39,6 +39,7 @@
 #include <string.h>
 
 /* GPIO */
+#include "boards.h"
 #include "app_timer.h"
 
 /* Core */
@@ -106,7 +107,7 @@ static rssi_util_t m_rssi_util;
 
 /* Time sync v1 */
 static uint8_t own_MAC[6] = {0};
-static uint8_t mesh_node_gap_name[17];
+static uint8_t mesh_node_gap_name[18];
 static time_sync_controller_t m_time_sync_controller;
 static dsm_handle_t m_time_sync_subscribe_handle;
 static dsm_handle_t m_time_sync_publish_handle;
@@ -137,7 +138,7 @@ static void app_time_sync_event_cb(sync_event_t sync_event)
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
 }
 
-static void app_rssi_server_cb(const rssi_data_entry_t* p_data) // TODO: Seems like packets almost only are sent one way?
+static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Seems like packets almost only are sent one way?
 {
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
@@ -155,20 +156,31 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data) // TODO: Seems l
             uint32_t target_port = 11035;
         #endif
 
+        buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
+        buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
+
         if(!is_network_busy())
         {
             set_network_busy(true);
-        
-            buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
-            buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
-            buf[2] = (uint8_t)((p_data->src_addr & 0xFF00) >> 8);
-            buf[3] = (uint8_t)(p_data->src_addr & 0x00FF);
-            buf[4] = p_data->mean_rssi;
-            buf[5] = p_data->msg_count;
 
-            len = 6;
+            uint8_t i;
+
+            for(i=0; i<length; i++)
+            {
+              buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
+              buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
+              buf[4] = (p_data+i)->mean_rssi;
+              buf[5] = (p_data+i)->msg_count;
+
+              len = 6;
                  
-            uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+              uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+
+              if(err != 0)
+              {
+                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb)\n");
+              }
+            }
 
             set_network_busy(false);
         }
@@ -366,6 +378,7 @@ int main(void)
     user_ethernet_init();
     dhcp_init();
     broadcast_init();
+    connection_init();
     
     #ifdef BROADCAST_ENABLED
         /* Hardcoded 'true' since we are using broadcast*/
@@ -378,7 +391,7 @@ int main(void)
         }
     #endif
 
-    connection_init();
+    pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
 
     rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
 

@@ -35,6 +35,11 @@ void send_i_am_alive_message(void)
         len = strlen((const char *)&buf[0]);
         uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
+        if(err != 0)
+        {
+          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_i_am_alive_message)\n");
+        }
+
         set_network_busy(false);
     }
 }

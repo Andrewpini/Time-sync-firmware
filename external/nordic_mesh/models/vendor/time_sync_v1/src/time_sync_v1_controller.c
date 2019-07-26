@@ -64,7 +64,7 @@ static void time_sync_publish_timeout_handler(access_model_handle_t handle, void
 {
     if(m_publish_timer_active)
     {
-        uint32_t error_code = send_initial_sync_msg((time_sync_controller_t *)p_args);
+      ERROR_CHECK(send_initial_sync_msg((time_sync_controller_t *)p_args));
     }
 }
 

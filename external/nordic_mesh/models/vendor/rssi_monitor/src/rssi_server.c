@@ -22,52 +22,52 @@ static void rssi_publish_timeout_handler(access_model_handle_t handle, void * p_
     (void)send_rssi_data((rssi_server_t*) p_args);
 }
  
-static void reliable_status_cb(access_model_handle_t model_handle, void * p_args, access_reliable_status_t status)
-{
-    switch (status)
-    {
-        case ACCESS_RELIABLE_TRANSFER_SUCCESS:
-            break;
+//static void reliable_status_cb(access_model_handle_t model_handle, void * p_args, access_reliable_status_t status)
+//{
+//    switch (status)
+//    {
+//        case ACCESS_RELIABLE_TRANSFER_SUCCESS:
+//            break;
+//
+//        case ACCESS_RELIABLE_TRANSFER_TIMEOUT:
+//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Reliable transfer of RSSI data has timed out\n");
+//            break;
+//
+//        case ACCESS_RELIABLE_TRANSFER_CANCELLED:
+//            break;
+//
+//        default:
+//            /* Should not be possible. */
+//            NRF_MESH_ASSERT(false);
+//            break;
+//    }
+//
+//    /* Allow new data to be sent */
+//    m_active_transfer = false;
+//}
 
-        case ACCESS_RELIABLE_TRANSFER_TIMEOUT:
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Reliable transfer of RSSI data has timed out\n");
-            break;
-
-        case ACCESS_RELIABLE_TRANSFER_CANCELLED:
-            break;
-
-        default:
-            /* Should not be possible. */
-            NRF_MESH_ASSERT(false);
-            break;
-    }
-
-    /* Allow new data to be sent */
-    m_active_transfer = false;
-}
-
-static uint32_t send_reliable_message(const rssi_server_t * p_server, uint16_t opcode, const uint8_t * p_data, uint16_t length)
-{
-    const access_reliable_t reliable = {
-        .model_handle = p_server->model_handle,
-        .message = {
-            .p_buffer = p_data,
-            .length = length,
-            .opcode = ACCESS_OPCODE_VENDOR(opcode, ACCESS_COMPANY_ID_NORDIC),
-            .force_segmented = false,
-            .transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT,
-            .access_token = nrf_mesh_unique_token_get(),
-        },
-        .reply_opcode = {
-            .opcode = RSSI_OPCODE_RSSI_ACK,
-            .company_id = ACCESS_COMPANY_ID_NORDIC,
-        },
-        .timeout = SEC_TO_US(30),
-        .status_cb = reliable_status_cb,
-    };
-
-    return access_model_reliable_publish(&reliable);
-}
+//static uint32_t send_reliable_message(const rssi_server_t * p_server, uint16_t opcode, const uint8_t * p_data, uint16_t length)
+//{
+//    const access_reliable_t reliable = {
+//        .model_handle = p_server->model_handle,
+//        .message = {
+//            .p_buffer = p_data,
+//            .length = length,
+//            .opcode = ACCESS_OPCODE_VENDOR(opcode, ACCESS_COMPANY_ID_NORDIC),
+//            .force_segmented = false,
+//            .transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT,
+//            .access_token = nrf_mesh_unique_token_get(),
+//        },
+//        .reply_opcode = {
+//            .opcode = RSSI_OPCODE_RSSI_ACK,
+//            .company_id = ACCESS_COMPANY_ID_NORDIC,
+//        },
+//        .timeout = SEC_TO_US(30),
+//        .status_cb = reliable_status_cb,
+//    };
+//
+//    return access_model_reliable_publish(&reliable);
+//}
 
 /* Refine and sends the collected rssi data to the client */
 static uint32_t send_rssi_data(rssi_server_t * p_server)
@@ -86,11 +86,12 @@ static uint32_t send_rssi_data(rssi_server_t * p_server)
         m_outgoing_rssi_data[i].msg_count = m_rssi_entries[i].msg_count;
     }
     #ifdef RSSI_OVER_ETHERNET_ENABLED
-        p_server->rssi_server_handler(m_outgoing_rssi_data);
+        p_server->rssi_server_handler(m_outgoing_rssi_data, m_rssi_entry_counter);
 
         /* Reset the local RSSI data buffer */
         memset(m_rssi_entries, NULL, sizeof(m_rssi_entries));
         m_rssi_entry_counter = 0;
+        return -1;
     #else
         uint32_t error_code = send_reliable_message(p_server, RSSI_OPCODE_SEND_RSSI_DATA, (const uint8_t*) m_outgoing_rssi_data, sizeof(m_outgoing_rssi_data[0]) * m_rssi_entry_counter);
 

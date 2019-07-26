@@ -18,7 +18,6 @@
 
 APP_TIMER_DEF(m_blink_timer);
 static uint32_t m_blink_count;
-static uint32_t m_blink_mask;
 static uint32_t m_prev_state;
 
 #define DFU_BUTTON_PRESS_FREQUENCY (((uint64_t) (400) << 15ULL) / 1000ULL) // 400 ms

@@ -19,7 +19,7 @@ typedef struct
 typedef struct __rssi_server_t rssi_server_t;
 
 /** Event callback function type */ 
-typedef void (*rssi_server_evt_cb_t)(const rssi_data_entry_t* p_data);
+typedef void (*rssi_server_evt_cb_t)(const rssi_data_entry_t* p_data, uint8_t length);
 
 /* Rssi server instance structure */
 struct __rssi_server_t

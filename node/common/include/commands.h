@@ -13,6 +13,7 @@
 // Typedef for control commands
 typedef enum
 {
+    RESET_NODE                      = 0,
     WHOAMI_START                    = 1,
     WHOAMI_STOP                     = 2,
     CMD_SERVER_IP_BROADCAST         = 10,

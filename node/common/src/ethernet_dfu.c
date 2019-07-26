@@ -5,6 +5,7 @@
 #include "mesh_flash.h"
 #include "boards.h"
 
+static bool dfu_button_flag = false;
 
 void dfu_set_button_flag()
 {
@@ -85,12 +86,12 @@ void dfu_write_own_ip(uint8_t * p_own_ip_uint8)
 {
   uint32_t * p_dfu_own_ip = (uint32_t *)0xFE004;
 
-  uint8_t stored_own_ip[4];
-
-  stored_own_ip[0] = (uint8_t)*p_dfu_own_ip;
-  stored_own_ip[1] = (uint8_t)*(p_dfu_own_ip + 1);
-  stored_own_ip[2] = (uint8_t)*(p_dfu_own_ip + 2);
-  stored_own_ip[3] = (uint8_t)*(p_dfu_own_ip + 3);
+//  uint8_t stored_own_ip[4];
+//
+//  stored_own_ip[0] = (uint8_t)*p_dfu_own_ip;
+//  stored_own_ip[1] = (uint8_t)*(p_dfu_own_ip + 1);
+//  stored_own_ip[2] = (uint8_t)*(p_dfu_own_ip + 2);
+//  stored_own_ip[3] = (uint8_t)*(p_dfu_own_ip + 3);
   
   uint32_t own_ip_uint32[4];
 
@@ -122,12 +123,12 @@ void dfu_write_server_ip(uint8_t * p_server_ip_uint8)
 {
   uint32_t * p_dfu_server_ip = (uint32_t *)0xFE014;
 
-  uint8_t stored_server_ip[4];
-
-  stored_server_ip[0] = (uint8_t)*p_dfu_server_ip;
-  stored_server_ip[1] = (uint8_t)*(p_dfu_server_ip + 1);
-  stored_server_ip[2] = (uint8_t)*(p_dfu_server_ip + 2);
-  stored_server_ip[3] = (uint8_t)*(p_dfu_server_ip + 3);
+//  uint8_t stored_server_ip[4];
+//
+//  stored_server_ip[0] = (uint8_t)*p_dfu_server_ip;
+//  stored_server_ip[1] = (uint8_t)*(p_dfu_server_ip + 1);
+//  stored_server_ip[2] = (uint8_t)*(p_dfu_server_ip + 2);
+//  stored_server_ip[3] = (uint8_t)*(p_dfu_server_ip + 3);
   
   uint32_t server_ip_uint32[4];
 
