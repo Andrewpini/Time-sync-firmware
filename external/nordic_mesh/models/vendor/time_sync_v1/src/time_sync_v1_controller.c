@@ -38,12 +38,14 @@ static uint32_t m_outgoing_tid;
 static uint8_t m_current_received_session_tid;
 static uint8_t m_prev_received_session_tid;
 static uint16_t m_senders_addr;
+static bool m_is_master;
 
 
 
 /* Forward declaration */
 static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid);
 static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token);
+static void set_as_master(void);
 
 
 //TODO Remove or make better
@@ -58,8 +60,14 @@ void send_timestamp(void)
 void sync_set_pub_timer(bool on_off)
 {
     m_publish_timer_active = on_off;
+    set_as_master();
 }
 
+
+static void set_as_master(void)
+{
+    m_is_master = true;
+}
 
 /*Calculates the time compensation for which channel the packet was recived on*/
 static uint32_t compensate_for_channel(uint8_t channel)
@@ -129,7 +137,7 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
 static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
 
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
     {
         uint32_t incoming_tid;
         memcpy(&incoming_tid, p_message->p_data, p_message->length);
@@ -149,7 +157,7 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
 
 static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
     {
 //
 //        /* Aborts the syncronization attempt if the address does not match the sender of the initial sync msg. Resets the session ID
