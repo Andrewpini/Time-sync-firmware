@@ -174,11 +174,11 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) 
 
               len = 6;
                  
-              uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+              int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
-              if(err != 0)
+              if(err < 0)
               {
-                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb)\n");
+                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb): %d\n", err);
               }
             }
 

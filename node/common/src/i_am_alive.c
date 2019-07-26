@@ -33,11 +33,11 @@ void send_i_am_alive_message(void)
         sprintf((char *)&buf[0], "I AM ALIVE - %02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
     
         len = strlen((const char *)&buf[0]);
-        uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+        int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
-        if(err != 0)
+        if(err < 0)
         {
-          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_i_am_alive_message)\n");
+          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_i_am_alive_message): %d\n", err);
         }
 
         set_network_busy(false);
@@ -45,8 +45,8 @@ void send_i_am_alive_message(void)
 }
 
 void i_am_alive_timer_handler(void * p_unused){
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "I AM ALIVE TIMER\n");
-    send_i_am_alive_message();
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "I AM ALIVE TIMER\n");
+//    send_i_am_alive_message();
 }
 
 void i_am_alive_timer_init(void)
