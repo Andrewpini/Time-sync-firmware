@@ -10,6 +10,8 @@
 #include "nrf_mesh.h"
 #include "timeslot_timer.h"
 #include "sync_timer_handler.h"
+#include "access_config.h"
+
 
 
 typedef struct
@@ -108,6 +110,7 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
     message.access_token = nrf_mesh_unique_token_get();
 
+    access_model_publish_ttl_set(p_server->model_handle, 0);
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
     return error_code;
 }
@@ -196,6 +199,7 @@ uint32_t send_initial_sync_msg(time_sync_controller_t * p_server)
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
     message.access_token = m_own_token;
     
+    access_model_publish_ttl_set(p_server->model_handle, 0);
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
     m_initial_timestamp_sent = true;
     return error_code;
