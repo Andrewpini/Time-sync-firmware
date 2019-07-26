@@ -77,6 +77,7 @@
 #endif
 
 APP_TIMER_DEF(m_timeout_timer_id);
+//APP_TIMER_DEF(m_logging_timer_id);
 
 void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
 {
@@ -128,6 +129,11 @@ static void timeout_timer_handler(void * p_context)
 	NVIC_SystemReset();
 }
 
+//static void logging_timer_handler(void * p_context)
+//{
+//	NRF_LOG_FLUSH();
+//}
+
 static void lfclk_request(void)
 {
     ret_code_t err_code = nrf_drv_clock_init();
@@ -140,17 +146,30 @@ static void timer_init(void)
 	lfclk_request();
 	app_timer_init();
 	
-	uint32_t err_code = app_timer_create(&m_timeout_timer_id,
+	uint32_t err_code;
+
+	err_code = app_timer_create(&m_timeout_timer_id,
                                 APP_TIMER_MODE_SINGLE_SHOT,
                                 timeout_timer_handler);
   APP_ERROR_CHECK(err_code);
+	
+//	err_code = app_timer_create(&m_logging_timer_id,
+//                                APP_TIMER_MODE_REPEATED,
+//                                logging_timer_handler);
+//  APP_ERROR_CHECK(err_code);
 }
 
 static void timeout_timer_start(void)
 {
-	uint32_t err_code = app_timer_start(m_timeout_timer_id, APP_TIMER_TICKS(120000), NULL);
+	uint32_t err_code = app_timer_start(m_timeout_timer_id, APP_TIMER_TICKS(60000), NULL);
   APP_ERROR_CHECK(err_code);
 }
+
+//static void logging_timer_start(void)
+//{
+//	uint32_t err_code = app_timer_start(m_logging_timer_id, APP_TIMER_TICKS(500), NULL);
+//  APP_ERROR_CHECK(err_code);
+//}
 
 /**@brief Function for application main entry. */
 int main(void)
@@ -167,6 +186,7 @@ int main(void)
 	
 		timer_init();
 		timeout_timer_start();
+//		logging_timer_start();
 
     ret_val = nrf_bootloader_init();
     APP_ERROR_CHECK(ret_val);

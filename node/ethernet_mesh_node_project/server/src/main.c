@@ -39,6 +39,7 @@
 #include <string.h>
 
 /* GPIO */
+#include "boards.h"
 #include "app_timer.h"
 
 /* Core */
@@ -60,6 +61,7 @@
 #include "rssi_util.h"
 #include "rssi_common.h"
 #include "health_client.h"
+#include "time_sync_v1_controller.h"
 
 /* Logging and RTT */
 #include "log.h"
@@ -90,6 +92,9 @@
 #include "time_sync_timer.h"
 #include "config.h"
 #include "socket.h"
+#include "time_sync_v1_controller.h"
+#include "sync_timer_handler.h"
+#include "i_am_alive.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -99,6 +104,13 @@ static dsm_handle_t m_appkey_handle;
 static rssi_server_t m_rssi_server;
 static health_client_t m_health_client;
 static rssi_util_t m_rssi_util;
+
+/* Time sync v1 */
+static uint8_t own_MAC[6] = {0};
+static uint8_t mesh_node_gap_name[18];
+static time_sync_controller_t m_time_sync_controller;
+static dsm_handle_t m_time_sync_subscribe_handle;
+static dsm_handle_t m_time_sync_publish_handle;
 
 static dsm_handle_t health_subscribe_handle;
 static dsm_handle_t health_publish_handle;
@@ -118,13 +130,18 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
     }
 }
 
-static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
+static void app_time_sync_event_cb(sync_event_t sync_event) 
 {
-        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "*** RSSI server callback ** %d\n", p_data->msg_count);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src: %d\n", sync_event.sender.addr);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst: %d\n", sync_event.reciver.addr);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src timestamp: %d\n", sync_event.sender.timestamp);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
+}
+
+static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Seems like packets almost only are sent one way?
+{
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
-        uint8_t own_MAC[6] = {0};
-        get_own_MAC(own_MAC);
 
         dsm_local_unicast_address_t local_addr;
         dsm_local_unicast_addresses_get(&local_addr);
@@ -134,25 +151,36 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data)
             uint8_t target_IP[4] = {255, 255, 255, 255}; 
             uint32_t target_port = 11035;;
         #else
-            uint8_t target_IP[4] = {10, 0, 0, 4};    
-            uint32_t target_port = 15000;
-            get_target_IP_and_port(target_IP, &target_port);
+            uint8_t target_IP[4];
+            get_target_IP(target_IP);       
+            uint32_t target_port = 11035;
         #endif
+
+        buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
+        buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
 
         if(!is_network_busy())
         {
             set_network_busy(true);
-        
-            buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
-            buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
-            buf[2] = (uint8_t)((p_data->src_addr & 0xFF00) >> 8);
-            buf[3] = (uint8_t)(p_data->src_addr & 0x00FF);
-            buf[4] = p_data->mean_rssi;
-            buf[5] = p_data->msg_count;
 
-            len = 6;
+            uint8_t i;
+
+            for(i=0; i<length; i++)
+            {
+              buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
+              buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
+              buf[4] = (p_data+i)->mean_rssi;
+              buf[5] = (p_data+i)->msg_count;
+
+              len = 6;
                  
-            uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+              int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+
+              if(err < 0)
+              {
+                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb): %d\n", err);
+              }
+            }
 
             set_network_busy(false);
         }
@@ -185,7 +213,7 @@ static void provisioning_complete_cb(void)
 #if MESH_FEATURE_GATT_ENABLED
     /* Restores the application parameters after switching from the Provisioning
      * service to the Proxy  */
-    gap_params_init();
+    gap_params_init(mesh_node_gap_name);
     conn_params_init();
 #endif
 
@@ -232,6 +260,16 @@ static void provisioning_complete_cb(void)
     ERROR_CHECK(access_model_publish_address_set(m_rssi_server.model_handle, rssi_server_publish_handle));
     ERROR_CHECK(access_model_publish_period_set(m_rssi_server.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 10));
 
+    /*Time sync model*/
+    ERROR_CHECK(dsm_address_subscription_add(TIME_SYNC_GROUP_ADDRESS, &m_time_sync_subscribe_handle));
+    ERROR_CHECK(dsm_address_publish_add(TIME_SYNC_GROUP_ADDRESS, &m_time_sync_publish_handle));
+
+    ERROR_CHECK(access_model_application_bind(m_time_sync_controller.model_handle, m_appkey_handle));
+    ERROR_CHECK(access_model_publish_application_set(m_time_sync_controller.model_handle, m_appkey_handle));
+    ERROR_CHECK(access_model_subscription_add(m_time_sync_controller.model_handle, rssi_util_subscribe_handle));
+    ERROR_CHECK(access_model_publish_address_set(m_time_sync_controller.model_handle, rssi_util_publish_handle));
+    ERROR_CHECK(access_model_publish_period_set(m_time_sync_controller.model_handle, ACCESS_PUBLISH_RESOLUTION_1S, 1));
+
     access_flash_config_store();
 }
 
@@ -246,10 +284,13 @@ static void models_init_cb(void)
 
     ERROR_CHECK(health_client_init(&m_health_client, 0, app_health_event_cb));
     ERROR_CHECK(access_model_subscription_list_alloc(m_health_client.model_handle));
+
+    ERROR_CHECK(time_sync_controller_init(&m_time_sync_controller, 0, app_time_sync_event_cb));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_time_sync_controller.model_handle));
 }
 
 
-static void initialize(void)
+static void initialize(uint8_t * gap_name)
 {
     /* Make sure that high power LED is disabled */
     nrf_gpio_cfg_output(13);
@@ -258,7 +299,7 @@ static void initialize(void)
     ble_stack_init();
 
     #if MESH_FEATURE_GATT_ENABLED
-        gap_params_init();
+        gap_params_init(gap_name);
         conn_params_init();
     #endif
 
@@ -268,7 +309,7 @@ static void initialize(void)
         .core.lfclksrc           = DEV_BOARD_LF_CLK_CFG,
         .core.p_uuid             = NULL,
         .models.models_init_cb   = models_init_cb,
-        .models.config_server_cb = config_server_evt_cb
+        .models.config_server_cb = config_server_evt_cb 
     };
     ERROR_CHECK(mesh_stack_init(&init_params, &m_device_provisioned));
 
@@ -292,6 +333,34 @@ static void initialize(void)
     led_blink_ms(LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
 }
 
+static void app_rtt_input_handler(int key)
+{
+    switch(key)
+    {
+        case '0':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SENDING TIMESTAMP\n");
+            send_timestamp();
+            break;
+
+        case '1':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER ON\n");
+            sync_set_pub_timer(true);
+            break;
+
+        case '2':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER OFF\n");
+            sync_set_pub_timer(false);
+            break;
+
+        case '3':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SET TIMER OFFSET TO 2000 \n");
+            sync_timer_set_timer_offset(2000);
+            break;
+
+        default:
+            break;
+    }
+}
 
 int main(void)
 {
@@ -309,6 +378,7 @@ int main(void)
     user_ethernet_init();
     dhcp_init();
     broadcast_init();
+    connection_init();
     
     #ifdef BROADCAST_ENABLED
         /* Hardcoded 'true' since we are using broadcast*/
@@ -321,10 +391,16 @@ int main(void)
         }
     #endif
 
-    connection_init();
+    pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
 
-    initialize();
+    rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
+
+    get_own_MAC(own_MAC);
+    sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
+
+    initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
+    i_am_alive_timer_init();
 
     while(1){
        if (is_connected())

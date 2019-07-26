@@ -558,7 +558,7 @@ NRF_MESH_STATIC_ASSERT(ACCESS_SUBS_LIST_FLASH_SIZE < ACCESS_MODEL_STATE_FLASH_SI
 /* Verify that the ACCESS_FLASH_PAGE_COUNT is of sufficient size. */
 NRF_MESH_STATIC_ASSERT(FLASH_MANAGER_PAGE_COUNT_MINIMUM(ACCESS_FLASH_ENTRY_SIZE, ACCESS_MODEL_STATE_FLASH_SIZE) <= ACCESS_FLASH_PAGE_COUNT);
 
-static inline void mark_all_as_outdated()
+static inline void mark_all_as_outdated(void)
 {
     /* Mark all allocated subscription lists as outdated. */
     for (uint16_t i = 0; i < ACCESS_SUBSCRIPTION_LIST_COUNT; ++i)

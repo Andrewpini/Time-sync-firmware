@@ -13,6 +13,7 @@
 // Typedef for control commands
 typedef enum
 {
+    RESET_NODE                      = 0,
     WHOAMI_START                    = 1,
     WHOAMI_STOP                     = 2,
     CMD_SERVER_IP_BROADCAST         = 10,
@@ -37,7 +38,8 @@ typedef enum
     CMD_NEW_FIRMWARE_ALL            = 80,
     CMD_NEW_FIRMWARE_MAC            = 81,
     CMD_NEW_FIRMWARE_BUTTON_ENABLE  = 82,
-    CMD_NEW_FIRMWARE_BUTTON_DISABLE = 83
+    CMD_NEW_FIRMWARE_BUTTON_DISABLE = 83,
+    RESET_SYNC                      = 3
 } ctrl_cmd_t;
 
 

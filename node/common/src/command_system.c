@@ -27,10 +27,14 @@
 #include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
+#include "sync_timer_handler.h"
+
 
 #ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
+#include "time_sync_v1_controller.h"
 #endif
+
 
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
 static volatile uint32_t sync_interval      = SYNC_INTERVAL_MS;
@@ -154,6 +158,13 @@ void check_ctrl_cmd(void)
                 // Choose the right action according to command
                 switch (cmd)
                 {
+                    case RESET_NODE:
+                        ERROR_CHECK(sd_nvic_SystemReset());
+                        break;
+                    case RESET_SYNC:
+                        LOG("CMD: RESETING TIME SYNC\r\n");
+                        sync_timer_reset();
+                        break;
                     case WHOAMI_START:
                         LOG("CMD: WHO AM I start\r\n");
                         m_who_am_i_enabled = true;
@@ -173,7 +184,8 @@ void check_ctrl_cmd(void)
                         break;
 
                     case CMD_NEW_SERVER_IP:
-                        set_server_IP_received(false);
+                        set_target_IP(&broadcast_ip[0]);
+                        set_server_IP_received(true);
                         break;
 
                     #ifdef MESH_ENABLED
@@ -181,6 +193,7 @@ void check_ctrl_cmd(void)
                     case CMD_NEW_FIRMWARE_ALL:
                         if(own_IP[0] != 1)
                         {
+                          dfu_erase_flash_page();
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
                           dfu_initiate_and_reset();
@@ -202,6 +215,7 @@ void check_ctrl_cmd(void)
                             if(own_mac[0] == received_data[18] && own_mac[1] == received_data[19] && own_mac[2] == received_data[20] && 
                             own_mac[3] == received_data[21] && own_mac[4] == received_data[22] && own_mac[5] == received_data[23])
                             {
+                              dfu_erase_flash_page();
                               dfu_write_own_ip(own_IP);
                               dfu_write_server_ip(&broadcast_ip[0]);
                               dfu_initiate_and_reset();
@@ -218,6 +232,7 @@ void check_ctrl_cmd(void)
                         if(own_IP[0] != 1)
                         {
                           LOG("CMD: Set button DFU flag\r\n");
+                          dfu_erase_flash_page();
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
                           dfu_set_button_flag();
@@ -271,11 +286,11 @@ void check_ctrl_cmd(void)
                         pwm_set_duty_cycle(LED_HP, led_hp_default_value);
                         break;
 
-                    case CMD_ALL_HPLED_CUSTOM:
-                        LOG("CMD: All HP LEDs set to value: %d.%d\r\n", p_payload[0], (p_payload[1] / 10.0f));
-                        float duty_cycle = p_payload[0] + (p_payload[1] / 10.0f);
-                        pwm_set_duty_cycle(LED_HP, duty_cycle);
-                        break;
+//                    case CMD_ALL_HPLED_CUSTOM:
+//                        LOG("CMD: All HP LEDs set to value: %d.%d\r\n", p_payload[0], (p_payload[1] / 10.0f));
+//                        float duty_cycle = p_payload[0] + (p_payload[1] / 10.0f);
+//                        pwm_set_duty_cycle(LED_HP, duty_cycle);
+//                        break;
 
                     case CMD_SINGLE_HPLED_ON:
                         LOG("CMD: Single HP LED ON: \n");
@@ -284,6 +299,7 @@ void check_ctrl_cmd(void)
                         {
                             pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
                             LOG("IP match -> turning HP LED ON\r\n");
+                            send_timestamp();
                         }
                         else 
                         {
@@ -317,19 +333,19 @@ void check_ctrl_cmd(void)
                         }
                         break;
 
-                    case CMD_SINGLE_HPLED_CUSTOM:
-                        LOG("CMD: Single HP LED custom value: ");
-                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
-                        {
-                            float duty_cycle = p_payload [4] + (p_payload[5] / 10.0f);
-                            pwm_set_duty_cycle(LED_HP, duty_cycle);
-                            LOG("IP match -> setting HP LED duty cycle to %d.%d \% \r\n", p_payload[4], p_payload[5]);
-                        }
-                        else 
-                        {
-                            LOG("no IP match -> no action \r\n");
-                        }
-                        break;
+//                    case CMD_SINGLE_HPLED_CUSTOM:
+//                        LOG("CMD: Single HP LED custom value: ");
+//                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+//                        {
+//                            float duty_cycle = p_payload [4] + (p_payload[5] / 10.0f);
+//                            pwm_set_duty_cycle(LED_HP, duty_cycle);
+//                            LOG("IP match -> setting HP LED duty cycle to %d.%d \% \r\n", p_payload[4], p_payload[5]);
+//                        }
+//                        else 
+//                        {
+//                            LOG("no IP match -> no action \r\n");
+//                        }
+//                        break;
 
                     case CMD_SINGLE_ADVERTISING_ON:
                         LOG("CMD: Single advertising START: ");

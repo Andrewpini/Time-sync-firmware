@@ -4,7 +4,7 @@
 #include "dhcp.h"
 #include "wizchip_conf.h"
 
-void w5500_dhcp_assign()
+void w5500_dhcp_assign(void)
 {
 	wiz_NetInfo prev_gWIZNETINFO;
 	wiz_NetInfo gWIZNETINFO;
@@ -21,7 +21,7 @@ void w5500_dhcp_assign()
 	ctlnetwork(CN_SET_NETINFO, (void*) &gWIZNETINFO);
 }
 
-void w5500_dhcp_conflict()
+void w5500_dhcp_conflict(void)
 {
 	// TODO
 	;

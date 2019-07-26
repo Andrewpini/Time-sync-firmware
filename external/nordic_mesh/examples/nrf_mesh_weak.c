@@ -48,12 +48,12 @@
 
 /*lint -e762 Redundantly declared symbol; these are all declared elsewhere. */
 
-uint32_t _weak_handler()
+uint32_t _weak_handler(void)
 {
     return NRF_ERROR_NOT_SUPPORTED;
 }
 
-void * _weak_handler_ptr()
+void * _weak_handler_ptr(void)
 {
     return NULL;
 }

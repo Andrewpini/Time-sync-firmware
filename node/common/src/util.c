@@ -51,7 +51,7 @@ void dict_add(dict_t dict, const uint8_t *key, int32_t value) {
        dict->cap *= 2;
        dict->entry = realloc((void *)dict->entry, dict->cap * sizeof(dict_entry_t));
    }
-   strncpy((uint8_t *)&(dict->entry[dict->len].key[0]), strdup(key), 6);
+   strncpy((char *)&(dict->entry[dict->len].key[0]), strdup((char *)key), 6);
    dict->entry[dict->len].value = value;
    dict->len++;
 }

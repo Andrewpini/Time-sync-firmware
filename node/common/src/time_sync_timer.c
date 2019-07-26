@@ -8,14 +8,15 @@
 #include "config.h"
 #include "dhcp.h"
 #include "time_sync_timer.h"
+#include "timer_drift_measurement.h"
 
 void drift_timer_init(void)
 {
+    DRIFT_TIMER->TASKS_START         = 1;
     DRIFT_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
     DRIFT_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
     DRIFT_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    DRIFT_TIMER->CC[0]               = DRIFT_TIMER_MAX;                                                                
-    DRIFT_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
+    DRIFT_TIMER->TASKS_START         = 1;
 }
 
 
@@ -32,7 +33,10 @@ void sync_master_timer_init(uint32_t interval){
     SYNC_TIMER->PRESCALER                           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
     SYNC_TIMER->CC[0]                               = interval * 1000; 
     SYNC_TIMER->SHORTS                              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
-}
+    SYNC_TIMER->INTENSET                            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
+
+    NVIC_EnableIRQ(TIMER1_IRQn);
+    NVIC_SetPriority(TIMER1_IRQn, 7);}
 
 
 /* When the mesh stack is present we choose to use the implemented timer module instead of a unique timer */
@@ -52,6 +56,10 @@ void dhcp_timer_init(void)
     ERROR_CHECK(app_timer_start(DHCP_TIMER, HAL_MS_TO_RTC_TICKS(1000), NULL));
 }
 
+void TIMER1_IRQHandler(void)
+{
+    SYNC_TIMER->EVENTS_COMPARE[0] = 0;
+}
 #else
 void dhcp_timer_init(void)
 {
@@ -73,3 +81,4 @@ void TIMER1_IRQHandler(void)
     DHCP_time_handler();
 }
 #endif
+

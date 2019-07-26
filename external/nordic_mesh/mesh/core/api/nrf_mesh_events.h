@@ -212,6 +212,8 @@ typedef struct
 {
     /** Packet identifier. */
     nrf_mesh_tx_token_t token;
+    timestamp_t timestamp;
+
 } nrf_mesh_evt_tx_complete_t;
 
 /** DFU event parameters. */
