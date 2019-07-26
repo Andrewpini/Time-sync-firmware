@@ -42,10 +42,10 @@ void gpiote_init(void)
                                                 | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
 
     // GPIOTE configuration for DFU button
-    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_DFU_BUTTON]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
-                                                | (BUTTON_0 << GPIOTE_CONFIG_PSEL_Pos)
-                                                | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                                | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_DFU_BUTTON] = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
+                                                  | (BUTTON_0 << GPIOTE_CONFIG_PSEL_Pos)
+                                                  | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                  | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
 
     NVIC_EnableIRQ(GPIOTE_IRQn);
     NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos);

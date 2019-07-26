@@ -23,7 +23,6 @@ void ppi_init(void)
     NRF_PPI->FORK[PPI_CHANNEL_SYNC].TEP      = (uint32_t) &(DRIFT_TIMER->TASKS_START);
 
     NRF_PPI->CHENSET = (1 << PPI_CHANNEL_SYNC_IN) | (1 << PPI_CHANNEL_SYNC);
-
 }
 
 
