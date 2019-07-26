@@ -53,10 +53,10 @@ void gpiote_init(void)
 }
 
 void sync_master_gpio_init(void){
-    nrf_gpio_cfg_output(SYNC_IN);
+    nrf_gpio_cfg_output(SYNC_OUT);
     // GPIOTE configuration for syncing of clocks
     NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_OUT]     = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
-                                                    | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
+                                                    | (SYNC_OUT << GPIOTE_CONFIG_PSEL_Pos)
                                                     | (0 << GPIOTE_CONFIG_PORT_Pos)
                                                     | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos)
                                                     | (GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos);
@@ -145,7 +145,7 @@ void button_init_dfu(void)
 // Initializes time synchronization
 void sync_line_init(void) 
 {
-    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_PULLUP);
     nrf_gpio_cfg_output(SYNC_OUT);
     nrf_gpio_pin_clear(SYNC_OUT);
 }
