@@ -47,7 +47,7 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
 
 void send_timestamp(void);
 
-void sync_set_pub_timer(bool on_off);
+void sync_set_pub_timer(bool on_off, bool is_master);
 
 /** @} */
 

@@ -344,12 +344,12 @@ static void app_rtt_input_handler(int key)
 
         case '1':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER ON\n");
-            sync_set_pub_timer(true);
+            sync_set_pub_timer(true, true);
             break;
 
         case '2':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER OFF\n");
-            sync_set_pub_timer(false);
+            sync_set_pub_timer(false, false);
             break;
 
         case '3':

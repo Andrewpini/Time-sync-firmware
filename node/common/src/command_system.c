@@ -297,9 +297,10 @@ void check_ctrl_cmd(void)
 
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
-                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
-                            LOG("IP match -> turning HP LED ON\r\n");
-                            send_timestamp();
+//                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
+//                            LOG("IP match -> turning HP LED ON\r\n");
+//                            send_timestamp();
+                              sync_set_pub_timer(true, true);
                         }
                         else 
                         {
@@ -311,8 +312,9 @@ void check_ctrl_cmd(void)
                         LOG("CMD: Single HP LED OFF: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
-                            pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
-                            LOG("IP match -> turning HP LED OFF\r\n");
+//                            pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
+//                            LOG("IP match -> turning HP LED OFF\r\n");
+                              sync_set_pub_timer(false, false);
                         }
                         else 
                         {
