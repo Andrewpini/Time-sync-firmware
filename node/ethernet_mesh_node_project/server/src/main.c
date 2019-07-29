@@ -132,10 +132,10 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
 
 static void app_time_sync_event_cb(sync_event_t sync_event) 
 {
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src: %d\n", sync_event.sender.addr);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst: %d\n", sync_event.reciver.addr);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src timestamp: %d\n", sync_event.sender.timestamp);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src: %d\n", sync_event.sender.addr);
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst: %d\n", sync_event.reciver.addr);
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src timestamp: %d\n", sync_event.sender.timestamp);
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
 }
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Seems like packets almost only are sent one way?
@@ -326,7 +326,7 @@ static void initialize(uint8_t * gap_name)
             .p_device_uri = EX_URI_LS_SERVER
         };
         ERROR_CHECK(mesh_provisionee_prov_start(&prov_start_params));
-    }
+    } 
     ERROR_CHECK(mesh_stack_start());
 
     mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());

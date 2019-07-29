@@ -31,20 +31,20 @@ static time_sync_controller_t* mp_controller;
 static bool m_initial_timestamp_sent;
 static bool m_publish_timer_active;
 static uint32_t m_channel_compensation;
-static uint32_t m_outgoing_tid;
+static uint8_t m_outgoing_tid;
 
 //static uint8_t m_own_session_tid;
 
 static uint8_t m_current_received_session_tid;
 static uint8_t m_prev_received_session_tid;
-static uint16_t m_senders_addr;
+static uint16_t m_senders_addr; 
 static bool m_is_master;
 
 
 
 /* Forward declaration */
 static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid);
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token);
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t token);
 static void set_as_master(void);
 
 
@@ -61,6 +61,24 @@ void sync_set_pub_timer(bool on_off)
 {
     m_publish_timer_active = on_off;
     set_as_master();
+    ERROR_CHECK(access_model_publish_period_set(mp_controller->model_handle, ACCESS_PUBLISH_RESOLUTION_100MS, 2));
+}
+
+
+static bool is_higher_tid(uint8_t tid)
+{
+    if(abs(tid - m_current_received_session_tid) > UINT8_MAX / 2)
+    {
+        return true;
+    }
+    else if(m_current_received_session_tid < tid)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 
@@ -112,7 +130,27 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
 }
 
 
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint32_t token)
+static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid)
+{
+    m_own_token = nrf_mesh_unique_token_get();
+
+    access_message_tx_t message;
+    message.opcode.opcode = TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG;
+    message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
+    message.p_buffer = (const uint8_t*) &session_tid;
+    message.length = sizeof(session_tid);
+    message.force_segmented = false;
+    message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
+    message.access_token = m_own_token;
+    
+    access_model_publish_ttl_set(p_server->model_handle, 0);
+    uint32_t error_code = access_model_publish(p_server->model_handle, &message);
+    m_initial_timestamp_sent = true;
+    return error_code;
+}
+
+
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t token)
 {
     sync_tx_timestamp_t msg;
     msg.tx_timestamp = tx_timestamp;
@@ -139,11 +177,12 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
 
     if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
     {
-        uint32_t incoming_tid;
+        uint8_t incoming_tid;
         memcpy(&incoming_tid, p_message->p_data, p_message->length);
-        if(m_current_received_session_tid < incoming_tid)
+
+        if(is_higher_tid(incoming_tid))
         {
-            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "handle_msg_initial_sync\n");
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "incoming tid: %d, prev tid: %d\n", incoming_tid, m_prev_received_session_tid);
 
             m_current_received_session_tid = incoming_tid;
             m_senders_addr = p_message->meta_data.src.value;
@@ -159,13 +198,7 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
 {
     if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
     {
-//
-//        /* Aborts the syncronization attempt if the address does not match the sender of the initial sync msg. Resets the session ID
-//           for the next attempt of sync */
-//        if(p_message->meta_data.src.value != m_senders_addr){
-//            m_current_received_session_tid = m_prev_received_session_tid;
-//            return;
-//        }
+
         sync_tx_timestamp_t sender_timestamp;
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
 
@@ -177,12 +210,9 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
             m_prev_received_session_tid = m_current_received_session_tid;
             m_senders_addr = NULL;
             send_initial_sync_msg(mp_controller, m_prev_received_session_tid);
-//            sync_event_t sync_event;
-//            sync_event.sender.addr = p_message->meta_data.src.value;
-//            sync_event.sender.timestamp = sender_timestamp.tx_timestamp + m_channel_compensation;
-//            sync_event.reciver.addr = p_message->meta_data.dst.value;
-//            sync_event.reciver.timestamp = m_reciver_timestamp;
-//            mp_controller->time_sync_controller_handler(sync_event);
+
+            sync_event_t sync_event;
+            mp_controller->time_sync_controller_handler(sync_event);
         } else {
             m_current_received_session_tid = m_prev_received_session_tid;
         }
@@ -198,26 +228,6 @@ static const access_opcode_handler_t m_opcode_handlers[] =
 
 
 /********** Interface functions **********/
-
-
-static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid)
-{
-    m_own_token = nrf_mesh_unique_token_get();
-
-    access_message_tx_t message;
-    message.opcode.opcode = TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG;
-    message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
-    message.p_buffer = (const uint8_t*) &session_tid;
-    message.length = sizeof(session_tid);
-    message.force_segmented = false;
-    message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
-    message.access_token = m_own_token;
-    
-    access_model_publish_ttl_set(p_server->model_handle, 0);
-    uint32_t error_code = access_model_publish(p_server->model_handle, &message);
-    m_initial_timestamp_sent = true;
-    return error_code;
-}
 
 
 uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t element_index, time_sync_controller_evt_cb_t time_sync_controller_handler)
@@ -241,7 +251,8 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
 
     m_time_sync_core_evt_handler.evt_cb = time_sync_core_evt_cb;
     event_handler_add(&m_time_sync_core_evt_handler);
-    return access_model_add(&add_params, &p_server->model_handle);
+    uint32_t error_code = access_model_add(&add_params, &p_server->model_handle);
+    return error_code;
 }
 
 
