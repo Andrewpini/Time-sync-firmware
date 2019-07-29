@@ -20,26 +20,34 @@ typedef struct
     uint32_t token;
 } sync_tx_timestamp_t;
 
+typedef struct
+{
+    uint16_t sender_addr;
+    uint32_t timestamp_val;
+} timestamp_buffer_entry_t;
+
 static const uint32_t CHANNEL_COMPENSATION = 367;
 static const uint8_t LAST_ADV_CHANNEL = 39;
 
 static nrf_mesh_evt_handler_t m_time_sync_core_evt_handler;
 static nrf_mesh_tx_token_t m_own_token;
-static uint32_t m_reciver_timestamp;
+//static uint32_t m_reciver_timestamp;
 //static uint32_t m_incoming_tid;
 static time_sync_controller_t* mp_controller;
 static bool m_initial_timestamp_sent;
 static bool m_publish_timer_active;
-static uint32_t m_channel_compensation;
+//static uint32_t m_channel_compensation;
 static uint8_t m_outgoing_tid;
 
 //static uint8_t m_own_session_tid;
 
 static uint8_t m_current_received_session_tid;
 static uint8_t m_prev_received_session_tid;
-static uint16_t m_senders_addr; 
+//static uint16_t m_senders_addr; 
 static bool m_is_master;
 
+static timestamp_buffer_entry_t inital_timestamp_buffer[10];
+static uint8_t inital_timestamp_entry_ctr;
 
 
 /* Forward declaration */
@@ -78,6 +86,33 @@ static bool is_higher_tid(uint8_t tid)
     else
     {
         return false;
+    }
+}
+
+
+static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val)
+{
+        /* Checks if a entry already exists */
+    for (uint8_t i = 0; i < inital_timestamp_entry_ctr; i++)
+    {
+        if (inital_timestamp_buffer[i].sender_addr == addr)
+        {
+            inital_timestamp_buffer[i].timestamp_val = timestamp_val;
+            return;
+        }
+    }
+    /* Adds a new entry as long as there is room in the buffer */
+    if (inital_timestamp_entry_ctr < 10)
+    {
+        inital_timestamp_buffer[inital_timestamp_entry_ctr].sender_addr = addr;
+        inital_timestamp_buffer[inital_timestamp_entry_ctr].timestamp_val = timestamp_val;
+
+        inital_timestamp_entry_ctr++;
+    }
+    else
+    {
+        /* Reset buffer if buffer gets full */
+        inital_timestamp_entry_ctr = 0;
     }
 }
 
@@ -128,7 +163,7 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
             break;
     }
 }
-
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid)
 {
@@ -150,11 +185,34 @@ static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t
 }
 
 
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t token)
+static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
+{
+
+    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
+    {
+        uint8_t incoming_tid;
+        memcpy(&incoming_tid, p_message->p_data, p_message->length);
+
+        if(is_higher_tid(incoming_tid))
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "incoming tid: %d, prev tid: %d\n", incoming_tid, m_prev_received_session_tid);
+
+            m_current_received_session_tid = incoming_tid;
+
+            uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
+            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
+            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp + channel_compensation);
+        }
+
+    }
+}
+
+
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t session_tid)
 {
     sync_tx_timestamp_t msg;
     msg.tx_timestamp = tx_timestamp;
-    msg.token = token;
+    msg.token = session_tid;
     __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "send_tx_sender_timestamp\n");
 
     access_message_tx_t message;
@@ -172,47 +230,32 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
 }
 
 
-static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
-{
-
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
-    {
-        uint8_t incoming_tid;
-        memcpy(&incoming_tid, p_message->p_data, p_message->length);
-
-        if(is_higher_tid(incoming_tid))
-        {
-            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "incoming tid: %d, prev tid: %d\n", incoming_tid, m_prev_received_session_tid);
-
-            m_current_received_session_tid = incoming_tid;
-            m_senders_addr = p_message->meta_data.src.value;
-            m_reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
-            m_channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
-        }
-
-    }
-}
-
-
 static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
     if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
     {
-
         sync_tx_timestamp_t sender_timestamp;
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
 
-        if(m_current_received_session_tid == sender_timestamp.token && p_message->meta_data.src.value == m_senders_addr)
+        if(m_current_received_session_tid == sender_timestamp.token)
         {
-            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "handle_msg_tx_sender_timestamp\n");
+            /* Checks if a entry already exists */
+            for (uint8_t i = 0; i < inital_timestamp_entry_ctr; i++)
+            {
+                if (inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value)
+                {
+                    sync_timer_set_timer_offset(inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+                    m_prev_received_session_tid = m_current_received_session_tid;
 
-            sync_timer_set_timer_offset(m_reciver_timestamp - sender_timestamp.tx_timestamp + m_channel_compensation);
-            m_prev_received_session_tid = m_current_received_session_tid;
-            m_senders_addr = NULL;
-            send_initial_sync_msg(mp_controller, m_prev_received_session_tid);
+                    /*Reset the buffer*/
+                    inital_timestamp_entry_ctr = 0;
 
-            sync_event_t sync_event;
-            mp_controller->time_sync_controller_handler(sync_event);
+                    send_initial_sync_msg(mp_controller, m_prev_received_session_tid);
+
+                    sync_event_t sync_event;
+                    mp_controller->time_sync_controller_handler(sync_event);
+                }
+            }
         } else {
             m_current_received_session_tid = m_prev_received_session_tid;
         }
