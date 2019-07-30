@@ -130,13 +130,6 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
     }
 }
 
-static void app_time_sync_event_cb(sync_event_t sync_event) 
-{
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src: %d\n", sync_event.sender.addr);
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst: %d\n", sync_event.reciver.addr);
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src timestamp: %d\n", sync_event.sender.timestamp);
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
-}
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Seems like packets almost only are sent one way?
 {
@@ -285,7 +278,7 @@ static void models_init_cb(void)
     ERROR_CHECK(health_client_init(&m_health_client, 0, app_health_event_cb));
     ERROR_CHECK(access_model_subscription_list_alloc(m_health_client.model_handle));
 
-    ERROR_CHECK(time_sync_controller_init(&m_time_sync_controller, 0, app_time_sync_event_cb));
+    ERROR_CHECK(time_sync_controller_init(&m_time_sync_controller, 0));
     ERROR_CHECK(access_model_subscription_list_alloc(m_time_sync_controller.model_handle));
 }
 
@@ -339,17 +332,17 @@ static void app_rtt_input_handler(int key)
     {
         case '0':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SENDING TIMESTAMP\n");
-            send_timestamp();
+            time_sync_controller_synchronize();
             break;
 
         case '1':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER ON\n");
-            sync_set_pub_timer(true, true);
+            sync_set_pub_timer(true);
             break;
 
         case '2':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "PUB_TIMER OFF\n");
-            sync_set_pub_timer(false, false);
+            sync_set_pub_timer(false);
             break;
 
         case '3':

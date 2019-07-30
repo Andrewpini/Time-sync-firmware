@@ -1,3 +1,40 @@
+/* Copyright (c) 2010 - 2018, Nordic Semiconductor ASA
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form, except as embedded into a Nordic
+ *    Semiconductor ASA integrated circuit in a product or a software update for
+ *    such product, must reproduce the above copyright notice, this list of
+ *    conditions and the following disclaimer in the documentation and/or other
+ *    materials provided with the distribution.
+ *
+ * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * 4. This software, with or without modification, must only be used with a
+ *    Nordic Semiconductor ASA integrated circuit.
+ *
+ * 5. Any software provided in binary form under this license must not be reverse
+ *    engineered, decompiled, modified and/or disassembled.
+ *
+ * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include "time_sync_v1_controller.h"
 #include "nrf_mesh_assert.h"
 #include "access_reliable.h"
@@ -12,79 +49,60 @@
 #include "sync_timer_handler.h"
 #include "access_config.h"
 
-
+#define INITIAL_TIMESTAMP_BUFFER_SIZE 10
+#define CHANNEL_COMPENSATION_IN_MICRO_SEC 367
+#define LAST_MESH_ADV_CHANNEL 39
 
 typedef struct
 {
     uint32_t tx_timestamp;
-    uint32_t token;
+    uint32_t session_tid;
 } sync_tx_timestamp_t;
 
 typedef struct
 {
     uint16_t sender_addr;
     uint32_t timestamp_val;
-    uint8_t tid;
+    uint8_t session_tid;
 } timestamp_buffer_entry_t;
 
-static const uint32_t CHANNEL_COMPENSATION = 367;
-static const uint8_t LAST_ADV_CHANNEL = 39;
 
-static nrf_mesh_evt_handler_t m_time_sync_core_evt_handler;
-static nrf_mesh_tx_token_t m_own_token;
-//static uint32_t m_reciver_timestamp;
-//static uint32_t m_incoming_tid;
 static time_sync_controller_t* mp_controller;
+static nrf_mesh_evt_handler_t m_time_sync_core_evt_handler;
+static timestamp_buffer_entry_t m_inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFFER_SIZE];
 
-/* Redundant? */
-static bool m_initial_timestamp_sent;
-static bool m_publish_timer_active;
-//static uint32_t m_channel_compensation;
-static uint8_t m_outgoing_tid;
 
-//static uint8_t m_own_session_tid;
-
-//static uint8_t m_current_received_session_tid;
-static uint8_t m_prev_received_session_tid;
-//static uint16_t m_senders_addr; 
-static bool m_is_master;
-
-static timestamp_buffer_entry_t m_inital_timestamp_buffer[10];
+static nrf_mesh_tx_token_t m_current_tx_token;
+static uint8_t m_current_session_tid;
 static uint8_t m_inital_timestamp_entry_ctr;
 
-static volatile int debug_msg_rec_ctr;
+/*For development only*/
+static bool m_publish_timer_active;
 
 
 /* Forward declaration */
 static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid);
 static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t token);
-static void set_as_master(bool val);
 
 
-//TODO Remove or make better
-void send_timestamp(void)
-{
-    m_outgoing_tid++;
-    send_initial_sync_msg(mp_controller, m_outgoing_tid);
-}
-
+/********** Development functions **********/
 
 //TODO Remove or make better
-void sync_set_pub_timer(bool on_off, bool is_master)
+void sync_set_pub_timer(bool on_off)
 {
     m_publish_timer_active = on_off;
-    set_as_master(is_master);
-//    ERROR_CHECK(access_model_publish_period_set(mp_controller->model_handle, ACCESS_PUBLISH_RESOLUTION_100MS, 2));
 }
 
+/********** Utility functions **********/
 
+/* Used to determine if a tid is greater than the current one */
 static bool is_higher_tid(uint8_t tid)
 {
-    if(abs(tid - m_prev_received_session_tid) > UINT8_MAX / 2)
+    if(abs(tid - m_current_session_tid) > (UINT8_MAX / 2))
     {
         return true;
     }
-    else if(m_prev_received_session_tid < tid)
+    else if(m_current_session_tid < tid)
     {
         return true;
     }
@@ -94,25 +112,31 @@ static bool is_higher_tid(uint8_t tid)
     }
 }
 
-
-static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val, uint8_t tid)
+/* Calculates the time compensation for which channel the packet was recived on */
+static uint32_t compensate_for_channel(uint8_t channel)
 {
-        /* Checks if a entry already exists */
+    return CHANNEL_COMPENSATION_IN_MICRO_SEC * (LAST_MESH_ADV_CHANNEL - channel);
+}
+
+
+static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val, uint8_t session_tid)
+{
+    /* Checks if a entry already exists */
     for (uint8_t i = 0; i < m_inital_timestamp_entry_ctr; i++)
     {
         if (m_inital_timestamp_buffer[i].sender_addr == addr)
         {
             m_inital_timestamp_buffer[i].timestamp_val = timestamp_val;
-            m_inital_timestamp_buffer[i].tid = tid;
+            m_inital_timestamp_buffer[i].session_tid = session_tid;
             return;
         }
     }
     /* Adds a new entry as long as there is room in the buffer */
-    if (m_inital_timestamp_entry_ctr < 10)
+    if (m_inital_timestamp_entry_ctr < INITIAL_TIMESTAMP_BUFFER_SIZE)
     {
         m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].sender_addr = addr;
         m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].timestamp_val = timestamp_val;
-        m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].tid = tid;
+        m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].session_tid = session_tid;
 
         m_inital_timestamp_entry_ctr++;
     }
@@ -124,26 +148,15 @@ static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val, uint8_t t
 }
 
 
-static void set_as_master(bool val)
-{
-    m_is_master = val;
-}
+/********** Event/timeout handlers **********/
 
-/*Calculates the time compensation for which channel the packet was recived on*/
-static uint32_t compensate_for_channel(uint8_t channel)
-{
-    return CHANNEL_COMPENSATION * (LAST_ADV_CHANNEL - channel);
-}
-
-
-
-/* Perodic model timeout handle */
+/* Perodic model timeout handler */
 static void time_sync_publish_timeout_handler(access_model_handle_t handle, void * p_args) 
 {
     if(m_publish_timer_active)
     {
-        m_outgoing_tid++;
-        send_initial_sync_msg((time_sync_controller_t *)p_args, m_outgoing_tid);
+        m_current_session_tid++;
+        send_initial_sync_msg((time_sync_controller_t *)p_args, m_current_session_tid);
     }
 }
 
@@ -154,15 +167,9 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
     switch (p_evt->type)
     {
         case NRF_MESH_EVT_TX_COMPLETE:
-            if(m_own_token == p_evt->params.tx_complete.token && m_initial_timestamp_sent)
+            if(m_current_tx_token == p_evt->params.tx_complete.token)
             {
-                static uint32_t last_found_token = 0xFFFFFFFF;
-                if (last_found_token == m_own_token) 
-                {
-                  __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "################# GOT SAME TOKEN TWICE: %u\n", m_own_token);
-                }
-                last_found_token = m_own_token;
-                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_current_offset(), m_outgoing_tid);
+                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_current_offset(), m_current_session_tid);
             }
             break;
 
@@ -170,11 +177,13 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
             break;
     }
 }
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+
+/********** Outgoing message functions **********/
 
 static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid)
 {
-    m_own_token = nrf_mesh_unique_token_get();
+    m_current_tx_token = nrf_mesh_unique_token_get();
 
     access_message_tx_t message;
     message.opcode.opcode = TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG;
@@ -183,34 +192,12 @@ static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t
     message.length = sizeof(session_tid);
     message.force_segmented = false;
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
-    message.access_token = m_own_token;
+    message.access_token = m_current_tx_token;
     
     access_model_publish_ttl_set(p_server->model_handle, 0);
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
 
-    m_initial_timestamp_sent = true;
     return error_code;
-}
-
-
-static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
-{
-
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
-    {
-        uint8_t incoming_tid;
-        memcpy(&incoming_tid, p_message->p_data, p_message->length);
-
-        if(is_higher_tid(incoming_tid))
-        {
-            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "incoming tid: %d, prev tid: %d\n", incoming_tid, m_prev_received_session_tid);
-
-            uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
-            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
-            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp + channel_compensation, incoming_tid);
-        }
-
-    }
 }
 
 
@@ -218,8 +205,7 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
 {
     sync_tx_timestamp_t msg;
     msg.tx_timestamp = tx_timestamp;
-    msg.token = session_tid;
-    __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "send_tx_sender_timestamp\n");
+    msg.session_tid = session_tid;
 
     access_message_tx_t message;
     message.opcode.opcode = TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP;
@@ -236,36 +222,50 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
 }
 
 
+/********** Incoming message handlers **********/
+
+static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
+{
+    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    {
+        uint8_t incoming_tid;
+        memcpy(&incoming_tid, p_message->p_data, p_message->length);
+
+        if(is_higher_tid(incoming_tid))
+        {
+            uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
+            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
+            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp + channel_compensation, incoming_tid);
+        }
+    }
+}
+
+
 static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER && !m_is_master)
+    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
     {
         sync_tx_timestamp_t sender_timestamp;
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
-        debug_msg_rec_ctr++;
 
-        /* Checks if a entry already exists */
+        /* Searches through the buffer for a matching entry */
         for (uint8_t i = 0; i < m_inital_timestamp_entry_ctr; i++)
         {
-            if ((m_inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (m_inital_timestamp_buffer[i].tid == sender_timestamp.token))
+            if ((m_inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (m_inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid))
             {
                 sync_timer_set_timer_offset(m_inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
-                m_prev_received_session_tid = sender_timestamp.token;
 
                 /*Reset the buffer*/
                 m_inital_timestamp_entry_ctr = 0;
                 
-                m_outgoing_tid = sender_timestamp.token;
-                send_initial_sync_msg(mp_controller, sender_timestamp.token);
-
-//                sync_event_t sync_event;
-//                mp_controller->time_sync_controller_handler(sync_event);
+                m_current_session_tid = sender_timestamp.session_tid;
+                send_initial_sync_msg(mp_controller, m_current_session_tid);
             }
         }
-
     }
 }
 
+/********** Opcode handler list *********/
 
 static const access_opcode_handler_t m_opcode_handlers[] =
 {
@@ -277,14 +277,13 @@ static const access_opcode_handler_t m_opcode_handlers[] =
 /********** Interface functions **********/
 
 
-uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t element_index, time_sync_controller_evt_cb_t time_sync_controller_handler)
+uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t element_index)
 {
     if (p_server == NULL)
     {
         return NRF_ERROR_NULL;
     }   
     mp_controller = p_server;
-    p_server->time_sync_controller_handler = time_sync_controller_handler;
     access_model_add_params_t add_params =
     {
         .element_index = element_index,
@@ -300,6 +299,12 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
     event_handler_add(&m_time_sync_core_evt_handler);
     uint32_t error_code = access_model_add(&add_params, &p_server->model_handle);
     return error_code;
+}
+
+void time_sync_controller_synchronize(void)
+{
+    m_current_session_tid++;
+    send_initial_sync_msg(mp_controller, m_current_session_tid);
 }
 
 

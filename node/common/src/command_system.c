@@ -300,7 +300,7 @@ void check_ctrl_cmd(void)
 //                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
 //                            LOG("IP match -> turning HP LED ON\r\n");
 //                            send_timestamp();
-                              sync_set_pub_timer(true, true);
+                              sync_set_pub_timer(true);
                         }
                         else 
                         {
@@ -314,7 +314,7 @@ void check_ctrl_cmd(void)
                         {
 //                            pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
 //                            LOG("IP match -> turning HP LED OFF\r\n");
-                              sync_set_pub_timer(false, false);
+                              sync_set_pub_timer(false);
                         }
                         else 
                         {
