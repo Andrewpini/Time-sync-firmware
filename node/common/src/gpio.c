@@ -145,7 +145,7 @@ void button_init_dfu(void)
 // Initializes time synchronization
 void sync_line_init(void) 
 {
-    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
     nrf_gpio_cfg_output(SYNC_OUT);
     nrf_gpio_pin_clear(SYNC_OUT);
 }
