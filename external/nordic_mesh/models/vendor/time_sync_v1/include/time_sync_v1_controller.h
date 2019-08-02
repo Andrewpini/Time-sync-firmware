@@ -46,7 +46,7 @@
 
 /**
  * @defgroup TIME_SYNC_CONTROLLER Time Sync controller
- * @ingroup TIME_SYNC_CONTROLLER
+ * @ingroup TIME_SYNC_COMMON
  * Model implementing time sync controller model.
  * @{
  */
@@ -91,7 +91,7 @@ void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t r
 /* For development only */
 void sync_set_pub_timer(bool on_off);
 
-/** @} */
+/** @} end of TIME_SYNC_CONTROLLER */
 
 #endif
 

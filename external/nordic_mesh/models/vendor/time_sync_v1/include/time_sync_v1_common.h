@@ -38,6 +38,12 @@
 #ifndef TIME_SYNC_V1_COMMON_H__
 #define TIME_SYNC_V1_COMMON_H__
 
+/**
+ * @defgroup TIME_SYNC_COMMON Time Sync controller common 
+ * @ingroup MESH_API_GROUP_VENDOR_MODELS
+ * @{
+ */
+
 /* Model ID for the time sync controller model. */
 #define TIME_SYNC_CONTROLLER_MODEL_ID 0x0026
 
@@ -50,4 +56,5 @@ typedef enum
 
 } time_sync_common_opcode_t;
 
+/**@} end of TIME_SYNC_COMMON */
 #endif

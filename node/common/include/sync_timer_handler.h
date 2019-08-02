@@ -39,8 +39,8 @@
 #define SYNC_TIMER_HANDLER_H
 
 /**
- * @defgroup SYNC TIMER HANDLER The handler for the time syncronization
- * @ingroup TIME_SYNC_CONTROLLER
+ * @defgroup SYNC_TIMER_HANDLER The handler for the time syncronization
+ * @ingroup TIME_SYNC_COMMON
  * Handler responsible for keeping track of and adjusting the time offset
  * that ensures time sync between devices
  * @{
@@ -86,6 +86,6 @@ void sync_timer_reset(void);
  */
 int32_t sync_timer_get_offset(void);
 
-/** @} */
+/** @} end of SYNC_TIMER_HANDLER */
 
 #endif
