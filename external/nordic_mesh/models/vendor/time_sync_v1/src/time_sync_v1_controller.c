@@ -52,6 +52,7 @@
 #define INITIAL_TIMESTAMP_BUFFER_SIZE 10
 #define CHANNEL_COMPENSATION_IN_MICRO_SEC 367
 #define LAST_MESH_ADV_CHANNEL 39
+#define TIME_SYNC_RESET_REPEATS 5
 
 typedef struct
 {
@@ -75,6 +76,8 @@ static timestamp_buffer_entry_t m_inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFF
 static nrf_mesh_tx_token_t m_current_tx_token;
 static uint8_t m_current_session_tid;
 static uint8_t m_inital_timestamp_entry_ctr;
+static bool m_is_master;
+
 
 /*For development only*/
 static bool m_publish_timer_active;
@@ -231,7 +234,7 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
         uint8_t incoming_tid;
         memcpy(&incoming_tid, p_message->p_data, p_message->length);
 
-        if(is_higher_tid(incoming_tid))
+        if(is_higher_tid(incoming_tid) && (!m_is_master))
         {
             uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
             uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
@@ -251,7 +254,7 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
         /* Searches through the buffer for a matching entry */
         for (uint8_t i = 0; i < m_inital_timestamp_entry_ctr; i++)
         {
-            if ((m_inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (m_inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid))
+            if ((m_inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (m_inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid) && (!m_is_master))
             {
                 sync_timer_set_timer_offset(m_inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
 
@@ -265,12 +268,23 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
     }
 }
 
+static void handle_msg_reset(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
+{
+    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    {
+        /* Resets the session tid*/
+        m_current_session_tid = 0;
+        m_is_master = false;
+    }
+}
+
 /********** Opcode handler list *********/
 
 static const access_opcode_handler_t m_opcode_handlers[] =
 {
     { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP, ACCESS_COMPANY_ID_NORDIC),   handle_msg_tx_sender_timestamp },
     { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG, ACCESS_COMPANY_ID_NORDIC),   handle_msg_initial_sync },
+    { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_RESET, ACCESS_COMPANY_ID_NORDIC),   handle_msg_reset },
 };
 
 
@@ -301,10 +315,37 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
     return error_code;
 }
 
-void time_sync_controller_synchronize(void)
+void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t repeat)
 {
+    m_current_tx_token = nrf_mesh_unique_token_get();
+
+    access_message_tx_t message;
+    message.opcode.opcode = TIME_SYNC_OPCODE_RESET;
+    message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
+    message.p_buffer = NULL;
+    message.length = 0;
+    message.force_segmented = false;
+    message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
+    message.access_token = m_current_tx_token;
+    
+    for(uint8_t i = 0; i < repeat; i++)
+    {
+        access_model_publish(p_controller->model_handle, &message);
+    }
+}
+
+void time_sync_controller_synchronize(time_sync_controller_t * p_controller)
+{
+    /*If the sending device is not master from before we need to make sure that the system is fully reset before we can start syncing*/
+    if(!m_is_master)
+{
+        m_is_master = true;
+        m_current_session_tid = 0;
+        time_sync_controller_reset(p_controller, TIME_SYNC_RESET_REPEATS);
+    }
+
     m_current_session_tid++;
-    send_initial_sync_msg(mp_controller, m_current_session_tid);
+    send_initial_sync_msg(p_controller, m_current_session_tid);
 }
 
 

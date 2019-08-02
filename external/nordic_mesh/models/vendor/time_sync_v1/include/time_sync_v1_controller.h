@@ -70,6 +70,16 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16
  */
 void time_sync_controller_synchronize(void);
 
+/**
+ * Resets the time sync controller on all nodes.
+ *
+ * @note Should always be used before switching root time sync device.
+ *
+ * @param[in] repeat The number of reset messages to send. should reflect connection quality in the
+ * @note  Should reflect the connection quality in the network to ensure that all devices recieves 
+ *        the reset message.
+ */
+void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t repeat);
 
 /* For development only */
 void sync_set_pub_timer(bool on_off);
