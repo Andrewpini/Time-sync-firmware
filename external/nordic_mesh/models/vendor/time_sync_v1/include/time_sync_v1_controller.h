@@ -44,6 +44,13 @@
 #include "access.h"
 #include "time_sync_v1_common.h"
 
+/**
+ * @defgroup TIME_SYNC_CONTROLLER Time Sync controller
+ * @ingroup TIME_SYNC_CONTROLLER
+ * Model implementing time sync controller model.
+ * @{
+ */
+
 /* Object type for rssi server instances. */
 typedef struct __time_sync_controller_t time_sync_controller_t;
 
@@ -68,7 +75,7 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16
 /**
  * Starts a syncronization session with the caller of this function as the root device.
  */
-void time_sync_controller_synchronize(void);
+void time_sync_controller_synchronize(time_sync_controller_t * p_controller);
 
 /**
  * Resets the time sync controller on all nodes.

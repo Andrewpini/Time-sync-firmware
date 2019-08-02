@@ -35,7 +35,7 @@ void sync_line_event_handler(void)
     DRIFT_TIMER->TASKS_CAPTURE[0] = 1;
     uint32_t processing_delay = DRIFT_TIMER->CC[0];
     uint32_t now = timer_now() - processing_delay;
-    m_adjusted_sync_timer = now - sync_timer_get_current_offset();
+    m_adjusted_sync_timer = now - sync_timer_get_offset();
 
     _ENABLE_IRQS(was_masked);
 }

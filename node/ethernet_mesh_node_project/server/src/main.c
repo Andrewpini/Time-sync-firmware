@@ -332,7 +332,7 @@ static void app_rtt_input_handler(int key)
     {
         case '0':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SENDING TIMESTAMP\n");
-            time_sync_controller_synchronize();
+            time_sync_controller_synchronize(&m_time_sync_controller);
             break;
 
         case '1':

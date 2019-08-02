@@ -158,8 +158,7 @@ static void time_sync_publish_timeout_handler(access_model_handle_t handle, void
 {
     if(m_publish_timer_active)
     {
-        m_current_session_tid++;
-        send_initial_sync_msg((time_sync_controller_t *)p_args, m_current_session_tid);
+        time_sync_controller_synchronize((time_sync_controller_t *)p_args);
     }
 }
 
@@ -172,7 +171,7 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
         case NRF_MESH_EVT_TX_COMPLETE:
             if(m_current_tx_token == p_evt->params.tx_complete.token)
             {
-                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_current_offset(), m_current_session_tid);
+                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_offset(), m_current_session_tid);
             }
             break;
 
@@ -257,6 +256,7 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
             if ((m_inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (m_inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid) && (!m_is_master))
             {
                 sync_timer_set_timer_offset(m_inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved a sync update. Offset set to %d\n", m_inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
 
                 /*Reset the buffer*/
                 m_inital_timestamp_entry_ctr = 0;
@@ -291,13 +291,13 @@ static const access_opcode_handler_t m_opcode_handlers[] =
 /********** Interface functions **********/
 
 
-uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t element_index)
+uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16_t element_index)
 {
-    if (p_server == NULL)
+    if (p_controller == NULL)
     {
         return NRF_ERROR_NULL;
     }   
-    mp_controller = p_server;
+    mp_controller = p_controller;
     access_model_add_params_t add_params =
     {
         .element_index = element_index,
@@ -306,12 +306,12 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_server, uint16_t e
         .p_opcode_handlers = m_opcode_handlers,
         .opcode_count = ARRAY_SIZE(m_opcode_handlers),
         .publish_timeout_cb = time_sync_publish_timeout_handler,
-        .p_args = p_server
+        .p_args = p_controller
     };
 
     m_time_sync_core_evt_handler.evt_cb = time_sync_core_evt_cb;
     event_handler_add(&m_time_sync_core_evt_handler);
-    uint32_t error_code = access_model_add(&add_params, &p_server->model_handle);
+    uint32_t error_code = access_model_add(&add_params, &p_controller->model_handle);
     return error_code;
 }
 
@@ -338,7 +338,7 @@ void time_sync_controller_synchronize(time_sync_controller_t * p_controller)
 {
     /*If the sending device is not master from before we need to make sure that the system is fully reset before we can start syncing*/
     if(!m_is_master)
-{
+    {
         m_is_master = true;
         m_current_session_tid = 0;
         time_sync_controller_reset(p_controller, TIME_SYNC_RESET_REPEATS);
