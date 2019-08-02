@@ -171,7 +171,7 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
         case NRF_MESH_EVT_TX_COMPLETE:
             if(m_current_tx_token == p_evt->params.tx_complete.token)
             {
-                send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_offset(), m_current_session_tid);
+                (void) send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_offset(), m_current_session_tid);
             }
             break;
 
@@ -196,7 +196,7 @@ static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
     message.access_token = m_current_tx_token;
     
-    access_model_publish_ttl_set(p_server->model_handle, 0);
+    (void) access_model_publish_ttl_set(p_server->model_handle, 0);
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
 
     return error_code;
@@ -218,7 +218,7 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
     message.access_token = nrf_mesh_unique_token_get();
 
-    access_model_publish_ttl_set(p_server->model_handle, 0);
+    (void) access_model_publish_ttl_set(p_server->model_handle, 0);
     uint32_t error_code = access_model_publish(p_server->model_handle, &message);
     return error_code;
 }
@@ -262,7 +262,7 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
                 m_inital_timestamp_entry_ctr = 0;
                 
                 m_current_session_tid = sender_timestamp.session_tid;
-                send_initial_sync_msg(mp_controller, m_current_session_tid);
+                (void) send_initial_sync_msg(mp_controller, m_current_session_tid);
             }
         }
     }
@@ -330,7 +330,7 @@ void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t r
     
     for(uint8_t i = 0; i < repeat; i++)
     {
-        access_model_publish(p_controller->model_handle, &message);
+        (void) access_model_publish(p_controller->model_handle, &message);
     }
 }
 
@@ -345,7 +345,7 @@ void time_sync_controller_synchronize(time_sync_controller_t * p_controller)
     }
 
     m_current_session_tid++;
-    send_initial_sync_msg(p_controller, m_current_session_tid);
+    (void) send_initial_sync_msg(p_controller, m_current_session_tid);
 }
 
 

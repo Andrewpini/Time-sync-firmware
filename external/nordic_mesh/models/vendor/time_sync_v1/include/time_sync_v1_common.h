@@ -53,7 +53,6 @@ typedef enum
     TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG = 0xF7,
     TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP = 0xF6,
     TIME_SYNC_OPCODE_RESET = 0xF7
-
 } time_sync_common_opcode_t;
 
 /**@} end of TIME_SYNC_COMMON */
