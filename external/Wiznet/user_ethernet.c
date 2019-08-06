@@ -69,6 +69,19 @@ static void network_init(void)
     }
 }
 
+static uint8_t critical_section_depth;
+static void critical_section_enter(void)
+{
+  uint8_t dummy;
+  app_util_critical_region_enter(&dummy);
+  critical_section_depth++;
+}
+
+ static void critical_section_exit(void)
+{
+  critical_section_depth--;
+  app_util_critical_region_exit(critical_section_depth);
+}
 
 void user_ethernet_init()
 {
@@ -82,6 +95,8 @@ void user_ethernet_init()
     gWIZNETINFO.mac[3] = (NRF_FICR->DEVICEADDR[0] >> 24)       ;
     gWIZNETINFO.mac[4] = (NRF_FICR->DEVICEADDR[1]      ) & 0xFF;
     gWIZNETINFO.mac[5] = (NRF_FICR->DEVICEADDR[1] >>  8) & 0xFF;
+
+    reg_wizchip_cris_cbfunc(critical_section_enter, critical_section_exit);
 
     reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
     reg_wizchip_spi_cbfunc(wizchip_read, wizchip_write);
