@@ -45,12 +45,12 @@ void send_i_am_alive_message(void)
 }
 
 void i_am_alive_timer_handler(void * p_unused){
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "I AM ALIVE TIMER\n");
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "I AM ALIVE TIMER\n");
     send_i_am_alive_message();
 }
 
 void i_am_alive_timer_init(void)
 {
   ERROR_CHECK(app_timer_create(&IM_ALIVE_TIMER, APP_TIMER_MODE_REPEATED, i_am_alive_timer_handler));
-  ERROR_CHECK(app_timer_start(IM_ALIVE_TIMER, HAL_MS_TO_RTC_TICKS(50), NULL));
+  ERROR_CHECK(app_timer_start(IM_ALIVE_TIMER, HAL_MS_TO_RTC_TICKS(100), NULL));
 }

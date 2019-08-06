@@ -53,6 +53,9 @@
 //! THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
+
+#include "log.h"
+#include "hal.h"
 #include "socket.h"
 
 //M20150401 : Typing Error
@@ -495,21 +498,21 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
    uint32_t taddr;
 
    CHECK_SOCKNUM();
-
     sn_mr_resister = getSn_MR(sn) & 0x0F;
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "sn_mr_register: %d, irq level: %u\n", sn_mr_resister, NVIC_GetPriority(hal_irq_active_get()));
 
-   switch(sn_mr_resister)
-   {
-      case Sn_MR_UDP:
-      case Sn_MR_MACRAW:
+//   switch(sn_mr_resister)
+//   {
+//      case Sn_MR_UDP:
+//      case Sn_MR_MACRAW:
+////         break;
+////   #if ( _WIZCHIP_ < 5200 )
+//      case Sn_MR_IPRAW:
 //         break;
-//   #if ( _WIZCHIP_ < 5200 )
-      case Sn_MR_IPRAW:
-         break;
-//   #endif
-      default:
-         return SOCKERR_SOCKMODE;
-   }
+////   #endif
+//      default:
+//         return SOCKERR_SOCKMODE;
+//   }
    CHECK_SOCKDATA();
    //M20140501 : For avoiding fatal error on memory align mismatched
    //if(*((uint32_t*)addr) == 0) return SOCKERR_IPINVALID;

@@ -141,8 +141,11 @@ void check_ctrl_cmd(void)
         int32_t recv_len = recvfrom(SOCKET_BROADCAST, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
 
         // If any data is received, check which command it is
-        if (recv_len > 0)
+        if (recv_len <= 0)
         {
+          LOG("Error receiving package (%d)\r\n", recv_len);
+        }
+        else if (recv_len > 0){
             uint8_t str[CTRL_CMD_PREFIX_LEN] = {0};
             const uint8_t pos[] = CTRL_CMD_PREFIX;
             strncpy((void *)str, (const void *)received_data, CTRL_CMD_PREFIX_LEN);

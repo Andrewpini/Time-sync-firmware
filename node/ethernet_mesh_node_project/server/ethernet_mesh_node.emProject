@@ -21,7 +21,7 @@
       debug_additional_load_file="$(SDK_ROOT:../../../../nRF5_SDK_15.2.0_9412b96)/components/softdevice/s132/hex/s132_nrf52_6.1.0_softdevice.hex"
       debug_start_from_entry_point_symbol="No"
       debug_target_connection="J-Link"
-      gcc_all_warnings_command_line_options="-Wall;-Wextra;-Wstrict-prototypes;-Wno-unused-parameter;-Wno-expansion-to-defined"
+      gcc_all_warnings_command_line_options="-Wall;-Wextra;-Wstrict-prototypes;-Wno-unused-parameter;-Wno-expansion-to-defined;-Wno-unused-function"
       gcc_enable_all_warnings="Yes"
       linker_output_format="bin"
       linker_printf_width_precision_supported="Yes"
