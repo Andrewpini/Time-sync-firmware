@@ -362,6 +362,21 @@ static void app_rtt_input_handler(int key)
     }
 }
 
+//static void poll_handler(void * lol)
+//{
+//       if (is_connected())
+//       {
+//          if (is_server_IP_received())
+//          {
+//              send_drift_timing_sample();
+//          }
+//          check_ctrl_cmd();
+//       }
+//}
+  
+
+//APP_TIMER_DEF(POLL_TIMER);
+
 int main(void)
 {
     clock_init();
@@ -374,6 +389,7 @@ int main(void)
     drift_timer_init();
     gpiote_init();
     ppi_init();
+
     spi0_master_init();
     user_ethernet_init();
     dhcp_init();
@@ -385,10 +401,13 @@ int main(void)
         set_server_IP_received(true);
 
     #else
-        while(!is_server_IP_received())
-        {
-            check_ctrl_cmd();
-        }
+//        while(!is_server_IP_received())
+//        {
+//            check_ctrl_cmd();
+//        }
+          uint8_t test_ip[] = {10, 0, 0, 20};
+          set_target_IP(test_ip);
+          set_server_IP_received(true);
     #endif
 
     pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
@@ -401,16 +420,19 @@ int main(void)
     initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
     i_am_alive_timer_init();
+    
+//    ERROR_CHECK(app_timer_create(&POLL_TIMER, APP_TIMER_MODE_REPEATED, poll_handler));
+//    ERROR_CHECK(app_timer_start(POLL_TIMER, HAL_MS_TO_RTC_TICKS(100), NULL));
 
     while(1){
-       if (is_connected())
-              {
-                  if (is_server_IP_received())
-                  {
-                      send_drift_timing_sample();
-                  }
-                  check_ctrl_cmd();
-              }
+    if (is_connected())
+       {
+          if (is_server_IP_received())
+          {
+              send_drift_timing_sample();
+          }
+          check_ctrl_cmd();
+       }
         (void)sd_app_evt_wait();
     }
 }
