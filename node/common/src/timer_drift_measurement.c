@@ -71,11 +71,11 @@ void send_drift_timing_sample(void)
                             m_time_tic);
         
             len = strlen((const char *)&buf[0]);
-            uint32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+            int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
-            if(err != 0)
+            if(err < 0)
             {
-              __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_drift_timing_sample)\n");
+              __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_drift_timing_sample): %d\n", err);
             }
 
             set_network_busy(false);

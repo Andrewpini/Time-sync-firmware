@@ -65,6 +65,8 @@ static uint16_t sock_is_sending = 0;
 
 static uint16_t sock_remained_size[_WIZCHIP_SOCK_NUM_] = {0,0,};
 
+uint8_t sn_mr_resister;
+
 //M20150601 : For extern decleation
 //static uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
 uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
@@ -493,7 +495,10 @@ int32_t sendto(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t
    uint32_t taddr;
 
    CHECK_SOCKNUM();
-   switch(getSn_MR(sn) & 0x0F)
+
+    sn_mr_resister = getSn_MR(sn) & 0x0F;
+
+   switch(sn_mr_resister)
    {
       case Sn_MR_UDP:
       case Sn_MR_MACRAW:
