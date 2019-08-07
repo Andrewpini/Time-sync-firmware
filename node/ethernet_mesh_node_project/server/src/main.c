@@ -131,7 +131,7 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
 }
 
 
-static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Seems like packets almost only are sent one way?
+static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Need to build packets in a better way
 {
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
