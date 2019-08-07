@@ -51,6 +51,16 @@
  * @{
  */
 
+#define INITIAL_TIMESTAMP_BUFFER_SIZE 10
+
+
+typedef struct
+{
+    uint16_t sender_addr;
+    uint32_t timestamp_val;
+    uint8_t session_tid;
+} timestamp_buffer_entry_t;
+
 /* Object type for rssi server instances. */
 typedef struct __time_sync_controller_t time_sync_controller_t;
 
@@ -58,6 +68,10 @@ typedef struct __time_sync_controller_t time_sync_controller_t;
 struct __time_sync_controller_t
 {
     access_model_handle_t model_handle;
+
+    bool is_master;
+    uint8_t inital_timestamp_entry_ctr;
+    timestamp_buffer_entry_t inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFFER_SIZE];
 };
 
 /* Initializes the time sync controller model.
@@ -67,6 +81,7 @@ struct __time_sync_controller_t
  *
  * @retval NRF_SUCCESS The model was successfully initialized.
  * @retval NRF_ERROR_NULL NULL pointer in function arguments
+ * @retval NRF_ERROR_FORBIDDEN This model has already been initialized 
  *
  * @see access_model_add()
  */

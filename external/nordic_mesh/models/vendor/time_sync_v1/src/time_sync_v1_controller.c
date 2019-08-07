@@ -49,7 +49,6 @@
 #include "sync_timer_handler.h"
 #include "access_config.h"
 
-#define INITIAL_TIMESTAMP_BUFFER_SIZE 10
 #define CHANNEL_COMPENSATION_IN_MICRO_SEC 367
 #define LAST_MESH_ADV_CHANNEL 39
 #define TIME_SYNC_RESET_REPEATS 5
@@ -60,23 +59,12 @@ typedef struct
     uint32_t session_tid;
 } sync_tx_timestamp_t;
 
-typedef struct
-{
-    uint16_t sender_addr;
-    uint32_t timestamp_val;
-    uint8_t session_tid;
-} timestamp_buffer_entry_t;
-
 
 static time_sync_controller_t* mp_controller;
 static nrf_mesh_evt_handler_t m_time_sync_core_evt_handler;
-static timestamp_buffer_entry_t m_inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFFER_SIZE];
-
 
 static nrf_mesh_tx_token_t m_current_tx_token;
 static uint8_t m_current_session_tid;
-static uint8_t m_inital_timestamp_entry_ctr;
-static bool m_is_master;
 
 
 /*For development only*/
@@ -115,7 +103,7 @@ static bool is_higher_tid(uint8_t tid)
     }
 }
 
-/* Calculates the time compensation for which channel the packet was recived on */
+/* Calculates the time compensation for which channel the message was recived on */
 static uint32_t compensate_for_channel(uint8_t channel)
 {
     return CHANNEL_COMPENSATION_IN_MICRO_SEC * (LAST_MESH_ADV_CHANNEL - channel);
@@ -125,28 +113,28 @@ static uint32_t compensate_for_channel(uint8_t channel)
 static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val, uint8_t session_tid)
 {
     /* Checks if a entry already exists */
-    for (uint8_t i = 0; i < m_inital_timestamp_entry_ctr; i++)
+    for (uint8_t i = 0; i < mp_controller->inital_timestamp_entry_ctr; i++)
     {
-        if (m_inital_timestamp_buffer[i].sender_addr == addr)
+        if (mp_controller->inital_timestamp_buffer[i].sender_addr == addr)
         {
-            m_inital_timestamp_buffer[i].timestamp_val = timestamp_val;
-            m_inital_timestamp_buffer[i].session_tid = session_tid;
+            mp_controller->inital_timestamp_buffer[i].timestamp_val = timestamp_val;
+            mp_controller->inital_timestamp_buffer[i].session_tid = session_tid;
             return;
         }
     }
     /* Adds a new entry as long as there is room in the buffer */
-    if (m_inital_timestamp_entry_ctr < INITIAL_TIMESTAMP_BUFFER_SIZE)
+    if (mp_controller->inital_timestamp_entry_ctr < INITIAL_TIMESTAMP_BUFFER_SIZE)
     {
-        m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].sender_addr = addr;
-        m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].timestamp_val = timestamp_val;
-        m_inital_timestamp_buffer[m_inital_timestamp_entry_ctr].session_tid = session_tid;
+        mp_controller->inital_timestamp_buffer[mp_controller->inital_timestamp_entry_ctr].sender_addr = addr;
+        mp_controller->inital_timestamp_buffer[mp_controller->inital_timestamp_entry_ctr].timestamp_val = timestamp_val;
+        mp_controller->inital_timestamp_buffer[mp_controller->inital_timestamp_entry_ctr].session_tid = session_tid;
 
-        m_inital_timestamp_entry_ctr++;
+        mp_controller->inital_timestamp_entry_ctr++;
     }
     else
     {
         /* Reset buffer if buffer gets full */
-        m_inital_timestamp_entry_ctr = 0;
+        mp_controller->inital_timestamp_entry_ctr = 0;
     }
 }
 
@@ -233,7 +221,7 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
         uint8_t incoming_tid;
         memcpy(&incoming_tid, p_message->p_data, p_message->length);
 
-        if(is_higher_tid(incoming_tid) && (!m_is_master))
+        if(is_higher_tid(incoming_tid) && (!mp_controller->is_master))
         {
             uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
             uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
@@ -251,15 +239,15 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
 
         /* Searches through the buffer for a matching entry */
-        for (uint8_t i = 0; i < m_inital_timestamp_entry_ctr; i++)
+        for (uint8_t i = 0; i < mp_controller->inital_timestamp_entry_ctr; i++)
         {
-            if ((m_inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (m_inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid) && (!m_is_master))
+            if ((mp_controller->inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (mp_controller->inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid) && (!mp_controller->is_master))
             {
-                sync_timer_set_timer_offset(m_inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
-                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved a sync update. Offset set to %d\n", m_inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+                sync_timer_set_timer_offset(mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved a sync update. Offset set to %d\n", mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
 
                 /*Reset the buffer*/
-                m_inital_timestamp_entry_ctr = 0;
+                mp_controller->inital_timestamp_entry_ctr = 0;
                 
                 m_current_session_tid = sender_timestamp.session_tid;
                 (void) send_initial_sync_msg(mp_controller, m_current_session_tid);
@@ -272,9 +260,9 @@ static void handle_msg_reset(access_model_handle_t handle, const access_message_
 {
     if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
     {
-        /* Resets the session tid*/
+        /* Resets the device's session tid*/
         m_current_session_tid = 0;
-        m_is_master = false;
+        mp_controller->is_master = false;
     }
 }
 
@@ -296,7 +284,11 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16
     if (p_controller == NULL)
     {
         return NRF_ERROR_NULL;
-    }   
+    }
+    else if(mp_controller != NULL)
+    {
+        return NRF_ERROR_FORBIDDEN;
+    }
     mp_controller = p_controller;
     access_model_add_params_t add_params =
     {
@@ -315,10 +307,9 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16
     return error_code;
 }
 
+
 void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t repeat)
 {
-    m_current_tx_token = nrf_mesh_unique_token_get();
-
     access_message_tx_t message;
     message.opcode.opcode = TIME_SYNC_OPCODE_RESET;
     message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
@@ -326,7 +317,7 @@ void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t r
     message.length = 0;
     message.force_segmented = false;
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
-    message.access_token = m_current_tx_token;
+    message.access_token = nrf_mesh_unique_token_get();
     
     for(uint8_t i = 0; i < repeat; i++)
     {
@@ -334,14 +325,15 @@ void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t r
     }
 }
 
+
 void time_sync_controller_synchronize(time_sync_controller_t * p_controller)
 {
     /*If the sending device is not master from before we need to make sure that the system is fully reset before we can start syncing*/
-    if(!m_is_master)
+    if(!mp_controller->is_master)
     {
-        m_is_master = true;
+        mp_controller->is_master = true;
         m_current_session_tid = 0;
-        time_sync_controller_reset(p_controller, TIME_SYNC_RESET_REPEATS);
+//        time_sync_controller_reset(p_controller, TIME_SYNC_RESET_REPEATS);
     }
 
     m_current_session_tid++;
