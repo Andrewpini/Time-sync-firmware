@@ -49,22 +49,33 @@
 #include "sync_timer_handler.h"
 #include "access_config.h"
 
-#define CHANNEL_COMPENSATION_IN_MICRO_SEC 367
-#define LAST_MESH_ADV_CHANNEL 39
-#define TIME_SYNC_RESET_REPEATS 5
+#ifndef CHANNEL_COMPENSATION_IN_MICRO_SEC
+    #define CHANNEL_COMPENSATION_IN_MICRO_SEC 367
+#endif
+
+#ifndef LAST_MESH_ADV_CHANNEL
+  #define LAST_MESH_ADV_CHANNEL 39
+#endif
+
+#ifndef FIRST_MESH_ADV_CHANNEL
+  #define FIRST_MESH_ADV_CHANNEL 37
+#endif
 
 typedef struct
 {
     uint32_t tx_timestamp;
-    uint32_t session_tid;
+    uint8_t session_tid;
 } sync_tx_timestamp_t;
 
+typedef struct
+{
+    uint8_t tid;
+    uint16_t channel_comp; /**< Channel compensation in micro seconds */ 
+    uint8_t hop_ctr;
+} sync_initial_msg_t;
 
 static time_sync_controller_t* mp_controller;
 static nrf_mesh_evt_handler_t m_time_sync_core_evt_handler;
-
-static nrf_mesh_tx_token_t m_current_tx_token;
-static uint8_t m_current_session_tid;
 
 
 /*For development only*/
@@ -72,8 +83,8 @@ static bool m_publish_timer_active;
 
 
 /* Forward declaration */
-static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid);
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t token);
+static uint32_t send_initial_sync_msg(time_sync_controller_t * p_controller, sync_initial_msg_t init_msg);
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_controller, sync_tx_timestamp_t msg);
 
 
 /********** Development functions **********/
@@ -89,28 +100,17 @@ void sync_set_pub_timer(bool on_off)
 /* Used to determine if a tid is greater than the current one */
 static bool is_higher_tid(uint8_t tid)
 {
-    if(abs(tid - m_current_session_tid) > (UINT8_MAX / 2))
-    {
-        return true;
-    }
-    else if(m_current_session_tid < tid)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return (int8_t)(mp_controller->current_session_tid - tid) < 0;
 }
 
 /* Calculates the time compensation for which channel the message was recived on */
-static uint32_t compensate_for_channel(uint8_t channel)
+static uint32_t compensate_for_channel(uint8_t channel, uint16_t compensation_per_chan)
 {
-    return CHANNEL_COMPENSATION_IN_MICRO_SEC * (LAST_MESH_ADV_CHANNEL - channel);
+    return compensation_per_chan * (channel - FIRST_MESH_ADV_CHANNEL);
 }
 
 
-static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val, uint8_t session_tid)
+static void add_timestamp_entry(uint16_t addr, uint32_t timestamp_val, uint8_t session_tid, uint8_t hop_cnt)
 {
     /* Checks if a entry already exists */
     for (uint8_t i = 0; i < mp_controller->inital_timestamp_entry_ctr; i++)
@@ -157,9 +157,12 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
     switch (p_evt->type)
     {
         case NRF_MESH_EVT_TX_COMPLETE:
-            if(m_current_tx_token == p_evt->params.tx_complete.token)
+            if(mp_controller->current_tx_token == p_evt->params.tx_complete.token)
             {
-                (void) send_tx_sender_timestamp(mp_controller, p_evt->params.tx_complete.timestamp - sync_timer_get_offset(), m_current_session_tid);
+                sync_tx_timestamp_t msg;
+                msg.tx_timestamp = p_evt->params.tx_complete.timestamp - sync_timer_get_offset() - ((LAST_MESH_ADV_CHANNEL - FIRST_MESH_ADV_CHANNEL) * CHANNEL_COMPENSATION_IN_MICRO_SEC);
+                msg.session_tid = mp_controller->current_session_tid;
+                (void) send_tx_sender_timestamp(mp_controller, msg);
             }
             break;
 
@@ -171,32 +174,31 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
 
 /********** Outgoing message functions **********/
 
-static uint32_t send_initial_sync_msg(time_sync_controller_t * p_server, uint8_t session_tid)
+static uint32_t send_initial_sync_msg(time_sync_controller_t * p_controller, sync_initial_msg_t init_msg)
 {
-    m_current_tx_token = nrf_mesh_unique_token_get();
+    mp_controller->current_tx_token = nrf_mesh_unique_token_get();
 
     access_message_tx_t message;
     message.opcode.opcode = TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG;
     message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
-    message.p_buffer = (const uint8_t*) &session_tid;
-    message.length = sizeof(session_tid);
+    message.p_buffer = (const uint8_t*) &init_msg;
+    message.length = sizeof(init_msg);
     message.force_segmented = false;
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
-    message.access_token = m_current_tx_token;
+    message.access_token = mp_controller->current_tx_token;
     
-    (void) access_model_publish_ttl_set(p_server->model_handle, 0);
-    uint32_t error_code = access_model_publish(p_server->model_handle, &message);
+    access_publish_retransmit_t access_publish_retransmit = {NULL};
+    (void) access_model_publish_retransmit_set(p_controller->model_handle, access_publish_retransmit);
+
+    (void) access_model_publish_ttl_set(p_controller->model_handle, 0);
+    uint32_t error_code = access_model_publish(p_controller->model_handle, &message);
 
     return error_code;
 }
 
 
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint32_t tx_timestamp, uint8_t session_tid)
+static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_controller, sync_tx_timestamp_t msg)
 {
-    sync_tx_timestamp_t msg;
-    msg.tx_timestamp = tx_timestamp;
-    msg.session_tid = session_tid;
-
     access_message_tx_t message;
     message.opcode.opcode = TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP;
     message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
@@ -206,8 +208,12 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
     message.access_token = nrf_mesh_unique_token_get();
 
-    (void) access_model_publish_ttl_set(p_server->model_handle, 0);
-    uint32_t error_code = access_model_publish(p_server->model_handle, &message);
+    access_publish_retransmit_t access_publish_retransmit = {NULL};
+    (void) access_model_publish_retransmit_set(p_controller->model_handle, access_publish_retransmit);
+
+    (void) access_model_publish_ttl_set(p_controller->model_handle, 0);
+    uint32_t error_code = access_model_publish(p_controller->model_handle, &message);
+
     return error_code;
 }
 
@@ -216,16 +222,16 @@ static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_server, uint
 
 static void handle_msg_initial_sync(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    if((p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER) && (p_message->length == sizeof(sync_initial_msg_t)))
     {
-        uint8_t incoming_tid;
-        memcpy(&incoming_tid, p_message->p_data, p_message->length);
+        sync_initial_msg_t incoming_msg;
+        memcpy(&incoming_msg, p_message->p_data, p_message->length);
 
-        if(is_higher_tid(incoming_tid) && (!mp_controller->is_master))
+        if(is_higher_tid(incoming_msg.tid) && (!mp_controller->is_master))
         {
             uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
-            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel);
-            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp + channel_compensation, incoming_tid);
+            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel, incoming_msg.channel_comp);
+            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp - channel_compensation, incoming_msg.tid, incoming_msg.hop_ctr);
         }
     }
 }
@@ -233,7 +239,7 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
 
 static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
-    if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
+    if((p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER) && (p_message->length == sizeof(sync_tx_timestamp_t)))
     {
         sync_tx_timestamp_t sender_timestamp;
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
@@ -244,25 +250,39 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
             if ((mp_controller->inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (mp_controller->inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid) && (!mp_controller->is_master))
             {
                 sync_timer_set_timer_offset(mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+
+                //TODO: Remove log when ready
                 __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved a sync update. Offset set to %d\n", mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
 
                 /*Reset the buffer*/
                 mp_controller->inital_timestamp_entry_ctr = 0;
                 
-                m_current_session_tid = sender_timestamp.session_tid;
-                (void) send_initial_sync_msg(mp_controller, m_current_session_tid);
+                mp_controller->current_session_tid = sender_timestamp.session_tid;
+
+                /*Increment the hop count for the next iteration in the time sync tree*/
+                uint8_t new_hop_count_val = mp_controller->inital_timestamp_buffer[i].hop_ctr + 1;
+
+                sync_initial_msg_t init_msg;
+                init_msg.tid = mp_controller->current_session_tid;
+                init_msg.channel_comp = CHANNEL_COMPENSATION_IN_MICRO_SEC;
+                init_msg.hop_ctr = new_hop_count_val;
+                (void) send_initial_sync_msg(mp_controller, init_msg);
             }
         }
     }
 }
+
 
 static void handle_msg_reset(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
     if(p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER)
     {
         /* Resets the device's session tid*/
-        m_current_session_tid = 0;
+        mp_controller->current_session_tid = 0;
         mp_controller->is_master = false;
+
+        //TODO: Remove log when ready
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "handle_msg_reset\n");
     }
 }
 
@@ -308,7 +328,7 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16
 }
 
 
-void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t repeat)
+void time_sync_controller_reset(time_sync_controller_t * p_controller)
 {
     access_message_tx_t message;
     message.opcode.opcode = TIME_SYNC_OPCODE_RESET;
@@ -319,10 +339,9 @@ void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t r
     message.transmic_size = NRF_MESH_TRANSMIC_SIZE_DEFAULT;
     message.access_token = nrf_mesh_unique_token_get();
     
-    for(uint8_t i = 0; i < repeat; i++)
-    {
-        (void) access_model_publish(p_controller->model_handle, &message);
-    }
+    (void) access_model_publish_ttl_set(p_controller->model_handle, NRF_MESH_TTL_MAX);
+
+    (void) access_model_publish(p_controller->model_handle, &message);
 }
 
 
@@ -332,12 +351,18 @@ void time_sync_controller_synchronize(time_sync_controller_t * p_controller)
     if(!mp_controller->is_master)
     {
         mp_controller->is_master = true;
-        m_current_session_tid = 0;
-//        time_sync_controller_reset(p_controller, TIME_SYNC_RESET_REPEATS);
+        mp_controller->current_session_tid = 0;
+        time_sync_controller_reset(p_controller);
     }
 
-    m_current_session_tid++;
-    (void) send_initial_sync_msg(p_controller, m_current_session_tid);
+    mp_controller->current_session_tid++;
+
+    sync_initial_msg_t init_msg;
+    init_msg.tid = mp_controller->current_session_tid;
+    init_msg.channel_comp = CHANNEL_COMPENSATION_IN_MICRO_SEC;
+    init_msg.hop_ctr = 0;
+    (void) send_initial_sync_msg(p_controller, init_msg);
+
 }
 
 

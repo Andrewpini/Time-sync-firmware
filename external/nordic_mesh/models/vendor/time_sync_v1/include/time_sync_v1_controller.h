@@ -51,7 +51,9 @@
  * @{
  */
 
-#define INITIAL_TIMESTAMP_BUFFER_SIZE 10
+#ifndef INITIAL_TIMESTAMP_BUFFER_SIZE
+    #define INITIAL_TIMESTAMP_BUFFER_SIZE 4
+#endif
 
 
 typedef struct
@@ -59,6 +61,7 @@ typedef struct
     uint16_t sender_addr;
     uint32_t timestamp_val;
     uint8_t session_tid;
+    uint8_t hop_ctr;
 } timestamp_buffer_entry_t;
 
 /* Object type for rssi server instances. */
@@ -70,6 +73,9 @@ struct __time_sync_controller_t
     access_model_handle_t model_handle;
 
     bool is_master;
+    uint8_t current_session_tid;
+    nrf_mesh_tx_token_t current_tx_token;
+
     uint8_t inital_timestamp_entry_ctr;
     timestamp_buffer_entry_t inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFFER_SIZE];
 };
@@ -96,12 +102,8 @@ void time_sync_controller_synchronize(time_sync_controller_t * p_controller);
  * Resets the time sync controller on all nodes.
  *
  * @note Should always be used before switching root time sync device.
- *
- * @param[in] repeat The number of reset messages to send. should reflect connection quality in the
- * @note  Should reflect the connection quality in the network to ensure that all devices recieves 
- *        the reset message.
  */
-void time_sync_controller_reset(time_sync_controller_t * p_controller, uint8_t repeat);
+void time_sync_controller_reset(time_sync_controller_t * p_controller);
 
 /* For development only */
 void sync_set_pub_timer(bool on_off);
