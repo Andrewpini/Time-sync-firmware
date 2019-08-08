@@ -6,12 +6,12 @@
 #include "app_error.h"
 #include "hal.h"
 #include "mesh_app_utils.h"
-#include "user_spi.h" ////////////////////////////
 #include "socket.h"
 #include "app_timer.h"
 #include "nrf_delay.h"
 #include "dhcp.h"
 #include "dhcp_cb.h"
+#include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
 
 #ifdef MESH_ENABLED
@@ -27,6 +27,9 @@ static uint8_t own_IP[4]           = {0};
 static uint8_t critical_section_depth;
 
 APP_TIMER_DEF(DHCP_TIMER);
+
+#define SPI_INSTANCE    0 /**< SPI instance index. */
+static const            nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);    /**< SPI instance. */
 
 static wiz_NetInfo gWIZNETINFO = 
 {
@@ -59,6 +62,38 @@ static void dhcp_timer_init(void)
 {
     ERROR_CHECK(app_timer_create(&DHCP_TIMER, APP_TIMER_MODE_REPEATED, dhcp_timer_handler));
     ERROR_CHECK(app_timer_start(DHCP_TIMER, HAL_MS_TO_RTC_TICKS(1000), NULL));
+}
+
+static bool spi_master_tx(SPIModuleNumber spi_num, uint16_t transfer_size, const uint8_t *tx_data)
+{
+    if(tx_data == 0)
+    {
+        return false;
+    }
+    
+    if(nrf_drv_spi_transfer(&spi_inst, tx_data, 1, NULL, 0) != NRF_SUCCESS)
+    {
+        LOG("SPI failed\r\n"); 
+        return false;
+    }
+    
+    return true;
+}
+
+static bool spi_master_rx(SPIModuleNumber spi_num, uint16_t transfer_size, uint8_t *rx_data)
+{    
+     if(rx_data == 0)
+    {
+        return false;
+    }
+    
+    if(nrf_drv_spi_transfer(&spi_inst, NULL, 0, rx_data, 1) != NRF_SUCCESS)
+    {
+        LOG("SPI failed\r\n"); 
+        return false;
+    }
+    
+    return true;
 }
 
 static void wizchip_select(void)
@@ -113,6 +148,24 @@ static void print_network_info(void)
     LOG("======================\r\n");
 }
 
+static void ethernet_spi_init(void)
+{
+    nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
+    spi_config.sck_pin   = SPIM0_SCK_PIN;
+    spi_config.mosi_pin  = SPIM0_MOSI_PIN;
+    spi_config.miso_pin  = SPIM0_MISO_PIN;
+    spi_config.ss_pin    = NRF_DRV_SPI_PIN_NOT_USED;
+    spi_config.orc       = 0x0;
+    spi_config.mode      = NRF_DRV_SPI_MODE_3;
+    spi_config.frequency = NRF_DRV_SPI_FREQ_1M;
+    nrf_gpio_cfg_output(SPIM0_SS_PIN); /* For manual controlling CS Pin */
+    nrf_gpio_pin_clear(SPIM0_SS_PIN);
+
+    uint32_t err_code = nrf_drv_spi_init(&spi_inst, &spi_config, NULL, NULL);
+    
+    APP_ERROR_CHECK(err_code);
+}
+
 void dhcp_init(void)
 {
     uint32_t ret;
@@ -155,6 +208,9 @@ void ethernet_init(void)
     int8_t error_code;
     uint8_t memsize[2][8] = {{2,2,2,2,2,2,2,2},{2,2,2,2,2,2,2,2}};
     wiz_NetTimeout timeout_info;
+
+    /* Initializing SPI communication with the ethernet (Wiznet W5500) chip */   
+    ethernet_spi_init();
 
     /* Using Nordic chip factory information as MAC address */       
     gWIZNETINFO.mac[0] = (0xB0                         ) & 0xFF;

@@ -23,6 +23,13 @@
 
 #define SPI_TIMER_TIMEOUT_INTERVAL_MS           1000
 
+/* SPI master module number */
+typedef enum
+{
+    SPI0 = 0,               /*!< SPI module 0 */
+    SPI1                    /*!< SPI module 1 */
+} SPIModuleNumber;
+
 void dhcp_init(void);
 
 void ethernet_init(void);
