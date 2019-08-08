@@ -22,10 +22,6 @@ bool is_connected(void);
  
 void get_server_ip(uint8_t * buf, uint8_t len);
 
-bool is_network_busy(void);
-
-void set_network_busy(bool val);
-
 bool is_server_IP_received(void);
 
 void set_server_IP_received(bool val);

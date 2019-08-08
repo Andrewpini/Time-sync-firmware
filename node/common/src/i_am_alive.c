@@ -25,22 +25,15 @@ void send_i_am_alive_message(void)
         get_target_IP(target_IP);       
         uint32_t target_port = 11040;
     #endif
+    
+    sprintf((char *)&buf[0], "I AM ALIVE - %02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
 
-    if(!is_network_busy())
+    len = strlen((const char *)&buf[0]);
+    int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+
+    if(err < 0)
     {
-        set_network_busy(true);
-    
-        sprintf((char *)&buf[0], "I AM ALIVE - %02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
-    
-        len = strlen((const char *)&buf[0]);
-        int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-
-        if(err < 0)
-        {
-          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_i_am_alive_message): %d\n", err);
-        }
-
-        set_network_busy(false);
+      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_i_am_alive_message): %d\n", err);
     }
 }
 

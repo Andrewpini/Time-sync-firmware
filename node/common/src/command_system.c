@@ -100,28 +100,20 @@ void send_scan_report(scan_report_t * scan_report)
 {
     uint8_t buf[SCAN_REPORT_LENGTH];
     uint8_t len = 0;
-    
-    if(!is_network_busy())
-    {
-        set_network_busy(true);
-        
+      
         sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
                         scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
                         scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
                         scan_report->address[3], scan_report->address[4], scan_report->address[5],
                         scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error, m_controls_sync_signal);
-        
+      
         len = strlen((const char *)&buf[0]);
-        
+      
         uint8_t target_IP[4] = {10, 0, 0, 4};    
         uint32_t target_port = 15000;
         get_target_IP_and_port(target_IP, &target_port);
 
         sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-
-        
-        set_network_busy(false);
-    }
 }
 
 

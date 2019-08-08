@@ -159,30 +159,23 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) 
         buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
         buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
 
-        if(!is_network_busy())
+        uint8_t i;
+
+        for(i=0; i<length; i++)
         {
-            set_network_busy(true);
+          buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
+          buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
+          buf[4] = (p_data+i)->mean_rssi;
+          buf[5] = (p_data+i)->msg_count;
 
-            uint8_t i;
+          len = 6;
+             
+          int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
 
-            for(i=0; i<length; i++)
-            {
-              buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
-              buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
-              buf[4] = (p_data+i)->mean_rssi;
-              buf[5] = (p_data+i)->msg_count;
-
-              len = 6;
-                 
-              int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-
-              if(err < 0)
-              {
-                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb): %d\n", err);
-              }
-            }
-
-            set_network_busy(false);
+          if(err < 0)
+          {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb): %d\n", err);
+          }
         }
 }
 

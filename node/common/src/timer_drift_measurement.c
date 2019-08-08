@@ -61,25 +61,19 @@ void send_drift_timing_sample(void)
             uint32_t target_port = 11001;
         #endif
 
-        if(!is_network_busy())
+        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
+                        own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
+                        m_adjusted_sync_timer,
+                        m_time_tic);
+    
+        len = strlen((const char *)&buf[0]);
+        int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+
+        if(err < 0)
         {
-            set_network_busy(true);
-        
-            sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
-                            own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
-                            m_adjusted_sync_timer,
-                            m_time_tic);
-        
-            len = strlen((const char *)&buf[0]);
-            int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-
-            if(err < 0)
-            {
-              __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_drift_timing_sample): %d\n", err);
-            }
-
-            set_network_busy(false);
+          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (send_drift_timing_sample): %d\n", err);
         }
+
         m_updated_drift_rdy = false;
     }
 }

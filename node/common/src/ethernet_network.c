@@ -40,7 +40,6 @@ static uint8_t own_IP[4]           = {0};
 /* State variables */
 static volatile bool m_connected              = false;
 static volatile bool m_server_ip_received     = false;
-static volatile bool m_network_is_busy        = false;
 
 /* Forward declarations */
 void connection_init(void);
@@ -132,11 +131,10 @@ void get_server_ip(uint8_t * buf, uint8_t len)
 
 void dhcp_init(void)
 {
-    if(DHCP_ENABLED && !m_network_is_busy)
+    if(DHCP_ENABLED)
     {
         uint32_t ret;
         uint8_t dhcp_retry = 0;
-        m_network_is_busy = true;
 
         dhcp_timer_init();
         DHCP_init(SOCKET_DHCP, TX_BUF);
@@ -148,7 +146,6 @@ void dhcp_init(void)
 
             if(ret == DHCP_IP_LEASED)
             {
-                m_network_is_busy = false;
                 getSHAR(&own_MAC[0]);
                 getIPfromDHCP(&own_IP[0]);
                 LOG("This device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
@@ -165,7 +162,6 @@ void dhcp_init(void)
                 break;
             }
         }
-        m_network_is_busy = false;
     }
     else 							
     {
@@ -175,14 +171,6 @@ void dhcp_init(void)
 
 bool is_connected(void){
     return m_connected;
-}
-
-bool is_network_busy(void){
-    return m_network_is_busy;
-}
-
-void set_network_busy(bool val){
-   m_network_is_busy = val;
 }
 
 bool is_server_IP_received(void){
