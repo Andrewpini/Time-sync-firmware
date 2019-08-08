@@ -393,16 +393,16 @@ int main(void)
 
     initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
+
+    #ifdef SEND_I_AM_ALIVE_MESSAGES
     i_am_alive_timer_init();
+    i_am_alive_timer_start();
+    #endif
 
     while(1){
        if (is_connected())
               {
-                  if (is_server_IP_received())
-                  {
-                      send_drift_timing_sample();
-                  }
-                  check_ctrl_cmd();
+                check_ctrl_cmd();
               }
         (void)sd_app_evt_wait();
     }

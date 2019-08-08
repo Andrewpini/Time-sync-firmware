@@ -45,5 +45,9 @@ void i_am_alive_timer_handler(void * p_unused){
 void i_am_alive_timer_init(void)
 {
   ERROR_CHECK(app_timer_create(&IM_ALIVE_TIMER, APP_TIMER_MODE_REPEATED, i_am_alive_timer_handler));
-  ERROR_CHECK(app_timer_start(IM_ALIVE_TIMER, HAL_MS_TO_RTC_TICKS(500), NULL));
+}
+
+void i_am_alive_timer_start(void)
+{
+    ERROR_CHECK(app_timer_start(IM_ALIVE_TIMER, HAL_MS_TO_RTC_TICKS(500), NULL));
 }

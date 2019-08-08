@@ -4,4 +4,5 @@
 
 void i_am_alive_timer_init(void);
 
+void i_am_alive_timer_start(void);
 #endif
