@@ -75,7 +75,8 @@
 #include "ble_softdevice_support.h"
 #include "example_network_config.h"
 
-/* Ethernet DFU*/
+/* Ethernet */
+#include "ethernet.h"
 #include "ethernet_dfu.h"
 
 //NOTE: Trial and error for implementing the init routines from the ethernet node project
@@ -84,9 +85,7 @@
 #include "pwm.h"
 #include "ppi.h"
 #include "clock.h"
-#include "user_ethernet.h"
 #include "user_spi.h"
-#include "ethernet_network.h"
 #include "command_system.h"
 #include "timer_drift_measurement.h"
 #include "time_sync_timer.h"
@@ -138,7 +137,7 @@ static void app_time_sync_event_cb(sync_event_t sync_event)
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
 }
 
-static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Seems like packets almost only are sent one way?
+static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Need to build packets in a better way
 {
         uint8_t buf[SCAN_REPORT_LENGTH];
         uint8_t len = 0;
@@ -368,21 +367,7 @@ int main(void)
     gpiote_init();
     ppi_init();
     spi0_master_init();
-    user_ethernet_init();
-    dhcp_init();
-    broadcast_init();
-    connection_init();
-    
-    #ifdef BROADCAST_ENABLED
-        /* Hardcoded 'true' since we are using broadcast*/
-        set_server_IP_received(true);
-
-    #else
-        while(!is_server_IP_received())
-        {
-            check_ctrl_cmd();
-        }
-    #endif
+    ethernet_init();
 
     pwm_set_duty_cycle(LED_HP, LED_HP_DEFAULT_DUTY_CYCLE);
 
@@ -400,10 +385,7 @@ int main(void)
     #endif
 
     while(1){
-       if (is_connected())
-              {
-                check_ctrl_cmd();
-              }
-        (void)sd_app_evt_wait();
+      check_ctrl_cmd();
+      (void)sd_app_evt_wait();
     }
 }

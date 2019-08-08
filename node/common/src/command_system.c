@@ -22,9 +22,8 @@
 #include "dhcp.h"
 #include "time_sync_timer.h"
 #include "dhcp_cb.h"
-#include "user_ethernet.h"
+#include "ethernet.h"
 #include "timer_drift_measurement.h"
-#include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
 #include "sync_timer_handler.h"
@@ -96,25 +95,25 @@ void sync_set_interval(uint8_t interval)
 }
 
 /* Function to send scan reports over Ethernet using UDP */
-void send_scan_report(scan_report_t * scan_report)
-{
-    uint8_t buf[SCAN_REPORT_LENGTH];
-    uint8_t len = 0;
-      
-        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
-                        scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
-                        scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
-                        scan_report->address[3], scan_report->address[4], scan_report->address[5],
-                        scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error, m_controls_sync_signal);
-      
-        len = strlen((const char *)&buf[0]);
-      
-        uint8_t target_IP[4] = {10, 0, 0, 4};    
-        uint32_t target_port = 15000;
-        get_target_IP_and_port(target_IP, &target_port);
-
-        sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-}
+//void send_scan_report(scan_report_t * scan_report)
+//{
+//    uint8_t buf[SCAN_REPORT_LENGTH];
+//    uint8_t len = 0;
+//      
+//        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
+//                        scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
+//                        scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
+//                        scan_report->address[3], scan_report->address[4], scan_report->address[5],
+//                        scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error, m_controls_sync_signal);
+//      
+//        len = strlen((const char *)&buf[0]);
+//      
+//        uint8_t target_IP[4] = {10, 0, 0, 4};    
+//        uint32_t target_port = 15000;
+//        get_target_IP_and_port(target_IP, &target_port);
+//
+//        sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+//}
 
 
 // Function for checking if the device has received a new control command
@@ -144,7 +143,7 @@ void check_ctrl_cmd(void)
             if (compare == 0)
             {
                 ctrl_cmd_t cmd = received_data[CTRL_CMD_CMD_INDEX];
-                uint8_t payload_len = received_data[CTRL_CMD_PAYLOAD_LEN_INDEX];
+//                uint8_t payload_len = received_data[CTRL_CMD_PAYLOAD_LEN_INDEX];
                 uint8_t * p_payload = &received_data[CTRL_CMD_PAYLOAD_INDEX];
 
                 // Choose the right action according to command
@@ -167,18 +166,18 @@ void check_ctrl_cmd(void)
                         m_who_am_i_enabled = false;
                         break;
 
-                    case CMD_SERVER_IP_BROADCAST:
-                        if (!is_server_IP_received())
-                        {
-                            get_server_ip(p_payload, payload_len);
-                        }
-                        set_server_IP_received(true);
-                        break;
-
-                    case CMD_NEW_SERVER_IP:
-                        set_target_IP(&broadcast_ip[0]);
-                        set_server_IP_received(true);
-                        break;
+//                    case CMD_SERVER_IP_BROADCAST:
+//                        if (!is_server_IP_received())
+//                        {
+//                            get_server_ip(p_payload, payload_len);
+//                        }
+//                        set_server_IP_received(true);
+//                        break;
+//
+//                    case CMD_NEW_SERVER_IP:
+//                        set_target_IP(&broadcast_ip[0]);
+//                        set_server_IP_received(true);
+//                        break;
 
                     #ifdef MESH_ENABLED
 

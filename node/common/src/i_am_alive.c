@@ -5,7 +5,7 @@
 #include "mesh_app_utils.h"
 #include "app_timer.h"
 #include "hal.h"
-#include "ethernet_network.h"
+#include "ethernet.h"
 #include "socket.h"
 
 APP_TIMER_DEF(IM_ALIVE_TIMER);

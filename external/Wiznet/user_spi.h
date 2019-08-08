@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "user_ethernet.h"
 
 /** @file
 * @brief Software controlled SPI Master driver.

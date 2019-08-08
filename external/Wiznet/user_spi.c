@@ -16,7 +16,7 @@
 #include "nrf_drv_spi.h"
 #include "nrf_log.h"
 
-#define SPI_TIMER_TIMEOUT_INTERVAL_MS           1000
+#include "ethernet.h" //////////////////////////////////
 
 static volatile bool timeout_triggered = false;
 static volatile bool triggered_count = 0;

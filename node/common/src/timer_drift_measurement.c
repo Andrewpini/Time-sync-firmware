@@ -11,7 +11,7 @@
 #include "config.h"
 #include "nrf_gpio.h"
 #include "time_sync_timer.h"
-#include "ethernet_network.h"
+#include "ethernet.h"
 #include "socket.h"
 #include "w5500.h"
 #include "sync_timer_handler.h"

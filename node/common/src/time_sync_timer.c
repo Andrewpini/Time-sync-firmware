@@ -19,7 +19,6 @@ void drift_timer_init(void)
     DRIFT_TIMER->TASKS_START         = 1;
 }
 
-
 void drift_timer_reset(void)
 {
     DRIFT_TIMER->TASKS_STOP = 1;
@@ -44,17 +43,6 @@ void sync_master_timer_init(uint32_t interval){
     #include "app_timer.h"
     #include "hal.h"
     #include "mesh_app_utils.h"
-    APP_TIMER_DEF(DHCP_TIMER);
-
-void dhcp_timer_handler(void * p_unused){
-    DHCP_time_handler();
-}
-
-void dhcp_timer_init(void)
-{
-    ERROR_CHECK(app_timer_create(&DHCP_TIMER, APP_TIMER_MODE_REPEATED, dhcp_timer_handler));
-    ERROR_CHECK(app_timer_start(DHCP_TIMER, HAL_MS_TO_RTC_TICKS(1000), NULL));
-}
 
 void TIMER1_IRQHandler(void)
 {
