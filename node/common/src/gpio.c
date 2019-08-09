@@ -49,7 +49,7 @@ void gpiote_init(void)
 
     NVIC_EnableIRQ(GPIOTE_IRQn);
     NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos);
-    NVIC_SetPriority(GPIOTE_IRQn, 1);
+    NVIC_SetPriority(GPIOTE_IRQn, 6);
 }
 
 void sync_master_gpio_init(void){

@@ -266,6 +266,16 @@ void ethernet_init(void)
     rx_socket_init();
 }
 
+void send_over_ethernet(uint8_t* data, uint8_t len)
+{
+    int32_t err = sendto(SOCKET_UDP, data, len, (uint8_t*)TARGET_IP, TARGET_PORT);
+
+    if(err < 0)
+    {
+      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+    }
+}
+
 void get_own_IP(uint8_t* p_IP){ 
     memcpy(p_IP, own_IP, 4);
 }

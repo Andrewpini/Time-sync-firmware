@@ -1,9 +1,12 @@
+
 #ifndef ETHERNET_H
 #define ETHERNET_H
 
 #define SOCKET_DHCP                         2
 #define SOCKET_UDP                          3
 #define SOCKET_BROADCAST                    6
+#define TARGET_IP                           ((const uint8_t[]){255, 255, 255, 255})
+#define TARGET_PORT                         11001
 #define UDP_PORT                            17545
 #define BROADCAST_PORT                      10000
 #define UDP_FLAGS                           0x00
@@ -33,6 +36,8 @@ typedef enum
 void dhcp_init(void);
 
 void ethernet_init(void);
+
+void send_over_ethernet(uint8_t* data, uint8_t len);
 
 void get_own_IP(uint8_t* p_IP);
 

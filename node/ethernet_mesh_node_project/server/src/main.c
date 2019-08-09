@@ -144,16 +144,6 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) 
     dsm_local_unicast_address_t local_addr;
     dsm_local_unicast_addresses_get(&local_addr);
 
-
-    #ifdef BROADCAST_ENABLED
-        uint8_t target_IP[4] = {255, 255, 255, 255}; 
-        uint32_t target_port = 11035;;
-    #else
-        uint8_t target_IP[4];
-        get_target_IP(target_IP);       
-        uint32_t target_port = 11035;
-    #endif
-
     buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
     buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
 
@@ -168,12 +158,7 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) 
 
       len = 6;
          
-      int32_t err = sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-
-      if(err < 0)
-      {
-        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet (app_rssi_server_cb): %d\n", err);
-      }
+      send_over_ethernet(&buf[0] , len);
     }
 }
 
