@@ -35,6 +35,23 @@ static wiz_NetInfo gWIZNETINFO =
     .dhcp   = NETINFO_DHCP 
 };
 
+static void print_network_info(void)
+{
+    uint8_t tmpstr[6];
+  
+    ctlnetwork(CN_GET_NETINFO, (void*)&gWIZNETINFO);
+
+    ctlwizchip(CW_GET_ID,(void*)tmpstr);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "=== %s NET CONF ===\r\n",(char*)tmpstr);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC:\t %02X:%02X:%02X:%02X:%02X:%02X\r\n",gWIZNETINFO.mac[0],gWIZNETINFO.mac[1],gWIZNETINFO.mac[2],
+              gWIZNETINFO.mac[3],gWIZNETINFO.mac[4],gWIZNETINFO.mac[5]);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SIP:\t %d.%d.%d.%d\r\n", gWIZNETINFO.ip[0],gWIZNETINFO.ip[1],gWIZNETINFO.ip[2],gWIZNETINFO.ip[3]);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "GAR:\t %d.%d.%d.%d\r\n", gWIZNETINFO.gw[0],gWIZNETINFO.gw[1],gWIZNETINFO.gw[2],gWIZNETINFO.gw[3]);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SUB:\t %d.%d.%d.%d\r\n", gWIZNETINFO.sn[0],gWIZNETINFO.sn[1],gWIZNETINFO.sn[2],gWIZNETINFO.sn[3]);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "DNS:\t %d.%d.%d.%d\r\n", gWIZNETINFO.dns[0],gWIZNETINFO.dns[1],gWIZNETINFO.dns[2],gWIZNETINFO.dns[3]);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "======================\r\n");
+}
+
 static void critical_section_enter(void)
 {
   uint8_t dummy;
@@ -46,16 +63,6 @@ static void critical_section_exit(void)
 {
   critical_section_depth--;
   app_util_critical_region_exit(critical_section_depth);
-}
-
-static void dhcp_timer_handler(void * p_unused){
-    DHCP_time_handler();
-}
-
-static void dhcp_timer_init(void)
-{
-    ERROR_CHECK(app_timer_create(&DHCP_TIMER, APP_TIMER_MODE_REPEATED, dhcp_timer_handler));
-    ERROR_CHECK(app_timer_start(DHCP_TIMER, HAL_MS_TO_RTC_TICKS(1000), NULL));
 }
 
 static bool spi_master_tx(SPIModuleNumber spi_num, uint16_t transfer_size, const uint8_t *tx_data)
@@ -116,30 +123,13 @@ static void wizchip_write(uint8_t wb)
 
 static void tx_socket_init(void) 
 {
-    socket(SOCKET_UDP, Sn_MR_UDP, UDP_PORT, UDP_FLAGS);
+    socket(SOCKET_TX, Sn_MR_UDP, UDP_PORT, UDP_FLAGS);
 }
 
 static void rx_socket_init(void)
 {
     uint8_t flag = SF_IO_NONBLOCK;
-    socket(SOCKET_BROADCAST, Sn_MR_UDP, BROADCAST_PORT, flag);
-}
-
-static void print_network_info(void)
-{
-    uint8_t tmpstr[6];
-  
-    ctlnetwork(CN_GET_NETINFO, (void*)&gWIZNETINFO);
-
-    ctlwizchip(CW_GET_ID,(void*)tmpstr);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "=== %s NET CONF ===\r\n",(char*)tmpstr);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC:\t %02X:%02X:%02X:%02X:%02X:%02X\r\n",gWIZNETINFO.mac[0],gWIZNETINFO.mac[1],gWIZNETINFO.mac[2],
-              gWIZNETINFO.mac[3],gWIZNETINFO.mac[4],gWIZNETINFO.mac[5]);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SIP:\t %d.%d.%d.%d\r\n", gWIZNETINFO.ip[0],gWIZNETINFO.ip[1],gWIZNETINFO.ip[2],gWIZNETINFO.ip[3]);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "GAR:\t %d.%d.%d.%d\r\n", gWIZNETINFO.gw[0],gWIZNETINFO.gw[1],gWIZNETINFO.gw[2],gWIZNETINFO.gw[3]);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SUB:\t %d.%d.%d.%d\r\n", gWIZNETINFO.sn[0],gWIZNETINFO.sn[1],gWIZNETINFO.sn[2],gWIZNETINFO.sn[3]);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "DNS:\t %d.%d.%d.%d\r\n", gWIZNETINFO.dns[0],gWIZNETINFO.dns[1],gWIZNETINFO.dns[2],gWIZNETINFO.dns[3]);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "======================\r\n");
+    socket(SOCKET_RX, Sn_MR_UDP, BROADCAST_PORT, flag);
 }
 
 static void ethernet_spi_init(void)
@@ -156,11 +146,20 @@ static void ethernet_spi_init(void)
     nrf_gpio_pin_clear(SPIM0_SS_PIN);
 
     uint32_t err_code = nrf_drv_spi_init(&spi_inst, &spi_config, NULL, NULL);
-    
     APP_ERROR_CHECK(err_code);
 }
 
-void dhcp_init(void)
+static void dhcp_timer_handler(void * p_unused){
+    DHCP_time_handler();
+}
+
+static void dhcp_timer_init(void)
+{
+    ERROR_CHECK(app_timer_create(&DHCP_TIMER, APP_TIMER_MODE_REPEATED, dhcp_timer_handler));
+    ERROR_CHECK(app_timer_start(DHCP_TIMER, HAL_MS_TO_RTC_TICKS(1000), NULL));
+}
+
+static void ethernet_dhcp_init(void)
 {
     uint32_t ret;
     uint8_t dhcp_retry = 0;
@@ -195,6 +194,8 @@ void dhcp_init(void)
         }
     }
 }
+
+/********** Interface functions **********/
 
 void ethernet_init(void)
 {
@@ -253,7 +254,7 @@ void ethernet_init(void)
 
     /* DHCP initialization */
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing DHCP\r\n");  
-    dhcp_init();
+    ethernet_dhcp_init();
 
     /* Socket initialization*/
     tx_socket_init(); 
@@ -262,7 +263,7 @@ void ethernet_init(void)
 
 void send_over_ethernet(uint8_t* data, uint8_t len)
 {
-    int32_t err = sendto(SOCKET_UDP, data, len, (uint8_t*)TARGET_IP, TARGET_PORT);
+    int32_t err = sendto(SOCKET_TX, data, len, (uint8_t*)TARGET_IP, TARGET_PORT);
 
     if(err < 0)
     {

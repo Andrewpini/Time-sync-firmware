@@ -3,8 +3,8 @@
 #define ETHERNET_H
 
 #define SOCKET_DHCP                         2
-#define SOCKET_UDP                          3
-#define SOCKET_BROADCAST                    6
+#define SOCKET_TX                           3
+#define SOCKET_RX                           6
 #define TARGET_IP                           ((const uint8_t[]){255, 255, 255, 255})
 #define TARGET_PORT                         11001
 #define UDP_PORT                            17545

@@ -108,14 +108,14 @@ void sync_set_interval(uint8_t interval)
 //        uint32_t target_port = 15000;
 //        get_target_IP_and_port(target_IP, &target_port);
 //
-//        sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
+//        sendto(SOCKET_TX, &buf[0], len, target_IP, target_port);
 //}
 
 
 // Function for checking if the device has received a new control command
 void check_ctrl_cmd(void)
 {
-    while (getSn_RX_RSR(SOCKET_BROADCAST) != 0x00)
+    while (getSn_RX_RSR(SOCKET_RX) != 0x00)
     {
         uint8_t received_data[200];
         uint8_t broadcast_ip[] = {255, 255, 255, 255};
@@ -125,7 +125,7 @@ void check_ctrl_cmd(void)
         get_own_IP(own_IP);
         
         // Receive new data from socket
-        int32_t recv_len = recvfrom(SOCKET_BROADCAST, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
+        int32_t recv_len = recvfrom(SOCKET_RX, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
 
         // If any data is received, check which command it is
         if (recv_len > 0)
