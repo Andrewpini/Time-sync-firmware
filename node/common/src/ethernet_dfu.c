@@ -9,7 +9,6 @@ static bool dfu_button_flag = false;
 
 void dfu_set_button_flag()
 {
-  NVIC_SetPriority(GPIOTE_IRQn, 6);
   dfu_button_flag = true;
   nrf_gpio_pin_clear(LED_1);
   nrf_gpio_pin_clear(LED_2);
@@ -18,7 +17,6 @@ void dfu_set_button_flag()
 void dfu_clear_button_flag()
 {
   dfu_button_flag = false;
-  NVIC_SetPriority(GPIOTE_IRQn, 1);
   nrf_gpio_pin_set(LED_1);
   nrf_gpio_pin_set(LED_2);
 }
