@@ -64,8 +64,6 @@
       <file file_name="../../common/src/timer_drift_measurement.c" />
       <file file_name="../../common/src/command_system.c" />
       <file file_name="../../common/src/util.c" />
-      <file file_name="../../ethernet_node_project/drivers/advertise.c" />
-      <file file_name="../../ethernet_node_project/drivers/radio.c" />
       <file file_name="../../common/src/ethernet_dfu.c" />
       <file file_name="../../common/src/ethernet.c" />
     </folder>

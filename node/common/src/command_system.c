@@ -12,11 +12,8 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "commands.h"
-#include "radio.h"
-#include "advertise.h"
 #include "boards.h"
 #include "pwm.h"
-#include "scan.h"
 #include "nrf_gpio.h"
 #include "util.h"
 #include "dhcp.h"
@@ -52,12 +49,12 @@ void scanning_disable(void)
     m_scanning_enabled = false;
 }
 
-// Enables advertising for current radio mode
-void advertising_enable(void)
-{                    
-    advertise_init();
-    m_advertising_enabled = true;
-}
+//// Enables advertising for current radio mode
+//void advertising_enable(void)
+//{                    
+//    advertise_init();
+//    m_advertising_enabled = true;
+//}
 
 // Disables advertising for current radio mode
 void advertising_disable(void)
@@ -233,15 +230,15 @@ void check_ctrl_cmd(void)
                         dfu_clear_button_flag();
                         break;
 
-                    case CMD_NEW_ACCESS_ADDRESS:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: New access address set\r\n");
-                        radio_set_access_address((uint32_t)*((uint32_t *)p_payload));
-                        break;
+//                    case CMD_NEW_ACCESS_ADDRESS:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: New access address set\r\n");
+//                        radio_set_access_address((uint32_t)*((uint32_t *)p_payload));
+//                        break;
 
-                    case CMD_ADVERTISING_START:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Advertising start\r\n");
-                        advertising_enable();
-                        break;
+//                    case CMD_ADVERTISING_START:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Advertising start\r\n");
+//                        advertising_enable();
+//                        break;
 
                     case CMD_ADVERTISING_STOP:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Advertising stop\r\n");
@@ -330,19 +327,19 @@ void check_ctrl_cmd(void)
 //                        }
 //                        break;
 
-                    case CMD_SINGLE_ADVERTISING_ON:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single advertising START: ");
-                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
-                        {
-                            scanning_disable();
-                            advertising_enable();
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> enabling advertising \r\n");
-                        }
-                        else 
-                        {
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
-                        }
-                        break;
+//                    case CMD_SINGLE_ADVERTISING_ON:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single advertising START: ");
+//                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+//                        {
+//                            scanning_disable();
+//                            advertising_enable();
+//                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> enabling advertising \r\n");
+//                        }
+//                        else 
+//                        {
+//                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
+//                        }
+//                        break;
 
                     case CMD_SINGLE_ADVERTISING_OFF:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single advertising STOP: ");
