@@ -1,0 +1,297 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+ width="699px" height="546px"
+ viewBox="0 0 699 546"
+ xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"
+ stroke-width="1" text-rendering="geometricPrecision">
+<polygon fill="white" points="86,7 144,7 144,16 86,16"/>
+<text x="116" y="16" textLength="57" font-family="Helvetica" font-size="12" fill="black" text-anchor="middle">
+
+Time Sync
+</text>
+<polygon fill="white" points="80,18 150,18 150,27 80,27"/>
+<text x="116" y="27" textLength="69" font-family="Helvetica" font-size="12" fill="black" text-anchor="middle">
+
+Master Node
+</text>
+<polygon fill="white" points="324,7 372,7 372,16 324,16"/>
+<text x="349" y="16" textLength="47" font-family="Helvetica" font-size="12" fill="black" text-anchor="middle">
+
+Slave #1
+</text>
+<polygon fill="white" points="261,18 435,18 435,27 261,27"/>
+<text x="349" y="27" textLength="173" font-family="Helvetica" font-size="12" fill="black" text-anchor="middle">
+
+(One hop away from the master)
+</text>
+<polygon fill="white" points="557,7 605,7 605,16 557,16"/>
+<text x="582" y="16" textLength="47" font-family="Helvetica" font-size="12" fill="black" text-anchor="middle">
+
+Slave #2
+</text>
+<polygon fill="white" points="491,18 671,18 671,27 491,27"/>
+<text x="582" y="27" textLength="179" font-family="Helvetica" font-size="12" fill="black" text-anchor="middle">
+
+(Two hops away from the master)
+</text>
+<line x1="116" y1="33" x2="116" y2="61" stroke="black"/>
+<line x1="349" y1="33" x2="349" y2="61" stroke="black"/>
+<line x1="582" y1="33" x2="582" y2="61" stroke="black"/>
+<line x1="116" y1="44" x2="349" y2="44" stroke="green"/>
+<line x1="349" y1="44" x2="339" y2="50" stroke="green"/>
+<line x1="339" y1="38" x2="349" y2="44" stroke="green"/>
+<polygon fill="white" points="190,34 274,34 274,43 190,43"/>
+<text x="191" y="43" textLength="82" font-family="Helvetica" font-size="12" fill="green">
+Initial sync msg
+</text>
+<line x1="116" y1="61" x2="116" y2="100" stroke="black"/>
+<line x1="349" y1="61" x2="349" y2="100" stroke="black"/>
+<line x1="582" y1="61" x2="582" y2="100" stroke="black"/>
+<polygon fill="white" points="247,61 452,61 452,94 247,94"/>
+<polygon fill="white" points="241,67 458,67 458,88 241,88"/>
+<circle fill="white" cx="247" cy="67" r="6"/>
+<circle fill="white" cx="452" cy="67" r="6"/>
+<circle fill="white" cx="247" cy="88" r="6"/>
+<circle fill="white" cx="452" cy="88" r="6"/>
+<line x1="247" y1="61" x2="452" y2="61" stroke="black"/>
+<line x1="247" y1="94" x2="452" y2="94" stroke="black"/>
+<line x1="241" y1="67" x2="241" y2="88" stroke="black"/>
+<line x1="458" y1="67" x2="458" y2="88" stroke="black"/>
+<path d="M 241 67 A6,6 0 0,1 247,61" stroke="black" fill="none"/><path d="M 452 61 A6,6 0 0,1 458,67" stroke="black" fill="none"/><path d="M 458 88 A6,6 0 0,1 452,94" stroke="black" fill="none"/><path d="M 247 94 A6,6 0 0,1 241,88" stroke="black" fill="none"/><polygon fill="white" points="254,62 443,62 443,71 254,71"/>
+<text x="255" y="71" textLength="187" font-family="Helvetica" font-size="12" fill="black">
+Slave #1 stores the timestamp (T1)
+</text>
+<polygon fill="white" points="250,73 447,73 447,82 250,82"/>
+<text x="251" y="82" textLength="195" font-family="Helvetica" font-size="12" fill="black">
+from the moment the initial sync msg
+</text>
+<polygon fill="white" points="267,84 429,84 429,93 267,93"/>
+<text x="268" y="93" textLength="160" font-family="Helvetica" font-size="12" fill="black">
+arrived on this node's scanner
+</text>
+<line x1="116" y1="100" x2="116" y2="128" stroke="black"/>
+<line x1="349" y1="100" x2="349" y2="128" stroke="black"/>
+<line x1="582" y1="100" x2="582" y2="128" stroke="black"/>
+<path d="M 116 117 A114,6 0 0,1 116,105" stroke="blue" fill="none"/><line x1="116" y1="117" x2="106" y2="123" stroke="blue"/>
+<line x1="106" y1="111" x2="116" y2="117" stroke="blue"/>
+<polygon fill="white" points="116,101 223,101 223,110 116,110"/>
+<text x="117" y="110" textLength="105" font-family="Helvetica" font-size="12" fill="blue">
+Tx_complete_event
+</text>
+<line x1="116" y1="128" x2="116" y2="189" stroke="black"/>
+<line x1="349" y1="128" x2="349" y2="189" stroke="black"/>
+<line x1="582" y1="128" x2="582" y2="189" stroke="black"/>
+<polygon fill="white" points="14,128 219,128 219,183 14,183"/>
+<polygon fill="white" points="8,134 225,134 225,177 8,177"/>
+<circle fill="white" cx="14" cy="134" r="6"/>
+<circle fill="white" cx="219" cy="134" r="6"/>
+<circle fill="white" cx="14" cy="177" r="6"/>
+<circle fill="white" cx="219" cy="177" r="6"/>
+<line x1="14" y1="128" x2="219" y2="128" stroke="black"/>
+<line x1="14" y1="183" x2="219" y2="183" stroke="black"/>
+<line x1="8" y1="134" x2="8" y2="177" stroke="black"/>
+<line x1="225" y1="134" x2="225" y2="177" stroke="black"/>
+<path d="M 8 134 A6,6 0 0,1 14,128" stroke="black" fill="none"/><path d="M 219 128 A6,6 0 0,1 225,134" stroke="black" fill="none"/><path d="M 225 177 A6,6 0 0,1 219,183" stroke="black" fill="none"/><path d="M 14 183 A6,6 0 0,1 8,177" stroke="black" fill="none"/><polygon fill="white" points="20,129 211,129 211,138 20,138"/>
+<text x="21" y="138" textLength="189" font-family="Helvetica" font-size="12" fill="black">
+The tx_complete event contains the
+</text>
+<polygon fill="white" points="17,140 214,140 214,149 17,149"/>
+<text x="18" y="149" textLength="195" font-family="Helvetica" font-size="12" fill="black">
+timestamp (T2) from the moment the
+</text>
+<polygon fill="white" points="12,151 219,151 219,160 12,160"/>
+<text x="13" y="160" textLength="205" font-family="Helvetica" font-size="12" fill="black">
+initial sync message was sent from the
+</text>
+<polygon fill="white" points="17,162 214,162 214,171 17,171"/>
+<text x="18" y="171" textLength="195" font-family="Helvetica" font-size="12" fill="black">
+master. This timestamp is sent along
+</text>
+<polygon fill="white" points="33,173 198,173 198,182 33,182"/>
+<text x="34" y="182" textLength="163" font-family="Helvetica" font-size="12" fill="black">
+with the second sync message
+</text>
+<line x1="116" y1="189" x2="116" y2="217" stroke="black"/>
+<line x1="349" y1="189" x2="349" y2="217" stroke="black"/>
+<line x1="582" y1="189" x2="582" y2="217" stroke="black"/>
+<line x1="116" y1="200" x2="349" y2="200" stroke="red"/>
+<line x1="349" y1="200" x2="339" y2="206" stroke="red"/>
+<line x1="339" y1="194" x2="349" y2="200" stroke="red"/>
+<polygon fill="white" points="184,190 281,190 281,199 184,199"/>
+<text x="185" y="199" textLength="95" font-family="Helvetica" font-size="12" fill="red">
+Second sync msg
+</text>
+<line x1="116" y1="217" x2="116" y2="256" stroke="black"/>
+<line x1="349" y1="217" x2="349" y2="256" stroke="black"/>
+<line x1="582" y1="217" x2="582" y2="256" stroke="black"/>
+<polygon fill="white" points="247,217 452,217 452,250 247,250"/>
+<polygon fill="white" points="241,223 458,223 458,244 241,244"/>
+<circle fill="white" cx="247" cy="223" r="6"/>
+<circle fill="white" cx="452" cy="223" r="6"/>
+<circle fill="white" cx="247" cy="244" r="6"/>
+<circle fill="white" cx="452" cy="244" r="6"/>
+<line x1="247" y1="217" x2="452" y2="217" stroke="black"/>
+<line x1="247" y1="250" x2="452" y2="250" stroke="black"/>
+<line x1="241" y1="223" x2="241" y2="244" stroke="black"/>
+<line x1="458" y1="223" x2="458" y2="244" stroke="black"/>
+<path d="M 241 223 A6,6 0 0,1 247,217" stroke="black" fill="none"/><path d="M 452 217 A6,6 0 0,1 458,223" stroke="black" fill="none"/><path d="M 458 244 A6,6 0 0,1 452,250" stroke="black" fill="none"/><path d="M 247 250 A6,6 0 0,1 241,244" stroke="black" fill="none"/><polygon fill="white" points="244,218 452,218 452,227 244,227"/>
+<text x="245" y="227" textLength="206" font-family="Helvetica" font-size="12" fill="black">
+Timestamp T1 &amp; T2 are compared and
+</text>
+<polygon fill="white" points="254,229 443,229 443,238 254,238"/>
+<text x="255" y="238" textLength="187" font-family="Helvetica" font-size="12" fill="black">
+the slave node sets its timing offset
+</text>
+<polygon fill="white" points="317,240 380,240 380,249 317,249"/>
+<text x="318" y="249" textLength="61" font-family="Helvetica" font-size="12" fill="black">
+accordingly
+</text>
+<line x1="116" y1="256" x2="116" y2="284" stroke="black"/>
+<line x1="349" y1="256" x2="349" y2="284" stroke="black"/>
+<line x1="582" y1="256" x2="582" y2="284" stroke="black"/>
+<line x1="116" y1="267" x2="349" y2="267" stroke="black" stroke-dasharray="2,2"/>
+<polygon fill="black" points="349,267 339,273 339,261"/>
+<polygon fill="black" points="116,267 126,273 126,261"/>
+<polygon fill="white" points="154,257 311,257 311,266 154,266"/>
+<text x="155" y="266" textLength="155" font-family="Helvetica" font-size="12" fill="black">
+SLAVE #1 SYNCHRONIZED
+</text>
+<polygon fill="white" points="165,268 300,268 300,277 165,277"/>
+<text x="166" y="277" textLength="133" font-family="Helvetica" font-size="12" fill="black">
+AGAINST THE MASTER
+</text>
+<line x1="116" y1="284" x2="116" y2="312" stroke="black"/>
+<line x1="349" y1="284" x2="349" y2="312" stroke="black"/>
+<line x1="582" y1="284" x2="582" y2="312" stroke="black"/>
+<line x1="349" y1="295" x2="582" y2="295" stroke="green"/>
+<line x1="582" y1="295" x2="572" y2="301" stroke="green"/>
+<line x1="572" y1="289" x2="582" y2="295" stroke="green"/>
+<polygon fill="white" points="423,285 507,285 507,294 423,294"/>
+<text x="424" y="294" textLength="82" font-family="Helvetica" font-size="12" fill="green">
+Initial sync msg
+</text>
+<line x1="116" y1="312" x2="116" y2="351" stroke="black"/>
+<line x1="349" y1="312" x2="349" y2="351" stroke="black"/>
+<line x1="582" y1="312" x2="582" y2="351" stroke="black"/>
+<polygon fill="white" points="480,312 685,312 685,345 480,345"/>
+<polygon fill="white" points="474,318 691,318 691,339 474,339"/>
+<circle fill="white" cx="480" cy="318" r="6"/>
+<circle fill="white" cx="685" cy="318" r="6"/>
+<circle fill="white" cx="480" cy="339" r="6"/>
+<circle fill="white" cx="685" cy="339" r="6"/>
+<line x1="480" y1="312" x2="685" y2="312" stroke="black"/>
+<line x1="480" y1="345" x2="685" y2="345" stroke="black"/>
+<line x1="474" y1="318" x2="474" y2="339" stroke="black"/>
+<line x1="691" y1="318" x2="691" y2="339" stroke="black"/>
+<path d="M 474 318 A6,6 0 0,1 480,312" stroke="black" fill="none"/><path d="M 685 312 A6,6 0 0,1 691,318" stroke="black" fill="none"/><path d="M 691 339 A6,6 0 0,1 685,345" stroke="black" fill="none"/><path d="M 480 345 A6,6 0 0,1 474,339" stroke="black" fill="none"/><polygon fill="white" points="487,313 676,313 676,322 487,322"/>
+<text x="488" y="322" textLength="187" font-family="Helvetica" font-size="12" fill="black">
+Slave #2 stores the timestamp (T3)
+</text>
+<polygon fill="white" points="483,324 680,324 680,333 483,333"/>
+<text x="484" y="333" textLength="195" font-family="Helvetica" font-size="12" fill="black">
+from the moment the initial sync msg
+</text>
+<polygon fill="white" points="500,335 662,335 662,344 500,344"/>
+<text x="501" y="344" textLength="160" font-family="Helvetica" font-size="12" fill="black">
+arrived on this node's scanner
+</text>
+<line x1="116" y1="351" x2="116" y2="379" stroke="black"/>
+<line x1="349" y1="351" x2="349" y2="379" stroke="black"/>
+<line x1="582" y1="351" x2="582" y2="379" stroke="black"/>
+<path d="M 349 356 A116,6 0 0,1 349,368" stroke="blue" fill="none"/><line x1="349" y1="368" x2="359" y2="374" stroke="blue"/>
+<line x1="349" y1="368" x2="359" y2="362" stroke="blue"/>
+<polygon fill="white" points="240,352 347,352 347,361 240,361"/>
+<text x="241" y="361" textLength="105" font-family="Helvetica" font-size="12" fill="blue">
+Tx_complete_event
+</text>
+<line x1="116" y1="379" x2="116" y2="451" stroke="black"/>
+<line x1="349" y1="379" x2="349" y2="451" stroke="black"/>
+<line x1="582" y1="379" x2="582" y2="451" stroke="black"/>
+<polygon fill="white" points="247,379 452,379 452,445 247,445"/>
+<polygon fill="white" points="241,385 458,385 458,439 241,439"/>
+<circle fill="white" cx="247" cy="385" r="6"/>
+<circle fill="white" cx="452" cy="385" r="6"/>
+<circle fill="white" cx="247" cy="439" r="6"/>
+<circle fill="white" cx="452" cy="439" r="6"/>
+<line x1="247" y1="379" x2="452" y2="379" stroke="black"/>
+<line x1="247" y1="445" x2="452" y2="445" stroke="black"/>
+<line x1="241" y1="385" x2="241" y2="439" stroke="black"/>
+<line x1="458" y1="385" x2="458" y2="439" stroke="black"/>
+<path d="M 241 385 A6,6 0 0,1 247,379" stroke="black" fill="none"/><path d="M 452 379 A6,6 0 0,1 458,385" stroke="black" fill="none"/><path d="M 458 439 A6,6 0 0,1 452,445" stroke="black" fill="none"/><path d="M 247 445 A6,6 0 0,1 241,439" stroke="black" fill="none"/><polygon fill="white" points="253,380 444,380 444,389 253,389"/>
+<text x="254" y="389" textLength="189" font-family="Helvetica" font-size="12" fill="black">
+The tx_complete event contains the
+</text>
+<polygon fill="white" points="247,391 449,391 449,400 247,400"/>
+<text x="248" y="400" textLength="200" font-family="Helvetica" font-size="12" fill="black">
+timestamp +  own offset (T4) from the
+</text>
+<polygon fill="white" points="248,402 449,402 449,411 248,411"/>
+<text x="249" y="411" textLength="199" font-family="Helvetica" font-size="12" fill="black">
+moment the initial sync message was
+</text>
+<polygon fill="white" points="248,413 448,413 448,422 248,422"/>
+<text x="249" y="422" textLength="198" font-family="Helvetica" font-size="12" fill="black">
+sent from slave #1. This timestamp is
+</text>
+<polygon fill="white" points="262,424 434,424 434,433 262,433"/>
+<text x="263" y="433" textLength="170" font-family="Helvetica" font-size="12" fill="black">
+sent along with the second sync
+</text>
+<polygon fill="white" points="323,435 374,435 374,444 323,444"/>
+<text x="324" y="444" textLength="49" font-family="Helvetica" font-size="12" fill="black">
+message
+</text>
+<line x1="116" y1="451" x2="116" y2="479" stroke="black"/>
+<line x1="349" y1="451" x2="349" y2="479" stroke="black"/>
+<line x1="582" y1="451" x2="582" y2="479" stroke="black"/>
+<line x1="349" y1="462" x2="582" y2="462" stroke="red"/>
+<line x1="582" y1="462" x2="572" y2="468" stroke="red"/>
+<line x1="572" y1="456" x2="582" y2="462" stroke="red"/>
+<polygon fill="white" points="417,452 514,452 514,461 417,461"/>
+<text x="418" y="461" textLength="95" font-family="Helvetica" font-size="12" fill="red">
+Second sync msg
+</text>
+<line x1="116" y1="479" x2="116" y2="518" stroke="black"/>
+<line x1="349" y1="479" x2="349" y2="518" stroke="black"/>
+<line x1="582" y1="479" x2="582" y2="518" stroke="black"/>
+<polygon fill="white" points="480,479 685,479 685,512 480,512"/>
+<polygon fill="white" points="474,485 691,485 691,506 474,506"/>
+<circle fill="white" cx="480" cy="485" r="6"/>
+<circle fill="white" cx="685" cy="485" r="6"/>
+<circle fill="white" cx="480" cy="506" r="6"/>
+<circle fill="white" cx="685" cy="506" r="6"/>
+<line x1="480" y1="479" x2="685" y2="479" stroke="black"/>
+<line x1="480" y1="512" x2="685" y2="512" stroke="black"/>
+<line x1="474" y1="485" x2="474" y2="506" stroke="black"/>
+<line x1="691" y1="485" x2="691" y2="506" stroke="black"/>
+<path d="M 474 485 A6,6 0 0,1 480,479" stroke="black" fill="none"/><path d="M 685 479 A6,6 0 0,1 691,485" stroke="black" fill="none"/><path d="M 691 506 A6,6 0 0,1 685,512" stroke="black" fill="none"/><path d="M 480 512 A6,6 0 0,1 474,506" stroke="black" fill="none"/><polygon fill="white" points="477,480 685,480 685,489 477,489"/>
+<text x="478" y="489" textLength="206" font-family="Helvetica" font-size="12" fill="black">
+Timestamp T3 &amp; T4 are compared and
+</text>
+<polygon fill="white" points="487,491 676,491 676,500 487,500"/>
+<text x="488" y="500" textLength="187" font-family="Helvetica" font-size="12" fill="black">
+the slave node sets its timing offset
+</text>
+<polygon fill="white" points="550,502 613,502 613,511 550,511"/>
+<text x="551" y="511" textLength="61" font-family="Helvetica" font-size="12" fill="black">
+accordingly
+</text>
+<line x1="116" y1="518" x2="116" y2="546" stroke="black"/>
+<line x1="349" y1="518" x2="349" y2="546" stroke="black"/>
+<line x1="582" y1="518" x2="582" y2="546" stroke="black"/>
+<line x1="349" y1="529" x2="582" y2="529" stroke="black" stroke-dasharray="2,2"/>
+<polygon fill="black" points="582,529 572,535 572,523"/>
+<polygon fill="black" points="349,529 359,535 359,523"/>
+<polygon fill="white" points="387,519 544,519 544,528 387,528"/>
+<text x="388" y="528" textLength="155" font-family="Helvetica" font-size="12" fill="black">
+SLAVE #2 SYNCHRONIZED
+</text>
+<polygon fill="white" points="409,530 522,530 522,539 409,539"/>
+<text x="410" y="539" textLength="111" font-family="Helvetica" font-size="12" fill="black">
+AGAINST SLAVE #1
+</text>
+<line x1="116" y1="540" x2="116" y2="546" stroke="black"/>
+<line x1="349" y1="540" x2="349" y2="546" stroke="black"/>
+<line x1="582" y1="540" x2="582" y2="546" stroke="black"/>
+</svg>

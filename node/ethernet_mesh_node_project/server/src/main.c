@@ -61,7 +61,7 @@
 #include "rssi_util.h"
 #include "rssi_common.h"
 #include "health_client.h"
-#include "time_sync_v1_controller.h"
+#include "time_sync_controller.h"
 
 /* Logging and RTT */
 #include "log.h"
@@ -92,7 +92,7 @@
 #include "time_sync_timer.h"
 #include "config.h"
 #include "socket.h"
-#include "time_sync_v1_controller.h"
+#include "time_sync_controller.h"
 #include "sync_timer_handler.h"
 #include "i_am_alive.h"
 

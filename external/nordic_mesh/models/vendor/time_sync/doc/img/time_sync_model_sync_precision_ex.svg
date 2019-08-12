@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="22cm" height="5cm" viewBox="337 351 427 82" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <ellipse style="fill: #ff9292" cx="488.216" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #ff0000" cx="488.216" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="506.291" y="409.138">
+      <tspan x="506.291" y="409.138"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="472.756" y="397.585">
+    <tspan x="472.756" y="397.585">  NODE</tspan>
+    <tspan x="472.756" y="407.463"> WITHIN</tspan>
+    <tspan x="472.756" y="417.34">ONE HOP</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #b3b3ff" cx="366.076" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" cx="366.076" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="384.151" y="409.138">
+      <tspan x="384.151" y="409.138"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="351.482" y="395.316">
+    <tspan x="351.482" y="395.316">  SYNC</tspan>
+    <tspan x="351.482" y="405.193">MASTER</tspan>
+    <tspan x="351.482" y="415.071">  NODE</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #84fc84" cx="610.355" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #009400" cx="610.355" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="628.431" y="409.138">
+      <tspan x="628.431" y="409.138"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="591.199" y="395.373">
+    <tspan x="591.199" y="395.373">   NODE</tspan>
+    <tspan x="591.199" y="405.251">  WITHIN</tspan>
+    <tspan x="591.199" y="415.129">TWO HOPS</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #0000ff" d="M 390.936,417.779 A 103.238,103.238 0 0 0 458.162,419.568"/>
+    <polygon style="fill: #0000ff" points="458.907,421.581 461.951,418.305 457.504,417.835 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #0000ff" points="458.907,421.581 461.951,418.305 457.504,417.835 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" d="M 583.86,383.468 A 79.1054,79.1054 0 0 0 509.86,386.038"/>
+    <polygon style="fill: #ff0000" points="582.946,385.03 587.411,385.29 584.94,381.563 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" points="582.946,385.03 587.411,385.29 584.94,381.563 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" d="M 635.215,417.779 A 103.238,103.238 0 0 0 702.441,419.568"/>
+    <polygon style="fill: #009400" points="703.186,421.581 706.231,418.305 701.783,417.835 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="703.186,421.581 706.231,418.305 701.783,417.835 "/>
+  </g>
+  <g>
+    <ellipse style="fill: #bfbfbf" cx="732.495" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" cx="732.495" cy="404.338" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="750.57" y="409.138">
+      <tspan x="750.57" y="409.138"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="720.723" y="390.672">
+    <tspan x="720.723" y="390.672">NODE</tspan>
+    <tspan x="720.723" y="400.55">WITHIN</tspan>
+    <tspan x="720.723" y="410.427">THREE </tspan>
+    <tspan x="720.723" y="420.305">HOPS</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="455.864" y="370.777">
+    <tspan x="455.864" y="370.777">+/- 100 μSec</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="581.296" y="370.777">
+    <tspan x="581.296" y="370.777">+/- 200 μSec</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="703.16" y="370.777">
+    <tspan x="703.16" y="370.777">+/- 300 μSec</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="339.887" y="370.639">
+    <tspan x="339.887" y="370.639">Master_time</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="457.589" y="360.883">
+    <tspan x="457.589" y="360.883">Master_time</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="582.396" y="360.883">
+    <tspan x="582.396" y="360.883">Master_time</tspan>
+  </text>
+  <text font-size="9.13271" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:700" x="704.825" y="360.883">
+    <tspan x="704.825" y="360.883">Master_time</tspan>
+  </text>
+</svg>
