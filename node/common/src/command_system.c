@@ -12,28 +12,20 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "commands.h"
-#include "radio.h"
-#include "advertise.h"
 #include "boards.h"
 #include "pwm.h"
-#include "scan.h"
 #include "nrf_gpio.h"
 #include "util.h"
 #include "dhcp.h"
 #include "time_sync_timer.h"
 #include "dhcp_cb.h"
-#include "user_ethernet.h"
+#include "ethernet.h"
 #include "timer_drift_measurement.h"
-#include "ethernet_network.h"
 #include "ppi.h"
 #include "gpio.h"
 #include "sync_timer_handler.h"
-
-
-#ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
 #include "time_sync_controller.h"
-#endif
 
 
 static volatile float led_hp_default_value  = LED_HP_CONNECTED_DUTY_CYCLE;
@@ -57,12 +49,12 @@ void scanning_disable(void)
     m_scanning_enabled = false;
 }
 
-// Enables advertising for current radio mode
-void advertising_enable(void)
-{                    
-    advertise_init();
-    m_advertising_enabled = true;
-}
+//// Enables advertising for current radio mode
+//void advertising_enable(void)
+//{                    
+//    advertise_init();
+//    m_advertising_enabled = true;
+//}
 
 // Disables advertising for current radio mode
 void advertising_disable(void)
@@ -96,39 +88,31 @@ void sync_set_interval(uint8_t interval)
 }
 
 /* Function to send scan reports over Ethernet using UDP */
-void send_scan_report(scan_report_t * scan_report)
-{
-    uint8_t buf[SCAN_REPORT_LENGTH];
-    uint8_t len = 0;
-    
-    if(!is_network_busy())
-    {
-        set_network_busy(true);
-        
-        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
-                        scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
-                        scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
-                        scan_report->address[3], scan_report->address[4], scan_report->address[5],
-                        scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error, m_controls_sync_signal);
-        
-        len = strlen((const char *)&buf[0]);
-        
-        uint8_t target_IP[4] = {10, 0, 0, 4};    
-        uint32_t target_port = 15000;
-        get_target_IP_and_port(target_IP, &target_port);
-
-        sendto(SOCKET_UDP, &buf[0], len, target_IP, target_port);
-
-        
-        set_network_busy(false);
-    }
-}
+//void send_scan_report(scan_report_t * scan_report)
+//{
+//    uint8_t buf[SCAN_REPORT_LENGTH];
+//    uint8_t len = 0;
+//      
+//        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"timestamp\" : %d, \t \"counter\" : %d, \t \"address\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"RSSI\" : %d, \"channel\" : %d, \"CRC\" : %01d, \"LPE\" : %01d, \"syncController\" : %01d }\r\n", 
+//                        scan_report->id[0], scan_report->id[1], scan_report->id[2], scan_report->id[3], scan_report->id[4], scan_report->id[5],
+//                        scan_report->timestamp, scan_report->counter, scan_report->address[0], scan_report->address[1], scan_report->address[2], 
+//                        scan_report->address[3], scan_report->address[4], scan_report->address[5],
+//                        scan_report->rssi, scan_report->channel, scan_report->crc_status, scan_report->long_packet_error, m_controls_sync_signal);
+//      
+//        len = strlen((const char *)&buf[0]);
+//      
+//        uint8_t target_IP[4] = {10, 0, 0, 4};    
+//        uint32_t target_port = 15000;
+//        get_target_IP_and_port(target_IP, &target_port);
+//
+//        sendto(SOCKET_TX, &buf[0], len, target_IP, target_port);
+//}
 
 
 // Function for checking if the device has received a new control command
 void check_ctrl_cmd(void)
 {
-    while (getSn_RX_RSR(SOCKET_BROADCAST) != 0x00)
+    while (getSn_RX_RSR(SOCKET_RX) != 0x00)
     {
         uint8_t received_data[200];
         uint8_t broadcast_ip[] = {255, 255, 255, 255};
@@ -138,7 +122,7 @@ void check_ctrl_cmd(void)
         get_own_IP(own_IP);
         
         // Receive new data from socket
-        int32_t recv_len = recvfrom(SOCKET_BROADCAST, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
+        int32_t recv_len = recvfrom(SOCKET_RX, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
 
         // If any data is received, check which command it is
         if (recv_len > 0)
@@ -152,7 +136,7 @@ void check_ctrl_cmd(void)
             if (compare == 0)
             {
                 ctrl_cmd_t cmd = received_data[CTRL_CMD_CMD_INDEX];
-                uint8_t payload_len = received_data[CTRL_CMD_PAYLOAD_LEN_INDEX];
+//                uint8_t payload_len = received_data[CTRL_CMD_PAYLOAD_LEN_INDEX];
                 uint8_t * p_payload = &received_data[CTRL_CMD_PAYLOAD_INDEX];
 
                 // Choose the right action according to command
@@ -162,33 +146,31 @@ void check_ctrl_cmd(void)
                         ERROR_CHECK(sd_nvic_SystemReset());
                         break;
                     case RESET_SYNC:
-                        LOG("CMD: RESETING TIME SYNC\r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: RESETING TIME SYNC\r\n");
                         sync_timer_reset();
                         break;
                     case WHOAMI_START:
-                        LOG("CMD: WHO AM I start\r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: WHO AM I start\r\n");
                         m_who_am_i_enabled = true;
                         break;
 
                     case WHOAMI_STOP:
-                        LOG("CMD: WHO AM I stop\r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: WHO AM I stop\r\n");
                         m_who_am_i_enabled = false;
                         break;
 
-                    case CMD_SERVER_IP_BROADCAST:
-                        if (!is_server_IP_received())
-                        {
-                            get_server_ip(p_payload, payload_len);
-                        }
-                        set_server_IP_received(true);
-                        break;
-
-                    case CMD_NEW_SERVER_IP:
-                        set_target_IP(&broadcast_ip[0]);
-                        set_server_IP_received(true);
-                        break;
-
-                    #ifdef MESH_ENABLED
+//                    case CMD_SERVER_IP_BROADCAST:
+//                        if (!is_server_IP_received())
+//                        {
+//                            get_server_ip(p_payload, payload_len);
+//                        }
+//                        set_server_IP_received(true);
+//                        break;
+//
+//                    case CMD_NEW_SERVER_IP:
+//                        set_target_IP(&broadcast_ip[0]);
+//                        set_server_IP_received(true);
+//                        break;
 
                     case CMD_NEW_FIRMWARE_ALL:
                         if(own_IP[0] != 1)
@@ -200,7 +182,7 @@ void check_ctrl_cmd(void)
                         }
                         else
                         {
-                          LOG("CMD: Own IP not valid - can not start DFU\r\n");
+                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Own IP not valid - can not start DFU\r\n");
                         }
                         break;
 
@@ -224,14 +206,14 @@ void check_ctrl_cmd(void)
                         }
                         else
                         {
-                          LOG("CMD: Own IP not valid - can not start DFU\r\n");
+                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Own IP not valid - can not start DFU\r\n");
                         }
                         break;
 
                     case CMD_NEW_FIRMWARE_BUTTON_ENABLE:
                         if(own_IP[0] != 1)
                         {
-                          LOG("CMD: Set button DFU flag\r\n");
+                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Set button DFU flag\r\n");
                           dfu_erase_flash_page();
                           dfu_write_own_ip(own_IP);
                           dfu_write_server_ip(&broadcast_ip[0]);
@@ -239,49 +221,47 @@ void check_ctrl_cmd(void)
                         }
                         else
                         {
-                          LOG("CMD: Own IP not valid - can not start DFU\r\n");
+                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Own IP not valid - can not start DFU\r\n");
                         }             
                         break;
 
                     case CMD_NEW_FIRMWARE_BUTTON_DISABLE:
-                        LOG("CMD: Clear button DFU flag\r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Clear button DFU flag\r\n");
                         dfu_clear_button_flag();
                         break;
 
-                    #endif
+//                    case CMD_NEW_ACCESS_ADDRESS:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: New access address set\r\n");
+//                        radio_set_access_address((uint32_t)*((uint32_t *)p_payload));
+//                        break;
 
-                    case CMD_NEW_ACCESS_ADDRESS:
-                        LOG("CMD: New access address set\r\n");
-                        radio_set_access_address((uint32_t)*((uint32_t *)p_payload));
-                        break;
-
-                    case CMD_ADVERTISING_START:
-                        LOG("CMD: Advertising start\r\n");
-                        advertising_enable();
-                        break;
+//                    case CMD_ADVERTISING_START:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Advertising start\r\n");
+//                        advertising_enable();
+//                        break;
 
                     case CMD_ADVERTISING_STOP:
-                        LOG("CMD: Advertising stop\r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Advertising stop\r\n");
                         advertising_disable();
                         break;
 
                     case CMD_ALL_HPLED_ON:
-                        LOG("CMD: All HP LEDs ON: \r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: All HP LEDs ON: \r\n");
                         pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
                         break;
 
                     case CMD_ALL_HPLED_OFF:
-                        LOG("CMD: All HP LEDs OFF \r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: All HP LEDs OFF \r\n");
                         pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
                         break;
 
                     case CMD_ALL_HPLED_DEFAULT:
-                        LOG("CMD: Set all HP LEDs to default value  \r\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Set all HP LEDs to default value  \r\n");
                         pwm_set_duty_cycle(LED_HP, led_hp_default_value);
                         break;
 
                     case CMD_ALL_HPLED_NEW_DEFAULT:
-                        LOG("CMD: Sets new HP LED default value: %d\r\n", p_payload[0]);
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sets new HP LED default value: %d\r\n", p_payload[0]);
                         led_hp_default_value = p_payload[0] + (p_payload[1] / 10.0f);
                         pwm_set_duty_cycle(LED_HP, led_hp_default_value);
                         break;
@@ -293,23 +273,22 @@ void check_ctrl_cmd(void)
 //                        break;
 
                     case CMD_SINGLE_HPLED_ON:
-                        LOG("CMD: Single HP LED ON: \n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single HP LED ON: \n");
 
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
-//                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
-//                            LOG("IP match -> turning HP LED ON\r\n");
-//                            send_timestamp();
-                              sync_set_pub_timer(true);
+                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> turning HP LED ON\r\n");
+                            sync_set_pub_timer(true);
                         }
                         else 
                         {
-                            LOG("no IP match -> no action \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
                         }
                         break;
 
                     case CMD_SINGLE_HPLED_OFF:
-                        LOG("CMD: Single HP LED OFF: ");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single HP LED OFF: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
 //                            pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
@@ -318,20 +297,20 @@ void check_ctrl_cmd(void)
                         }
                         else 
                         {
-                            LOG("no IP match -> no action\r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action\r\n");
                         }
                         break;
 
                     case CMD_SINGLE_HPLED_DEFAULT:
-                        LOG("CMD: Single HP LED default: ");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single HP LED default: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
                             pwm_set_duty_cycle(LED_HP, led_hp_default_value);
-                            LOG("IP match -> setting HP LED to default value\r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> setting HP LED to default value\r\n");
                         }
                         else 
                         {
-                            LOG("no IP match -> no action \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
                         }
                         break;
 
@@ -349,63 +328,63 @@ void check_ctrl_cmd(void)
 //                        }
 //                        break;
 
-                    case CMD_SINGLE_ADVERTISING_ON:
-                        LOG("CMD: Single advertising START: ");
-                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
-                        {
-                            scanning_disable();
-                            advertising_enable();
-                            LOG("IP match -> enabling advertising \r\n");
-                        }
-                        else 
-                        {
-                            LOG("no IP match -> no action \r\n");
-                        }
-                        break;
+//                    case CMD_SINGLE_ADVERTISING_ON:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single advertising START: ");
+//                        if (IPs_are_equal((uint8_t *)p_payload, own_IP))
+//                        {
+//                            scanning_disable();
+//                            advertising_enable();
+//                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> enabling advertising \r\n");
+//                        }
+//                        else 
+//                        {
+//                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
+//                        }
+//                        break;
 
                     case CMD_SINGLE_ADVERTISING_OFF:
-                        LOG("CMD: Single advertising STOP: ");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single advertising STOP: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
                             advertising_disable();
                             scanning_enable();
-                            LOG("IP match -> disabling advertising \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> disabling advertising \r\n");
                         }
                         else 
                         {
-                            LOG("no IP match -> no action \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
                         }
                         break;
 
                      case CMD_SYNC_NODE_SET:
-                        LOG("CMD: Sync node set: \n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync node set: \n");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
                             sync_master_set(sync_interval);
-                            LOG("IP match -> setting node as sync master \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> setting node as sync master \r\n");
                         }
                         else 
                         {
                             sync_master_unset();
-                            LOG("no IP match -> unset as sync master, no further action \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> unset as sync master, no further action \r\n");
                         }
                         break;
                     
                     case CMD_SYNC_SET_INTERVAL:
-                        LOG("CMD: Sync set interval: ");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync set interval: ");
                         if (IPs_are_equal((uint8_t *)p_payload, own_IP))
                         {
                             sync_set_interval(p_payload[4]);
-                            LOG("IP match -> setting sync interval to %d ms\r\n", p_payload[4] * 100);
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "IP match -> setting sync interval to %d ms\r\n", p_payload[4] * 100);
                         }
                         else 
                         {
-                            LOG("no IP match -> no action \r\n");
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "no IP match -> no action \r\n");
                         }
                         break;
 
                     case CMD_SYNC_RESET:
-                        LOG("CMD: Sync Reset\n");
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync Reset\n");
                         sync_master_unset();
                         drift_timer_reset();
                         reset_drift_measure_params();
@@ -413,7 +392,7 @@ void check_ctrl_cmd(void)
                         break;
                                             
                     default:
-                        LOG("CMD: Unrecognized control command: %d\r\n", cmd);
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Unrecognized control command: %d\r\n", cmd);
                         break;
                 }
             }

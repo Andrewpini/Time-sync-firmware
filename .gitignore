@@ -20,7 +20,6 @@ output
 ## VS CODE ##
 .vscode/
 
-
 ## ATOM EDITOR ##
 tags
 *.tag*

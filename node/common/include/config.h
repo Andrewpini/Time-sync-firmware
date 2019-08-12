@@ -2,13 +2,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#ifdef MESH_ENABLED
-    #include "log.h"
-    #define LOG(...) __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, __VA_ARGS__);
-#else
-    #define LOG(...) printf(__VA_ARGS__)
-#endif
-
 #define USE_COUNTER_FROM_ADV                1
 
 #define SUCCESS                             0
@@ -24,6 +17,7 @@
 #define LED_HP_OFF_DUTY_CYCLE               0.0f
 #define LED_HP_DEFAULT_DUTY_CYCLE           LED_HP_CONNECTED_DUTY_CYCLE
 
+#define I_AM_ALIVE_SENDING_INTERVAL         2000
 
 // GPITOE channelse
 #define GPIOTE_CHANNEL_SYNC_IN              0

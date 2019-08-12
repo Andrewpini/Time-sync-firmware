@@ -11,10 +11,7 @@
 #include "app_timer.h"
 #include "boards.h"
 #include "timer_drift_measurement.h"
-
-#ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
-#endif
 
 APP_TIMER_DEF(m_blink_timer);
 static uint32_t m_blink_count;
@@ -49,7 +46,7 @@ void gpiote_init(void)
 
     NVIC_EnableIRQ(GPIOTE_IRQn);
     NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos);
-    NVIC_SetPriority(GPIOTE_IRQn, 1);
+    NVIC_SetPriority(GPIOTE_IRQn, 6);
 }
 
 void sync_master_gpio_init(void){
@@ -69,8 +66,6 @@ void GPIOTE_IRQHandler(void)
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
         sync_line_event_handler(); 
     }
-
-    #ifdef MESH_ENABLED
     
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_DFU_BUTTON]){
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_DFU_BUTTON] = 0;
@@ -83,8 +78,6 @@ void GPIOTE_IRQHandler(void)
           }
         }
     }
-
-    #endif
 }
 
 static void led_timeout_handler(void * p_context)
