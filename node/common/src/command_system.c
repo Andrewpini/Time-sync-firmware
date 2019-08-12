@@ -32,7 +32,7 @@
 
 #ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
-#include "time_sync_v1_controller.h"
+#include "time_sync_controller.h"
 #endif
 
 
