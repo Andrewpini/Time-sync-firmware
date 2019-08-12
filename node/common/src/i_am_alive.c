@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "i_am_alive.h"
+#include "config.h"
 #include "log.h"
 #include "mesh_app_utils.h"
 #include "app_timer.h"
@@ -36,5 +37,5 @@ void i_am_alive_timer_init(void)
 
 void i_am_alive_timer_start(void)
 {
-    ERROR_CHECK(app_timer_start(IM_ALIVE_TIMER, HAL_MS_TO_RTC_TICKS(500), NULL));
+  ERROR_CHECK(app_timer_start(IM_ALIVE_TIMER, HAL_MS_TO_RTC_TICKS(I_AM_ALIVE_SENDING_INTERVAL), NULL));
 }

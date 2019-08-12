@@ -11,10 +11,7 @@
 #include "app_timer.h"
 #include "boards.h"
 #include "timer_drift_measurement.h"
-
-#ifdef MESH_ENABLED
 #include "ethernet_dfu.h"
-#endif
 
 APP_TIMER_DEF(m_blink_timer);
 static uint32_t m_blink_count;
@@ -69,8 +66,6 @@ void GPIOTE_IRQHandler(void)
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
         sync_line_event_handler(); 
     }
-
-    #ifdef MESH_ENABLED
     
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_DFU_BUTTON]){
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_DFU_BUTTON] = 0;
@@ -83,8 +78,6 @@ void GPIOTE_IRQHandler(void)
           }
         }
     }
-
-    #endif
 }
 
 static void led_timeout_handler(void * p_context)

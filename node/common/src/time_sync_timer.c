@@ -9,6 +9,9 @@
 #include "dhcp.h"
 #include "time_sync_timer.h"
 #include "timer_drift_measurement.h"
+#include "app_timer.h"
+#include "hal.h"
+#include "mesh_app_utils.h"
 
 void drift_timer_init(void)
 {
@@ -37,36 +40,7 @@ void sync_master_timer_init(uint32_t interval){
     NVIC_EnableIRQ(TIMER1_IRQn);
     NVIC_SetPriority(TIMER1_IRQn, 7);}
 
-
-/* When the mesh stack is present we choose to use the implemented timer module instead of a unique timer */
-#ifdef MESH_ENABLED
-    #include "app_timer.h"
-    #include "hal.h"
-    #include "mesh_app_utils.h"
-
 void TIMER1_IRQHandler(void)
 {
     SYNC_TIMER->EVENTS_COMPARE[0] = 0;
 }
-#else
-void dhcp_timer_init(void)
-{
-    DHCP_TIMER->MODE                = TIMER_MODE_MODE_Timer << TIMER_MODE_MODE_Pos;                                 // Timer mode
-    DHCP_TIMER->BITMODE             = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;                     // 32-bit timer
-    DHCP_TIMER->PRESCALER           = 4 << TIMER_PRESCALER_PRESCALER_Pos;                                           // Prescaling: 16 MHz / 2^PRESCALER = 16 MHz / 16 = 1 MHz timer
-    DHCP_TIMER->CC[0]               = 1000000;                                                                      // Compare event every second
-    DHCP_TIMER->SHORTS              = TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos;       // Clear compare event on event
-    DHCP_TIMER->INTENSET            = TIMER_INTENSET_COMPARE0_Enabled << TIMER_INTENSET_COMPARE0_Pos;               // Enable interrupt for compare event
-    NVIC_ClearPendingIRQ(TIMER1_IRQn);
-    NVIC_EnableIRQ(TIMER1_IRQn);
- 
-    DHCP_TIMER->TASKS_START = 1;
-}
-
-void TIMER1_IRQHandler(void)
-{
-    DHCP_TIMER->EVENTS_COMPARE[0] = 0;
-    DHCP_time_handler();
-}
-#endif
-
