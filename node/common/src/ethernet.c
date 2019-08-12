@@ -123,13 +123,12 @@ static void wizchip_write(uint8_t wb)
 
 static void tx_socket_init(void) 
 {
-    socket(SOCKET_TX, Sn_MR_UDP, UDP_PORT, UDP_FLAGS);
+    socket(SOCKET_TX, Sn_MR_UDP, TARGET_PORT, TX_FLAGS);
 }
 
 static void rx_socket_init(void)
 {
-    uint8_t flag = SF_IO_NONBLOCK;
-    socket(SOCKET_RX, Sn_MR_UDP, BROADCAST_PORT, flag);
+    socket(SOCKET_RX, Sn_MR_UDP, BROADCAST_PORT, SF_IO_NONBLOCK);
 }
 
 static void ethernet_spi_init(void)
