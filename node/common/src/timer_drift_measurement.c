@@ -14,7 +14,7 @@
 #include "ethernet.h"
 #include "socket.h"
 #include "w5500.h"
-#include "sync_timer_handler.h"
+#include "time_sync_handler.h"
 #include "toolchain.h"
 #include "timer.h"
 
@@ -51,7 +51,7 @@ void sync_line_event_handler(void)
     DRIFT_TIMER->TASKS_CAPTURE[0] = 1;
     uint32_t processing_delay = DRIFT_TIMER->CC[0];
     uint32_t now = timer_now() - processing_delay;
-    uint32_t adjusted_sync_timer = now - sync_timer_get_current_offset();
+    uint32_t adjusted_sync_timer = now - sync_timer_get_offset();
 
     _ENABLE_IRQS(was_masked);
 

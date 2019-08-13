@@ -138,7 +138,11 @@ void button_init_dfu(void)
 // Initializes time synchronization
 void sync_line_init(void) 
 {
+    #ifdef R39_PULLUP_CONNECTED
     nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
+    #else
+    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_PULLUP);
+    #endif
     nrf_gpio_cfg_output(SYNC_OUT);
     nrf_gpio_pin_clear(SYNC_OUT);
 }
