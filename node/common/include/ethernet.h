@@ -5,8 +5,8 @@
 #define SOCKET_DHCP                         2
 #define SOCKET_TX                           3
 #define SOCKET_RX                           6
-#define TARGET_IP                           ((const uint8_t[]){255, 255, 255, 255})
-#define TARGET_PORT                         11001
+#define TX_IP                               ((const uint8_t[]){255, 255, 255, 255})
+#define TX_PORT                             11001
 #define BROADCAST_PORT                      10000
 #define TX_FLAGS                            0x00
 #define TX_BUF_SIZE                         2048

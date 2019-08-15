@@ -5,7 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "timer_drift_measurement.h"
+#include "sync_line.h"
 #include "nordic_common.h"
 #include "app_error.h"
 #include "config.h"
@@ -17,12 +17,12 @@
 #include "time_sync_handler.h"
 #include "toolchain.h"
 #include "timer.h"
+#include "gpio.h"
+#include "ppi.h"
 
-
-/* Variables for calculating drift */
 static uint32_t m_time_tic;
+static bool m_controls_sync_signal = false;
 
-/* Function to send timing samples over Ethernet, using UDP */
 static void send_drift_timing_sample(uint32_t adjusted_sync_timer)
 {
         uint8_t buf[SCAN_REPORT_LENGTH];
@@ -40,7 +40,7 @@ static void send_drift_timing_sample(uint32_t adjusted_sync_timer)
         send_over_ethernet(&buf[0] , len);
 }
 
-/*Should triggers each time the sync-line is set high by the master node*/
+// Should triggers each time the sync-line is set high by the master node
 void sync_line_event_handler(void)
 {
     m_time_tic++;
@@ -61,4 +61,20 @@ void sync_line_event_handler(void)
 void reset_drift_measure_params(void)
 {
 m_time_tic = 0;
+}
+
+void sync_master_set(uint32_t interval)
+{
+    sync_master_timer_init(interval);
+    sync_master_gpio_init();
+    sync_master_ppi_init();
+
+    START_SYNC_TIMER = 1;
+    m_controls_sync_signal = true;
+}
+
+void sync_master_unset(void)
+{
+    SYNC_TIMER->TASKS_STOP = 1;
+    m_controls_sync_signal = false;
 }

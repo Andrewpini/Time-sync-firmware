@@ -123,7 +123,7 @@ static void wizchip_write(uint8_t wb)
 
 static void tx_socket_init(void) 
 {
-    socket(SOCKET_TX, Sn_MR_UDP, TARGET_PORT, TX_FLAGS);
+    socket(SOCKET_TX, Sn_MR_UDP, TX_PORT, TX_FLAGS);
 }
 
 static void rx_socket_init(void)
@@ -262,7 +262,7 @@ void ethernet_init(void)
 
 void send_over_ethernet(uint8_t* data, uint8_t len)
 {
-    int32_t err = sendto(SOCKET_TX, data, len, (uint8_t*)TARGET_IP, TARGET_PORT);
+    int32_t err = sendto(SOCKET_TX, data, len, (uint8_t*)TX_IP, TX_PORT);
 
     if(err < 0)
     {

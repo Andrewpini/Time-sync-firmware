@@ -8,7 +8,7 @@
 #include "config.h"
 #include "dhcp.h"
 #include "time_sync_timer.h"
-#include "timer_drift_measurement.h"
+#include "sync_line.h"
 #include "app_timer.h"
 #include "hal.h"
 #include "mesh_app_utils.h"

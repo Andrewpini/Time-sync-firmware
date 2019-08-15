@@ -86,7 +86,7 @@
 #include "ppi.h"
 #include "clock.h"
 #include "command_system.h"
-#include "timer_drift_measurement.h"
+#include "sync_line.h"
 #include "time_sync_timer.h"
 #include "config.h"
 #include "socket.h"
@@ -131,28 +131,28 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Need to build packets in a better way
 {
-    uint8_t buf[SCAN_REPORT_LENGTH];
-    uint8_t len = 0;
-
-    dsm_local_unicast_address_t local_addr;
-    dsm_local_unicast_addresses_get(&local_addr);
-
-    buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
-    buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
-
-    uint8_t i;
-
-    for(i=0; i<length; i++)
-    {
-      buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
-      buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
-      buf[4] = (p_data+i)->mean_rssi;
-      buf[5] = (p_data+i)->msg_count;
-
-      len = 6;
-         
-      send_over_ethernet(&buf[0] , len);
-    }
+//    uint8_t buf[SCAN_REPORT_LENGTH];
+//    uint8_t len = 0;
+//
+//    dsm_local_unicast_address_t local_addr;
+//    dsm_local_unicast_addresses_get(&local_addr);
+//
+//    buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
+//    buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
+//
+//    uint8_t i;
+//
+//    for(i=0; i<length; i++)
+//    {
+//      buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
+//      buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
+//      buf[4] = (p_data+i)->mean_rssi;
+//      buf[5] = (p_data+i)->msg_count;
+//
+//      len = 6;
+//         
+//      send_over_ethernet(&buf[0] , len);
+//    }
 }
 
 /*************************************************************************************************/
@@ -354,6 +354,9 @@ int main(void)
 
     initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
+    
+    uint8_t broadcast_ip[] = {255, 255, 255, 255};
+    dfu_write_server_ip(&broadcast_ip[0]); // TODO: Remove when bootloader is fixed
 
     #ifdef SEND_I_AM_ALIVE_MESSAGES
     i_am_alive_timer_init();

@@ -10,7 +10,7 @@
 #include "gpio.h"
 #include "app_timer.h"
 #include "boards.h"
-#include "timer_drift_measurement.h"
+#include "sync_line.h"
 #include "ethernet_dfu.h"
 
 APP_TIMER_DEF(m_blink_timer);
