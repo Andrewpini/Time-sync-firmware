@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "rssi_common.h"
+#include "config.h"
+
 // Typedef for control commands
 typedef enum
 {
@@ -23,7 +26,9 @@ typedef enum
     CMD_SYNC_LINE_STOP              = 0x32,
     CMD_TIME_SYNC_START_MASTER      = 0x40,
     CMD_TIME_SYNC_STOP              = 0x41,
-    CMD_I_AM_ALIVE                  = 0xFF
+    CMD_I_AM_ALIVE                  = 0xFF,
+    CMD_LINK_MONITOR                = 0xFE,
+    CMD_SYNC_LINE                   = 0xFD
 } ctrl_cmd_t;
 
 typedef struct __attribute((packed))
@@ -34,11 +39,18 @@ typedef struct __attribute((packed))
 
 typedef struct __attribute((packed))
 {
+    uint16_t element_address;
+    rssi_data_entry_t rssi_data_entry[LINK_MONITOR_MAX_NEIGHBOR_NODES];
+} link_monitor_package_t;
+
+typedef struct __attribute((packed))
+{
     uint32_t identifier;
     ctrl_cmd_t opcode;
     uint8_t mac[6];
     union{
       i_am_alive_package_t i_am_alive_package;
+      link_monitor_package_t link_monitor_package;
     } payload;
 } command_system_package_t;
 

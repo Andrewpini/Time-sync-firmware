@@ -25,19 +25,19 @@ static bool m_controls_sync_signal = false;
 
 static void send_drift_timing_sample(uint32_t adjusted_sync_timer)
 {
-        uint8_t buf[SCAN_REPORT_LENGTH];
-        uint8_t len = 0;
-        uint8_t own_MAC[6] = {0};
-        get_own_MAC(own_MAC);
+    uint8_t buf[SCAN_REPORT_LENGTH];
+    uint8_t len = 0;
+    uint8_t own_MAC[6] = {0};
+    get_own_MAC(own_MAC);
 
-        sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
-                        own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
-                        adjusted_sync_timer,
-                        m_time_tic);
+    sprintf((char *)&buf[0], "{ \"nodeID\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", \"drift\" : %d, \"timetic\" : %d}", 
+                    own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5],
+                    adjusted_sync_timer,
+                    m_time_tic);
+
+    len = strlen((const char *)&buf[0]);
     
-        len = strlen((const char *)&buf[0]);
-        
-        send_over_ethernet(&buf[0] , len);
+    send_over_ethernet(&buf[0] , len, TIME_SYNC_PORT);
 }
 
 // Should triggers each time the sync-line is set high by the master node

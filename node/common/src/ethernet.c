@@ -121,9 +121,19 @@ static void wizchip_write(uint8_t wb)
     spi_master_tx(SPI0, 1, &wb);
 }
 
-static void tx_socket_init(void) 
+static void command_socket_init(void) 
 {
-    socket(SOCKET_TX, Sn_MR_UDP, TX_PORT, TX_FLAGS);
+    socket(SOCKET_COMMAND, Sn_MR_UDP, COMMAND_PORT, TX_FLAGS); 
+}
+
+static void link_monitor_socket_init(void) 
+{
+    socket(SOCKET_LINK_MONITOR, Sn_MR_UDP, LINK_MONITOR_PORT, TX_FLAGS); 
+}
+
+static void time_sync_socket_init(void) 
+{
+    socket(SOCKET_TIME_SYNC, Sn_MR_UDP, TIME_SYNC_PORT, TX_FLAGS); 
 }
 
 static void rx_socket_init(void)
@@ -256,17 +266,42 @@ void ethernet_init(void)
     ethernet_dhcp_init();
 
     /* Socket initialization*/
-    tx_socket_init(); 
+    command_socket_init();
+    link_monitor_socket_init();
+    time_sync_socket_init();
     rx_socket_init();
 }
 
-void send_over_ethernet(uint8_t* data, uint8_t len)
+void send_over_ethernet(uint8_t* data, uint8_t len, uint16_t port)
 {
-    int32_t err = sendto(SOCKET_TX, data, len, (uint8_t*)TX_IP, TX_PORT);
+    uint8_t socket;
+    bool send_package = true;
 
-    if(err < 0)
+    switch(port)
     {
-      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+        case COMMAND_PORT:
+            socket = SOCKET_COMMAND;
+            break;
+        case LINK_MONITOR_PORT:
+            socket = SOCKET_LINK_MONITOR;
+            break;
+        case TIME_SYNC_PORT:
+            socket = SOCKET_LINK_MONITOR;
+            break;
+        default:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "send_over_ethernet: Unknown port chosen");
+            send_package = false;
+            break;
+    }
+    
+    if (send_package)
+    {
+        int32_t err = sendto(socket, data, len, (uint8_t*)TX_IP, port);
+
+        if(err < 0)
+        {
+          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+        }
     }
 }
 

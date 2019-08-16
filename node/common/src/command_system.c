@@ -29,7 +29,7 @@
 #include "ethernet_dfu.h"
 #include "time_sync_controller.h"
 
-// Function for checking if the device has received a new control command
+/* Function for checking if the device has received a new control command */
 void check_ctrl_cmd(void)
 {
     uint8_t received_data[200];
@@ -46,11 +46,11 @@ void check_ctrl_cmd(void)
     {
         get_own_IP(own_ip);
         
-        // Receive new data from socket
+        /* Receive new data from socket */
         int32_t recv_len = recvfrom(SOCKET_RX, received_data, sizeof(received_data), &broadcast_ip[0], &broadcast_port);
 
-        // If any data is received, check which command it is
-        if (recv_len >= 4) // 4 because of the first memcpy
+        /* If any data is received, check which command it is */
+        if (recv_len >= 4) /* 4 because of the first memcpy */
         {
             uint32_t reversed_identifier;
             memcpy(&reversed_identifier, received_data, 4);
@@ -60,7 +60,7 @@ void check_ctrl_cmd(void)
             {
                 memcpy(&received_package, received_data, sizeof(received_package));
 
-                // Choose the right action according to command
+                /* Choose the right action according to command */
                 switch (received_package.opcode)
                 {
                     case CMD_RESET_ALL_NODES:
@@ -98,8 +98,7 @@ void check_ctrl_cmd(void)
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU - MAC\n");
                         if(own_ip[0] != 1)
                         {
-                            if(own_mac[0] == received_package.mac[0] && own_mac[1] == received_package.mac[1] && own_mac[2] == received_package.mac[2] && 
-                            own_mac[3] == received_package.mac[3] && own_mac[4] == received_package.mac[4] && own_mac[5] == received_package.mac[4])
+                            if(mac_addresses_are_equal(own_mac, received_package.mac))
                             {
                               dfu_erase_flash_page();
                               dfu_write_own_ip(own_ip);

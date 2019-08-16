@@ -7,6 +7,8 @@
 #define SUCCESS                             0
 #define FAIL                                1
 
+#define LINK_MONITOR_MAX_NEIGHBOR_NODES     32
+
 #define TX_POWER                            RADIO_TXPOWER_TXPOWER_0dBm // TODO: This is not used (and many other defines)
 
 #define ADVERTISING_INTERVAL                300

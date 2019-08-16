@@ -131,28 +131,30 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Need to build packets in a better way
 {
-//    uint8_t buf[SCAN_REPORT_LENGTH];
-//    uint8_t len = 0;
-//
-//    dsm_local_unicast_address_t local_addr;
-//    dsm_local_unicast_addresses_get(&local_addr);
-//
-//    buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
-//    buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
-//
-//    uint8_t i;
-//
-//    for(i=0; i<length; i++)
-//    {
-//      buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
-//      buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
-//      buf[4] = (p_data+i)->mean_rssi;
-//      buf[5] = (p_data+i)->msg_count;
-//
-//      len = 6;
-//         
-//      send_over_ethernet(&buf[0] , len);
-//    }
+    if (length <= LINK_MONITOR_MAX_NEIGHBOR_NODES)
+    { 
+        dsm_local_unicast_address_t node_element_address;
+        dsm_local_unicast_addresses_get(&node_element_address);
+    
+        command_system_package_t package;
+
+        package.identifier = 0xDEADFACE;
+        get_own_MAC((uint8_t*)&package.mac);
+        package.opcode = CMD_LINK_MONITOR;
+        package.payload.link_monitor_package.element_address = node_element_address.address_start;
+
+        uint8_t i;
+
+        for(uint8_t i=0; i<length; i++)
+        {
+          package.payload.link_monitor_package.rssi_data_entry[i] = *(p_data+i);
+        }
+
+        send_over_ethernet((uint8_t*)&package , offsetof(link_monitor_package_t, rssi_data_entry[length-1]), LINK_MONITOR_PORT);
+    } else
+    {
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Link monitor package to long\n");
+    }
 }
 
 /*************************************************************************************************/
