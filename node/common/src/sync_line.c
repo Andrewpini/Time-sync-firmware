@@ -19,14 +19,16 @@
 #include "timer.h"
 #include "gpio.h"
 #include "ppi.h"
+#include "command_system.h"
+#include "ethernet.h"
 
 static uint32_t m_time_tic;
 static bool m_controls_sync_signal = false;
 
-static void send_drift_timing_sample(uint32_t adjusted_sync_timer)
+static void send_drift_timing_sample(uint32_t adjusted_sync_timer) // TODO: Need to build packets in a better way
 {
     uint8_t buf[SCAN_REPORT_LENGTH];
-    uint8_t len = 0;
+//    uint8_t len = 0;
     uint8_t own_MAC[6] = {0};
     get_own_MAC(own_MAC);
 
@@ -35,9 +37,13 @@ static void send_drift_timing_sample(uint32_t adjusted_sync_timer)
                     adjusted_sync_timer,
                     m_time_tic);
 
-    len = strlen((const char *)&buf[0]);
+//    len = strlen((const char *)&buf[0]);
+
+//    command_system_package_t package;
+//
+//    package.
     
-    send_over_ethernet(&buf[0] , len, TIME_SYNC_PORT);
+    send_over_ethernet(&buf[0], PKG_TIME_SYNC);
 }
 
 // Should triggers each time the sync-line is set high by the master node

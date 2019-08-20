@@ -26,3 +26,8 @@ bool mac_addresses_are_equal(uint8_t * ip1, uint8_t * ip2)
     return arrays_are_equal(ip1, ip2, 6, 6);
 }
 
+bool ip_addresses_are_equal(uint8_t * ip1, uint8_t * ip2)
+{
+    return arrays_are_equal(ip1, ip2, 4, 4);
+}
+

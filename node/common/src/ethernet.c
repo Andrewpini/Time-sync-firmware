@@ -14,6 +14,7 @@
 #include "dhcp_cb.h"
 #include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
+#include "command_system.h"
 
 static uint8_t TX_BUF[TX_BUF_SIZE];
 static uint8_t own_MAC[6]          = {0};
@@ -272,31 +273,82 @@ void ethernet_init(void)
     rx_socket_init();
 }
 
-void send_over_ethernet(uint8_t* data, uint8_t len, uint16_t port)
+void send_over_ethernet(uint8_t* payload_package, ethernet_package_t ethernet_package_type)
 {
     uint8_t socket;
+    uint16_t port;
+
+    command_system_package_t package;
+    package.identifier = 0xDEADFACE;
+    get_own_MAC((uint8_t*)&package.mac);
+
+    uint8_t length = 0; // Do not need?
+    
     bool send_package = true;
 
-    switch(port)
+    switch(ethernet_package_type)
     {
-        case COMMAND_PORT:
+        case PKG_I_AM_ALIVE:
             socket = SOCKET_COMMAND;
+            port = COMMAND_PORT;
+            package.opcode = CMD_I_AM_ALIVE;
+
+            i_am_alive_package_t i_am_alive_package;
+            memcpy(&i_am_alive_package, payload_package, sizeof(i_am_alive_package_t));
+            package.payload.i_am_alive_package = i_am_alive_package;
+
+            length = sizeof(command_system_package_t);
             break;
-        case LINK_MONITOR_PORT:
-            socket = SOCKET_LINK_MONITOR;
+        case PKG_COMMAND:
+            socket = SOCKET_COMMAND;
+            port = COMMAND_PORT;
+            package.opcode = CMD_COMMAND;
             break;
-        case TIME_SYNC_PORT:
+        case PKG_ACK:
+            socket = SOCKET_COMMAND;
+            port = COMMAND_PORT;
+            package.opcode = CMD_ACK;
+            
+            ack_package_t ack_package;
+            memcpy(&ack_package, payload_package, sizeof(ack_package_t));
+            package.payload.ack_package = ack_package;
+
+            length = sizeof(command_system_package_t);
+            break;
+        case PKG_LINK_MONITOR: 
+            /* Special because of variable size */
             socket = SOCKET_LINK_MONITOR;
+            port = LINK_MONITOR_PORT;
+            package.opcode = CMD_LINK_MONITOR;
+
+            link_monitor_package_t link_monitor_package;
+            memcpy(&link_monitor_package, payload_package, sizeof(link_monitor_package_t));
+
+            length = offsetof(link_monitor_package_t, rssi_data_entry[link_monitor_package.number_of_entries]);
+
+            int32_t err = sendto(socket, (uint8_t*)&link_monitor_package, length, (uint8_t*)TX_IP, port);
+
+            if(err < 0)
+            {
+              __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+            }
+
+            send_package = false;
+            break;
+        case PKG_TIME_SYNC:
+            socket = SOCKET_TIME_SYNC;
+            port = TIME_SYNC_PORT;
+            package.opcode = CMD_TIME_SYNC;
             break;
         default:
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "send_over_ethernet: Unknown port chosen");
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "send_over_ethernet: Unknown package type chosen");
             send_package = false;
             break;
     }
     
     if (send_package)
     {
-        int32_t err = sendto(socket, data, len, (uint8_t*)TX_IP, port);
+        int32_t err = sendto(socket, (uint8_t*)&package, length, (uint8_t*)TX_IP, port);
 
         if(err < 0)
         {

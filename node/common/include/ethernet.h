@@ -36,11 +36,20 @@ typedef enum
     SPI1                    /*!< SPI module 1 */
 } SPIModuleNumber;
 
+typedef enum
+{
+    PKG_I_AM_ALIVE                  = 0x01,
+    PKG_COMMAND                     = 0x02,
+    PKG_ACK                         = 0x03,
+    PKG_LINK_MONITOR                = 0x04,
+    PKG_TIME_SYNC                   = 0x05
+} ethernet_package_t;
+
 void dhcp_init(void);
 
 void ethernet_init(void);
 
-void send_over_ethernet(uint8_t* data, uint8_t len, uint16_t port);
+void send_over_ethernet(uint8_t* data, ethernet_package_t ethernet_package_type);
 
 void get_own_IP(uint8_t* p_IP);
 

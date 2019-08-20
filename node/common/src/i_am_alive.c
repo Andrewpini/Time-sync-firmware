@@ -18,19 +18,15 @@ void send_i_am_alive_message(void)
     dsm_local_unicast_address_t node_element_address;
     dsm_local_unicast_addresses_get(&node_element_address);
     
-    command_system_package_t package;
+    i_am_alive_package_t i_am_alive_package;
 
-    package.identifier = 0xDEADFACE;
-    package.opcode = CMD_I_AM_ALIVE;
-    get_own_MAC((uint8_t*)&package.mac);
-    get_own_IP((uint8_t*)&package.payload.i_am_alive_package.ip);
-    package.payload.i_am_alive_package.element_address = node_element_address.address_start;
+    get_own_IP((uint8_t*)&i_am_alive_package.ip);
+    i_am_alive_package.element_address = node_element_address.address_start;
 
-    send_over_ethernet((uint8_t*)&package , offsetof(command_system_package_t, payload), COMMAND_PORT);
+    send_over_ethernet((uint8_t*)&i_am_alive_package, PKG_I_AM_ALIVE);
 }
 
 void i_am_alive_timer_handler(void * p_unused){
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "I AM ALIVE TIMER\n");
     send_i_am_alive_message();
 }
 

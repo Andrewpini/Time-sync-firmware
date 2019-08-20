@@ -136,21 +136,18 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) 
         dsm_local_unicast_address_t node_element_address;
         dsm_local_unicast_addresses_get(&node_element_address);
     
-        command_system_package_t package;
+        link_monitor_package_t package;
 
         package.identifier = 0xDEADFACE;
-        get_own_MAC((uint8_t*)&package.mac);
-        package.opcode = CMD_LINK_MONITOR;
-        package.payload.link_monitor_package.element_address = node_element_address.address_start;
-
-        uint8_t i;
+        package.element_address = node_element_address.address_start;
+        package.number_of_entries = length;
 
         for(uint8_t i=0; i<length; i++)
         {
-          package.payload.link_monitor_package.rssi_data_entry[i] = *(p_data+i);
+          package.rssi_data_entry[i] = *(p_data+i);
         }
 
-        send_over_ethernet((uint8_t*)&package , offsetof(link_monitor_package_t, rssi_data_entry[length-1]), LINK_MONITOR_PORT);
+        send_over_ethernet((uint8_t*)&package, PKG_LINK_MONITOR);
     } else
     {
         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Link monitor package to long\n");
@@ -356,9 +353,6 @@ int main(void)
 
     initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());
-    
-    uint8_t broadcast_ip[] = {255, 255, 255, 255};
-    dfu_write_server_ip(&broadcast_ip[0]); // TODO: Remove when bootloader is fixed
 
     #ifdef SEND_I_AM_ALIVE_MESSAGES
     i_am_alive_timer_init();
