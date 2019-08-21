@@ -157,7 +157,7 @@ void check_ctrl_cmd(void)
                             ack_package_t ack_package;
                             get_own_MAC((uint8_t*)ack_package.mac);
                             ack_package.tid = received_package.payload.hp_led_package.tid;
-                            send_over_ethernet((uint8_t*)&ack_package, PKG_ACK);
+                            send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         }
                         else 
                         {
@@ -168,10 +168,15 @@ void check_ctrl_cmd(void)
                     case CMD_SINGLE_HPLED_OFF:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single HP LED - OFF\n");
 
-                        if (mac_addresses_are_equal(own_mac, received_package.mac))
+                        if (mac_addresses_are_equal(own_mac, received_package.payload.hp_led_package.target_mac))
                         {
                             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> turning HP LED OFF\n");
                             pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
+
+                            ack_package_t ack_package;
+                            get_own_MAC((uint8_t*)ack_package.mac);
+                            ack_package.tid = received_package.payload.hp_led_package.tid;
+                            send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         }
                         else 
                         {
@@ -182,10 +187,16 @@ void check_ctrl_cmd(void)
                      case CMD_SYNC_LINE_START_MASTER:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync node set: \n");
 
-                        if (mac_addresses_are_equal(own_mac, received_package.mac))
+                        if (mac_addresses_are_equal(own_mac, received_package.payload.hp_led_package.target_mac))
                         {
                             sync_master_set(SYNC_INTERVAL_MS);
                             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> setting node as sync master \r\n");
+
+                            ack_package_t ack_package;
+                            get_own_MAC((uint8_t*)ack_package.mac);
+                            ack_package.tid = received_package.payload.hp_led_package.tid;
+                            ack_package.ack_opcode = CMD_SYNC_LINE_START_MASTER;
+                            send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         }
                         else 
                         {
@@ -194,12 +205,19 @@ void check_ctrl_cmd(void)
                         }
                         break;
 
-                    case CMD_SYNC_LINE_RESET:
+                    case CMD_SYNC_LINE_RESET:{
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync Reset\n");
                         sync_master_unset();
                         drift_timer_reset();
                         reset_drift_measure_params();
+
+                        ack_package_t ack_package;
+                        get_own_MAC((uint8_t*)ack_package.mac);
+                        ack_package.tid = received_package.payload.hp_led_package.tid;
+                        ack_package.ack_opcode = CMD_SYNC_LINE_RESET;
+                        send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         break;
+                    }
 
                     case CMD_SYNC_LINE_STOP:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync line stop\n");
@@ -207,10 +225,15 @@ void check_ctrl_cmd(void)
 
                     case CMD_TIME_SYNC_START_MASTER:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Time sync start master\n");
-                        if (mac_addresses_are_equal(own_mac, received_package.mac))
+                        if (mac_addresses_are_equal(own_mac, received_package.payload.hp_led_package.target_mac))
                         {
                             sync_set_pub_timer(true);
                             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> setting node as time sync master \r\n");
+                            ack_package_t ack_package;
+                            get_own_MAC((uint8_t*)ack_package.mac);
+                            ack_package.tid = received_package.payload.hp_led_package.tid;
+                            ack_package.ack_opcode = CMD_TIME_SYNC_START_MASTER;
+                            send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         }
                         else 
                         {
@@ -219,10 +242,16 @@ void check_ctrl_cmd(void)
                         }
                         break;
 
-                    case CMD_TIME_SYNC_STOP:
+                    case CMD_TIME_SYNC_STOP:{
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Time sync stop\n");
                         sync_set_pub_timer(false);
+                        ack_package_t ack_package;
+                        get_own_MAC((uint8_t*)ack_package.mac);
+                        ack_package.tid = received_package.payload.hp_led_package.tid;
+                        ack_package.ack_opcode = CMD_TIME_SYNC_STOP;
+                        send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         break;
+                    }
                                     
                     default:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Unrecognized control command: %d\r\n", received_package.opcode);

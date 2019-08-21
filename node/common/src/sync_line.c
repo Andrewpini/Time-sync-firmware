@@ -42,8 +42,10 @@ static void send_drift_timing_sample(uint32_t adjusted_sync_timer) // TODO: Need
 //    command_system_package_t package;
 //
 //    package.
-    
-    send_over_ethernet(&buf[0], PKG_TIME_SYNC);
+    sync_sample_package_t sample;
+    sample.sample_nr = m_time_tic;
+    sample.sample_value = adjusted_sync_timer;
+    send_over_ethernet((uint8_t*)&sample, CMD_TIME_SYNC);
 }
 
 // Should triggers each time the sync-line is set high by the master node

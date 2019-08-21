@@ -147,7 +147,7 @@ static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) 
           package.rssi_data_entry[i] = *(p_data+i);
         }
 
-        send_over_ethernet((uint8_t*)&package, PKG_LINK_MONITOR);
+        send_over_ethernet((uint8_t*)&package, CMD_LINK_MONITOR);
     } else
     {
         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Link monitor package to long\n");

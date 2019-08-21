@@ -1,6 +1,7 @@
-
 #ifndef ETHERNET_H
 #define ETHERNET_H
+
+#include "command_system.h"
 
 #define SOCKET_DHCP                         2
 #define SOCKET_COMMAND                      3
@@ -49,7 +50,7 @@ void dhcp_init(void);
 
 void ethernet_init(void);
 
-void send_over_ethernet(uint8_t* data, ethernet_package_t ethernet_package_type);
+void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode);
 
 void get_own_IP(uint8_t* p_IP);
 

@@ -23,7 +23,7 @@ void send_i_am_alive_message(void)
     get_own_IP((uint8_t*)&i_am_alive_package.ip);
     i_am_alive_package.element_address = node_element_address.address_start;
 
-    send_over_ethernet((uint8_t*)&i_am_alive_package, PKG_I_AM_ALIVE);
+    send_over_ethernet((uint8_t*)&i_am_alive_package, CMD_I_AM_ALIVE);
 }
 
 void i_am_alive_timer_handler(void * p_unused){

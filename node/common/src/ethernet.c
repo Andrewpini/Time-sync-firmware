@@ -273,25 +273,25 @@ void ethernet_init(void)
     rx_socket_init();
 }
 
-void send_over_ethernet(uint8_t* payload_package, ethernet_package_t ethernet_package_type)
+void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode)
 {
     uint8_t socket;
     uint16_t port;
 
     command_system_package_t package;
     package.identifier = 0xDEADFACE;
+    package.opcode = msg_opcode;
     get_own_MAC((uint8_t*)&package.mac);
 
     uint8_t length = 0; // Do not need?
     
     bool send_package = true;
 
-    switch(ethernet_package_type)
+    switch(msg_opcode)
     {
-        case PKG_I_AM_ALIVE:
+        case CMD_I_AM_ALIVE:
             socket = SOCKET_COMMAND;
             port = COMMAND_PORT;
-            package.opcode = CMD_I_AM_ALIVE;
 
             i_am_alive_package_t i_am_alive_package;
             memcpy(&i_am_alive_package, payload_package, sizeof(i_am_alive_package_t));
@@ -299,27 +299,26 @@ void send_over_ethernet(uint8_t* payload_package, ethernet_package_t ethernet_pa
 
             length = sizeof(command_system_package_t);
             break;
-        case PKG_COMMAND:
+
+        case CMD_COMMAND:
             socket = SOCKET_COMMAND;
             port = COMMAND_PORT;
-            package.opcode = CMD_COMMAND;
             break;
-        case PKG_ACK:
+
+        /* Common acknowledge message */
+        case CMD_ACK:
             socket = SOCKET_COMMAND;
             port = COMMAND_PORT;
-            package.opcode = CMD_ACK;
-            
             ack_package_t ack_package;
             memcpy(&ack_package, payload_package, sizeof(ack_package_t));
             package.payload.ack_package = ack_package;
-
             length = sizeof(command_system_package_t);
             break;
-        case PKG_LINK_MONITOR: 
+
+        case CMD_LINK_MONITOR: 
             /* Special because of variable size */
             socket = SOCKET_LINK_MONITOR;
             port = LINK_MONITOR_PORT;
-            package.opcode = CMD_LINK_MONITOR;
 
             link_monitor_package_t link_monitor_package;
             memcpy(&link_monitor_package, payload_package, sizeof(link_monitor_package_t));
@@ -335,11 +334,14 @@ void send_over_ethernet(uint8_t* payload_package, ethernet_package_t ethernet_pa
 
             send_package = false;
             break;
-        case PKG_TIME_SYNC:
+
+        case CMD_TIME_SYNC:
             socket = SOCKET_TIME_SYNC;
             port = TIME_SYNC_PORT;
-            package.opcode = CMD_TIME_SYNC;
+            memcpy(&package.payload.ack_package, payload_package, sizeof(sync_sample_package_t));
+            length = sizeof(command_system_package_t);
             break;
+
         default:
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "send_over_ethernet: Unknown package type chosen");
             send_package = false;

@@ -30,7 +30,7 @@ typedef enum
     CMD_COMMAND                     = 0x51,
     CMD_ACK                         = 0x52,
     CMD_LINK_MONITOR                = 0x53,
-    CMD_TIME_SYNC                   = 0x54
+    CMD_TIME_SYNC                   = 0x54,
 } ctrl_cmd_t;
 
 typedef struct __attribute((packed))
@@ -55,8 +55,15 @@ typedef struct __attribute((packed))
 
 typedef struct __attribute((packed))
 {
+    uint32_t sample_nr;
+    uint32_t sample_value;
+} sync_sample_package_t;
+
+typedef struct __attribute((packed))
+{
     uint8_t mac[6];
     uint32_t tid;
+    uint8_t ack_opcode;
 } ack_package_t;
 
 typedef struct __attribute((packed))
