@@ -104,7 +104,7 @@ static health_client_t m_health_client;
 static rssi_util_t m_rssi_util;
 
 /* Time sync v1 */
-static uint8_t own_MAC[6] = {0};
+static uint8_t own_mac[6] = {0};
 static uint8_t mesh_node_gap_name[18];
 static time_sync_controller_t m_time_sync_controller;
 static dsm_handle_t m_time_sync_subscribe_handle;
@@ -348,8 +348,8 @@ int main(void)
 
     rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
 
-    get_own_MAC(own_MAC);
-    sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
+    get_own_mac(own_mac);
+    sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_mac[0], own_mac[1], own_mac[2], own_mac[3], own_mac[4], own_mac[5]);
 
     initialize(mesh_node_gap_name);
     ERROR_CHECK(dfu_clear_bootloader_flag());

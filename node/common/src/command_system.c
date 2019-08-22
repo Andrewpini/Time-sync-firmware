@@ -29,33 +29,31 @@
 #include "ethernet_dfu.h"
 #include "time_sync_controller.h"
 
+static uint8_t received_data[200];
+static command_system_package_t received_package;
+
+static uint8_t own_mac[6];
+static uint8_t own_ip[4];
+static uint8_t uninitialized_ip[4] = {1, 1, 1, 1};
+
+static uint8_t server_ip[4] = {1, 1, 1, 1};
+static uint16_t broadcast_port = COMMAND_RX_PORT;
+
 /* Function for checking if the device has received a new control command */
 void check_ctrl_cmd(void)
 {
-    uint8_t received_data[200];
-    command_system_package_t received_package;
-
-    uint8_t own_mac[6];
-    get_own_MAC(own_mac);
-    uint8_t own_ip[4];
-    uint8_t uninitialized_ip[4] = {1, 1, 1, 1};
-
-    uint8_t received_from_ip[4] = {0};
-    uint16_t broadcast_port = BROADCAST_PORT;
-
     while (getSn_RX_RSR(SOCKET_RX) != 0x00)
     {
-        get_own_IP(own_ip);
+        get_own_ip(own_ip);
         
         /* Receive new data from socket */
-        int32_t recv_len = recvfrom(SOCKET_RX, received_data, sizeof(received_data), received_from_ip, &broadcast_port);
+        int32_t recv_len = recvfrom(SOCKET_RX, received_data, sizeof(received_data), server_ip, &broadcast_port);
 
         /* If any data is received, check which command it is */
         if (recv_len >= 4) /* 4 because of the first memcpy */
         {
             uint32_t identifier;
             memcpy(&identifier, received_data, 4);
-//            uint32_t identifier = LE2BE32(reversed_identifier);
 
             if (identifier == 0xDEADFACE)
             {
@@ -86,10 +84,7 @@ void check_ctrl_cmd(void)
                                                 
                         if (!ip_addresses_are_equal(own_ip, uninitialized_ip))
                         {
-                            dfu_erase_flash_page();
-                            dfu_write_own_ip(own_ip);
-                            dfu_write_server_ip(received_from_ip);
-                            dfu_initiate_and_reset();
+                            dfu_start();
                         }
                         else
                         {
@@ -104,36 +99,13 @@ void check_ctrl_cmd(void)
                         {
                             if(mac_addresses_are_equal(own_mac, received_package.mac))
                             {
-                              dfu_erase_flash_page();
-                              dfu_write_own_ip(own_ip);
-                              dfu_write_server_ip(received_from_ip);
-                              dfu_initiate_and_reset();
+                              dfu_start();
                             }  
                         }
                         else
                         {
                           __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\r\n");
                         }
-                        break;
-
-                    case CMD_DFU_BUTTON_ENABLE:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU button enable\n");
-                        if(!ip_addresses_are_equal(own_ip, uninitialized_ip))
-                        {
-                          dfu_erase_flash_page();
-                          dfu_write_own_ip(own_ip);
-                          dfu_write_server_ip(received_from_ip);
-                          dfu_set_button_flag();
-                        }
-                        else
-                        {
-                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\n");
-                        }             
-                        break;
-
-                    case CMD_DFU_BUTTON_DISABLE:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU button disable\n");
-                        dfu_clear_button_flag();
                         break;
 
                     case CMD_ALL_HPLED_ON:
@@ -155,7 +127,7 @@ void check_ctrl_cmd(void)
                             pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
                             
                             ack_package_t ack_package;
-                            get_own_MAC((uint8_t*)ack_package.mac);
+                            get_own_mac((uint8_t*)ack_package.mac);
                             ack_package.tid = received_package.payload.hp_led_package.tid;
                             send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         }
@@ -174,7 +146,7 @@ void check_ctrl_cmd(void)
                             pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
 
                             ack_package_t ack_package;
-                            get_own_MAC((uint8_t*)ack_package.mac);
+                            get_own_mac((uint8_t*)ack_package.mac);
                             ack_package.tid = received_package.payload.hp_led_package.tid;
                             send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
                         }
@@ -193,7 +165,7 @@ void check_ctrl_cmd(void)
                             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> setting node as sync master \r\n");
 
                             ack_package_t ack_package;
-                            get_own_MAC((uint8_t*)ack_package.mac);
+                            get_own_mac((uint8_t*)ack_package.mac);
                             ack_package.tid = received_package.payload.hp_led_package.tid;
                             ack_package.ack_opcode = CMD_SYNC_LINE_START_MASTER;
                             send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
@@ -212,7 +184,7 @@ void check_ctrl_cmd(void)
                         reset_drift_measure_params();
 
                         ack_package_t ack_package;
-                        get_own_MAC((uint8_t*)ack_package.mac);
+                        get_own_mac((uint8_t*)ack_package.mac);
                         ack_package.tid = received_package.payload.hp_led_package.tid;
                         ack_package.ack_opcode = CMD_SYNC_LINE_RESET;
                         send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
@@ -230,7 +202,7 @@ void check_ctrl_cmd(void)
                             sync_set_pub_timer(true);
                             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> setting node as time sync master \r\n");
                             ack_package_t ack_package;
-                            get_own_MAC((uint8_t*)ack_package.mac);
+                            get_own_mac((uint8_t*)ack_package.mac);
                             ack_package.tid = received_package.payload.hp_led_package.tid;
                             ack_package.ack_opcode = CMD_TIME_SYNC_START_MASTER;
                             send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
@@ -246,7 +218,7 @@ void check_ctrl_cmd(void)
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Time sync stop\n");
                         sync_set_pub_timer(false);
                         ack_package_t ack_package;
-                        get_own_MAC((uint8_t*)ack_package.mac);
+                        get_own_mac((uint8_t*)ack_package.mac);
                         ack_package.tid = received_package.payload.hp_led_package.tid;
                         ack_package.ack_opcode = CMD_TIME_SYNC_STOP;
                         send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
@@ -260,4 +232,14 @@ void check_ctrl_cmd(void)
             }
         }
     }
+}
+
+void command_system_set_mac(void)
+{
+    get_own_mac(own_mac);
+}
+
+void get_server_ip(uint8_t* p_server_ip)
+{
+    memcpy(p_server_ip, server_ip, 4);
 }

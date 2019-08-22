@@ -87,4 +87,8 @@ typedef struct __attribute((packed))
 
 void check_ctrl_cmd(void);
 
+void command_system_set_mac(void);
+
+void get_server_ip(uint8_t* p_server_ip);
+
 #endif
