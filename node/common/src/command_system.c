@@ -64,9 +64,12 @@ void check_ctrl_cmd(void)
                 /* Choose the right action according to command */
                 switch (received_package.opcode)
                 {
-                    case CMD_RESET_ALL_NODES:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Reset all nodes\n");
+                    case CMD_RESET:
+                        if(received_package.payload.reset_package.is_broadcast || mac_addresses_are_equal(own_mac, received_package.payload.reset_package.target_mac))
+                        {    
+                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Reset node\n");
                         ERROR_CHECK(sd_nvic_SystemReset());
+                        }
                         break;
             
                     case CMD_RESET_NODE_MAC:
@@ -81,108 +84,93 @@ void check_ctrl_cmd(void)
                         }
                         break;
 
-                    case CMD_DFU_ALL:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU all\n");
-                                                
-                        if (!ip_addresses_are_equal(own_ip, uninitialized_ip))
-                        {
-                            dfu_erase_flash_page();
-                            dfu_write_own_ip(own_ip);
-                            dfu_write_server_ip(received_from_ip);
-                            dfu_initiate_and_reset();
-                        }
-                        else
-                        {
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\r\n");
-                        }
-                        break;
-
-                    case CMD_DFU_MAC:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU - MAC\n");
-
-                        if (!ip_addresses_are_equal(own_ip, uninitialized_ip))
-                        {
-                            if(mac_addresses_are_equal(own_mac, received_package.mac))
+                    case CMD_DFU:
+                        if(received_package.payload.dfu_package.is_broadcast || mac_addresses_are_equal(own_mac, received_package.payload.dfu_package.target_mac))
+                        {    
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU\n");                
+                            if (ip_addresses_are_equal(own_ip, uninitialized_ip))
                             {
+                                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\r\n");
+                                break;
+                            }
                               dfu_erase_flash_page();
                               dfu_write_own_ip(own_ip);
                               dfu_write_server_ip(received_from_ip);
                               dfu_initiate_and_reset();
-                            }  
-                        }
-                        else
-                        {
-                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\r\n");
-                        }
+                        }  
                         break;
 
-                    case CMD_DFU_BUTTON_ENABLE:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU button enable\n");
-                        if(!ip_addresses_are_equal(own_ip, uninitialized_ip))
+//                    case CMD_DFU_ALL:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU all\n");
+//                                                
+//                        if (!ip_addresses_are_equal(own_ip, uninitialized_ip))
+//                        {
+//                            dfu_erase_flash_page();
+//                            dfu_write_own_ip(own_ip);
+//                            dfu_write_server_ip(received_from_ip);
+//                            dfu_initiate_and_reset();
+//                        }
+//                        else
+//                        {
+//                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\r\n");
+//                        }
+//                        break;
+//
+//                    case CMD_DFU_MAC:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU - MAC\n");
+//
+//                        if (!ip_addresses_are_equal(own_ip, uninitialized_ip))
+//                        {
+//                            if(mac_addresses_are_equal(own_mac, received_package.mac))
+//                            {
+//                              dfu_erase_flash_page();
+//                              dfu_write_own_ip(own_ip);
+//                              dfu_write_server_ip(received_from_ip);
+//                              dfu_initiate_and_reset();
+//                            }  
+//                        }
+//                        else
+//                        {
+//                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\r\n");
+//                        }
+//                        break;
+//
+//                    case CMD_DFU_BUTTON_ENABLE:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU button enable\n");
+//                        if(!ip_addresses_are_equal(own_ip, uninitialized_ip))
+//                        {
+//                          dfu_erase_flash_page();
+//                          dfu_write_own_ip(own_ip);
+//                          dfu_write_server_ip(received_from_ip);
+//                          dfu_set_button_flag();
+//                        }
+//                        else
+//                        {
+//                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\n");
+//                        }             
+//                        break;
+//
+//                    case CMD_DFU_BUTTON_DISABLE:
+//                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU button disable\n");
+//                        dfu_clear_button_flag();
+//                        break;
+
+                    case CMD_LED:
+                        if (received_package.payload.led_package.is_broadcast || mac_addresses_are_equal(own_mac, received_package.payload.led_package.target_mac))
                         {
-                          dfu_erase_flash_page();
-                          dfu_write_own_ip(own_ip);
-                          dfu_write_server_ip(received_from_ip);
-                          dfu_set_button_flag();
+                            if(received_package.payload.led_package.on_off)
+                            {
+                                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved HP-LED-ON command\n");
+                                pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
+                            }
+                            else
+                            {
+                                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved HP-LED-OFF command\n");
+                                pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
+                            }
                         }
-                        else
-                        {
-                          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Own IP not valid - can not start DFU\n");
-                        }             
                         break;
 
-                    case CMD_DFU_BUTTON_DISABLE:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: DFU button disable\n");
-                        dfu_clear_button_flag();
-                        break;
-
-                    case CMD_ALL_HPLED_ON:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: All HP LED - ON\n");
-                        pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
-                        break;
-
-                    case CMD_ALL_HPLED_OFF:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: All HP LED - OFF\n");
-                        pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
-                        break;
-
-                    case CMD_SINGLE_HPLED_ON:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single HP LED - ON\n");
-
-                        if (mac_addresses_are_equal(own_mac, received_package.payload.hp_led_package.target_mac))
-                        {
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> turning HP LED ON\n");
-                            pwm_set_duty_cycle(LED_HP, LED_HP_ON_DUTY_CYCLE);
-                            
-                            ack_package_t ack_package;
-                            get_own_MAC((uint8_t*)ack_package.mac);
-                            ack_package.tid = received_package.payload.hp_led_package.tid;
-                            send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
-                        }
-                        else 
-                        {
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "No MAC match -> no action\n");
-                        }
-                        break;
-
-                    case CMD_SINGLE_HPLED_OFF:
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Single HP LED - OFF\n");
-
-                        if (mac_addresses_are_equal(own_mac, received_package.payload.hp_led_package.target_mac))
-                        {
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> turning HP LED OFF\n");
-                            pwm_set_duty_cycle(LED_HP, LED_HP_OFF_DUTY_CYCLE);
-
-                            ack_package_t ack_package;
-                            get_own_MAC((uint8_t*)ack_package.mac);
-                            ack_package.tid = received_package.payload.hp_led_package.tid;
-                            send_over_ethernet((uint8_t*)&ack_package, CMD_ACK);
-                        }
-                        else 
-                        {
-                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "No MAC match -> no action\n");
-                        }
-                        break;
 
                      case CMD_SYNC_LINE_START_MASTER:
                         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Sync node set: \n");

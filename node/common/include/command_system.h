@@ -11,16 +11,13 @@
 /* Typedef for control commands */
 typedef enum
 {
-    CMD_RESET_ALL_NODES             = 0x01,
+    CMD_RESET                       = 0x01,
     CMD_RESET_NODE_MAC              = 0x02,
     CMD_DFU_ALL                     = 0x10,
-    CMD_DFU_MAC                     = 0x11,
+    CMD_DFU                         = 0x11,
     CMD_DFU_BUTTON_ENABLE           = 0x12,
     CMD_DFU_BUTTON_DISABLE          = 0x13,
-    CMD_ALL_HPLED_ON                = 0x20,
-    CMD_ALL_HPLED_OFF               = 0x21,
-    CMD_SINGLE_HPLED_ON             = 0x22,
-    CMD_SINGLE_HPLED_OFF            = 0x23,
+    CMD_LED                         = 0x20,
     CMD_SYNC_LINE_START_MASTER      = 0x30,
     CMD_SYNC_LINE_RESET             = 0x31,
     CMD_SYNC_LINE_STOP              = 0x32,
@@ -40,6 +37,25 @@ typedef struct __attribute((packed))
     uint8_t number_of_entries;
     rssi_data_entry_t rssi_data_entry[LINK_MONITOR_MAX_NEIGHBOR_NODES];
 } link_monitor_package_t;
+
+typedef struct __attribute((packed))
+{
+    bool is_broadcast;
+    uint8_t target_mac[6];
+} dfu_package_t;
+
+typedef struct __attribute((packed))
+{
+    bool is_broadcast;
+    uint8_t target_mac[6];
+} reset_package_t;
+
+typedef struct __attribute((packed))
+{
+    bool is_broadcast;
+    bool on_off;
+    uint8_t target_mac[6];
+} led_package_t;
 
 typedef struct __attribute((packed))
 {
@@ -78,10 +94,13 @@ typedef struct __attribute((packed))
     ctrl_cmd_t opcode;
     uint8_t mac[6];
     union{
-      i_am_alive_package_t i_am_alive_package;
-      ack_package_t ack_package;
-      hp_led_package_t hp_led_package;
-      sync_line_package_t sync_line_package;
+        i_am_alive_package_t i_am_alive_package;
+        ack_package_t ack_package;
+        hp_led_package_t hp_led_package;
+        sync_line_package_t sync_line_package;
+        led_package_t led_package;
+        dfu_package_t dfu_package;
+        reset_package_t reset_package;
     } payload;
 } command_system_package_t;
 
