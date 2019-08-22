@@ -4,22 +4,8 @@
 #include "mesh_app_utils.h"
 #include "mesh_flash.h"
 #include "boards.h"
-
-static bool dfu_button_flag = false;
-
-void dfu_set_button_flag()
-{
-  dfu_button_flag = true;
-  nrf_gpio_pin_clear(LED_1);
-  nrf_gpio_pin_clear(LED_2);
-}
-
-void dfu_clear_button_flag()
-{
-  dfu_button_flag = false;
-  nrf_gpio_pin_set(LED_1);
-  nrf_gpio_pin_set(LED_2);
-}
+#include "ethernet.h"
+#include "command_system.h"
 
 uint32_t dfu_clear_bootloader_flag()
 {
@@ -73,9 +59,9 @@ void dfu_erase_flash_page() // TODO: Write to rising flash address untill the wh
   
   ERROR_CHECK(mesh_flash_op_push(MESH_FLASH_USER_APP, p_flash_parameters_erase, NULL));
 
-  while(mesh_flash_in_progress())
-  {
-  }
+//  while(mesh_flash_in_progress())
+//  {
+//  }
 
   __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully erased flash page\n");
 }
@@ -110,9 +96,9 @@ void dfu_write_own_ip(uint8_t * p_own_ip_uint8)
 
   ERROR_CHECK(mesh_flash_op_push(MESH_FLASH_USER_APP, p_flash_parameters, NULL));
 
-  while(mesh_flash_in_progress())
-  {
-  }
+//  while(mesh_flash_in_progress())
+//  {
+//  }
 
   __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully written own IP to flash\n");
 }
@@ -147,14 +133,29 @@ void dfu_write_server_ip(uint8_t * p_server_ip_uint8)
   
   ERROR_CHECK(mesh_flash_op_push(MESH_FLASH_USER_APP, p_flash_parameters, NULL));
 
-  while(mesh_flash_in_progress())
-  {
-  }
+//  while(mesh_flash_in_progress())
+//  {
+//  }
 
   __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully written server IP to flash\n");
 }
 
-bool get_dfu_flag()
+void dfu_start()
 {
-  return dfu_button_flag;
+    uint8_t own_ip[4];
+    uint8_t server_ip[4];
+
+    get_own_ip(own_ip);
+    get_server_ip(server_ip);
+
+    if (!(server_ip[0] == 1))
+    {
+      dfu_erase_flash_page();
+      dfu_write_own_ip(own_ip);
+      dfu_write_server_ip(server_ip);
+      dfu_initiate_and_reset();
+    } else
+    {
+      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "No server IP - can not start DFU\n");
+    }
 }

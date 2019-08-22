@@ -73,9 +73,7 @@ void GPIOTE_IRQHandler(void)
         if(TIMER_DIFF(m_last_button_press, NRF_RTC1->COUNTER) > DFU_BUTTON_PRESS_FREQUENCY){
           m_last_button_press = NRF_RTC1->COUNTER;
 
-          if(get_dfu_flag()){
-            dfu_initiate_and_reset();
-          }
+          dfu_start();
         }
     }
 }
