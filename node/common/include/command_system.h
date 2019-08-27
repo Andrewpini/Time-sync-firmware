@@ -6,6 +6,25 @@
 
 #include "rssi_common.h"
 #include "config.h"
+#include "radio_config.h"
+
+static const radio_tx_power_t tx_power_array[] = {
+    RADIO_POWER_NRF_POS8DBM,
+    RADIO_POWER_NRF_POS7DBM,
+    RADIO_POWER_NRF_POS6DBM,
+    RADIO_POWER_NRF_POS5DBM,
+    RADIO_POWER_NRF_POS4DBM,
+    RADIO_POWER_NRF_POS3DBM,
+    RADIO_POWER_NRF_POS2DBM,
+    RADIO_POWER_NRF_0DBM,
+    RADIO_POWER_NRF_NEG4DBM,
+    RADIO_POWER_NRF_NEG8DBM,
+    RADIO_POWER_NRF_NEG12DBM,
+    RADIO_POWER_NRF_NEG16DBM,
+    RADIO_POWER_NRF_NEG20DBM,
+    RADIO_POWER_NRF_NEG30DBM,
+    RADIO_POWER_NRF_NEG40DBM,
+};
 
 /* Typedef for control commands */
 typedef enum
@@ -27,6 +46,7 @@ typedef enum
     CMD_ACK                         = 0x52,
     CMD_LINK_MONITOR                = 0x53,
     CMD_TIME_SYNC                   = 0x54,
+    CMD_TX_POWER                    = 0x55,
 } ctrl_cmd_t;
 
 typedef struct __attribute((packed))
@@ -36,6 +56,13 @@ typedef struct __attribute((packed))
     uint8_t number_of_entries;
     rssi_data_entry_t rssi_data_entry[LINK_MONITOR_MAX_NEIGHBOR_NODES];
 } link_monitor_package_t;
+
+typedef struct __attribute((packed))
+{
+    bool is_broadcast;
+    uint8_t selected_pwr_idx;
+    uint8_t target_mac[6];
+} tx_power_package_t;
 
 typedef struct __attribute((packed))
 {
@@ -100,6 +127,7 @@ typedef struct __attribute((packed))
         led_package_t led_package;
         dfu_package_t dfu_package;
         reset_package_t reset_package;
+        tx_power_package_t tx_power_package;
     } payload;
 } command_system_package_t;
 

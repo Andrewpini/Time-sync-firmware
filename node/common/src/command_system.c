@@ -28,6 +28,9 @@
 #include "sync_timer_handler.h"
 #include "ethernet_dfu.h"
 #include "time_sync_controller.h"
+#include "mesh_opt_core.h"
+#include "radio_config.h"
+#include "core_tx.h"
 
 static uint8_t received_data[200];
 static command_system_package_t received_package;
@@ -62,11 +65,25 @@ void check_ctrl_cmd(void)
                 /* Choose the right action according to command */
                 switch (received_package.opcode)
                 {
+                    case CMD_TX_POWER:
+                        if(received_package.payload.tx_power_package.is_broadcast || mac_addresses_are_equal(own_mac, received_package.payload.tx_power_package.target_mac))
+                        {   
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Radio idx: %d\n", received_package.payload.tx_power_package.selected_pwr_idx);
+                            radio_tx_power_t radio_pwr;
+                            mesh_opt_core_tx_power_get(CORE_TX_ROLE_RELAY, &radio_pwr);
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Radio Before Power is: %d\n",radio_pwr);
+                            ERROR_CHECK(mesh_opt_core_tx_power_set(CORE_TX_ROLE_RELAY, tx_power_array[received_package.payload.tx_power_package.selected_pwr_idx]));
+                            mesh_opt_core_tx_power_get(CORE_TX_ROLE_RELAY, &radio_pwr);
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Radio After Power is: %d\n",radio_pwr);
+                            ERROR_CHECK(mesh_opt_core_tx_power_set(CORE_TX_ROLE_ORIGINATOR, tx_power_array[received_package.payload.tx_power_package.selected_pwr_idx]));
+                        }
+                        break;
+
                     case CMD_RESET:
                         if(received_package.payload.reset_package.is_broadcast || mac_addresses_are_equal(own_mac, received_package.payload.reset_package.target_mac))
                         {    
-                        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Reset node\n");
-                        ERROR_CHECK(sd_nvic_SystemReset());
+                            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CMD: Reset node\n");
+                            ERROR_CHECK(sd_nvic_SystemReset());
                         }
                         break;
             
