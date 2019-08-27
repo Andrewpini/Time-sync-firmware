@@ -197,8 +197,7 @@ static void provisioning_complete_cb(void)
 
     ERROR_CHECK(dsm_appkey_add(0, m_netkey_handle, appkey, &m_appkey_handle));
 
-    health_server_t* p_health_server;
-    p_health_server = mesh_stack_health_server_get();
+    health_server_t* p_health_server = mesh_stack_health_server_get();
 
     ERROR_CHECK(dsm_address_subscription_add(HEALTH_GROUP_ADDRESS, &health_subscribe_handle));
     ERROR_CHECK(dsm_address_publish_add(HEALTH_GROUP_ADDRESS, &health_publish_handle));
@@ -359,6 +358,7 @@ int main(void)
     i_am_alive_timer_start();
     #endif
 
+    access_flash_config_store();
     while(1){
       check_ctrl_cmd();
       (void)sd_app_evt_wait();
