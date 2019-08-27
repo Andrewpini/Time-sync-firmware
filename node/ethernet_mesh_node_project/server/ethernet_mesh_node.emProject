@@ -63,9 +63,9 @@
     </folder>
     <folder Name="Ethernet backend">
       <file file_name="../../common/src/command_system.c" />
-      <file file_name="../../common/src/util.c" />
       <file file_name="../../common/src/ethernet_dfu.c" />
       <file file_name="../../common/src/ethernet.c" />
+      <file file_name="../../common/src/ethernet_utils.c" />
     </folder>
     <folder Name="Core">
       <file file_name="../../../external/nordic_mesh/mesh/core/src/internal_event.c" />

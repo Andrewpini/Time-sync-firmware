@@ -7,14 +7,9 @@
 #include "app_error.h"
 #include "config.h"
 
-#define PWM_PERIOD_US                       1000
-
-
 static volatile uint16_t pwm_seq[1]         = {0};
 
-
-/**@brief Sets PWM properties for a pin. Duty cycle in percent. Frequency is statically set to 1000 Hz.
-*/
+/* Sets PWM properties for a pin. Duty cycle in percent. Frequency is statically set to 1000 Hz */
 void pwm_set_duty_cycle(uint8_t pin, float duty_cycle)
 {
     pwm_seq[0] = ( 1 << 15 ) | (uint16_t)(PWM_PERIOD_US * 10.0 * duty_cycle / 1000);

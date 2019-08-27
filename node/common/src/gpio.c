@@ -21,8 +21,6 @@ static uint32_t m_prev_state;
 
 static uint32_t m_last_button_press;
 
-/**@brief Function for initialization of GPIOTE
- */
 void gpiote_init(void) 
 {
     // GPIOTE configuration for syncing of clocks

@@ -16,8 +16,8 @@
 #include "boards.h"
 #include "pwm.h"
 #include "nrf_gpio.h"
-#include "util.h"
-#include "utils.h" // Mesh core utils
+#include "ethernet_utils.h"
+#include "utils.h"
 #include "dhcp.h"
 #include "time_sync_timer.h"
 #include "dhcp_cb.h"
@@ -117,7 +117,7 @@ void check_ctrl_cmd(void)
 
                         if (mac_addresses_are_equal(own_mac, received_package.payload.hp_led_package.target_mac))
                         {
-                            sync_master_set(SYNC_INTERVAL_MS);
+                            sync_master_set(SYNC_LINE_INTERVAL_MS);
                             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC match -> setting node as sync master \r\n");
 
                             ack_package_t ack_package;
