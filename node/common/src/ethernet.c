@@ -17,14 +17,14 @@
 #include "command_system.h"
 
 static uint8_t TX_BUF[TX_BUF_SIZE];
-static uint8_t own_mac[6]          = {0};
-static uint8_t own_ip[4]           = {1, 1, 1, 1};
+static uint8_t own_mac[6] = {0};
+static uint8_t own_ip[4] = {1, 1, 1, 1};
 static uint8_t critical_section_depth;
 
 APP_TIMER_DEF(DHCP_TIMER);
 
-#define SPI_INSTANCE    0 /**< SPI instance index. */
-static const            nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);    /**< SPI instance. */
+#define SPI_INSTANCE 0 /**< SPI instance index. */
+static const nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);    /**< SPI instance. */
 
 static wiz_NetInfo gWIZNETINFO = 
 {
@@ -55,15 +55,15 @@ static void print_network_info(void)
 
 static void critical_section_enter(void)
 {
-  uint8_t dummy;
-  app_util_critical_region_enter(&dummy);
-  critical_section_depth++;
+    uint8_t dummy;
+    app_util_critical_region_enter(&dummy);
+    critical_section_depth++;
 }
 
 static void critical_section_exit(void)
 {
-  critical_section_depth--;
-  app_util_critical_region_exit(critical_section_depth);
+    critical_section_depth--;
+    app_util_critical_region_exit(critical_section_depth);
 }
 
 static bool spi_master_tx(SPIModuleNumber spi_num, uint16_t transfer_size, const uint8_t *tx_data)

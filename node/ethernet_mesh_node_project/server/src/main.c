@@ -351,7 +351,8 @@ int main(void)
     sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_mac[0], own_mac[1], own_mac[2], own_mac[3], own_mac[4], own_mac[5]);
 
     initialize(mesh_node_gap_name);
-    ERROR_CHECK(dfu_clear_bootloader_flag());
+
+    dfu_init();
 
     #ifdef SEND_I_AM_ALIVE_MESSAGES
     i_am_alive_timer_init();
