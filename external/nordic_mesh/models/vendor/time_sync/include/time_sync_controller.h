@@ -35,25 +35,80 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TIME_SYNC_V1_COMMON_H__
-#define TIME_SYNC_V1_COMMON_H__
+#ifndef TIME_SYNC_V1_CONTROLLER_H__
+#define TIME_SYNC_V1_CONTROLLER_H__
+
+#include <stdbool.h>
+#include <stdint.h> 
+
+#include "access.h"
+#include "time_sync_common.h"
 
 /**
- * @defgroup TIME_SYNC_COMMON Time Sync controller common 
- * @ingroup MESH_API_GROUP_VENDOR_MODELS
+ * @defgroup TIME_SYNC_CONTROLLER Time Sync controller
+ * @ingroup TIME_SYNC_COMMON
+ * Model implementing time sync controller model.
  * @{
  */
 
-/* Model ID for the time sync controller model. */
-#define TIME_SYNC_CONTROLLER_MODEL_ID 0x0026
-
-/* Time sync model common opcode */
-typedef enum
-{
-    TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG = 0xF6,
-    TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP = 0xF7,
-    TIME_SYNC_OPCODE_RESET = 0xF8
-} time_sync_common_opcode_t;
-
-/**@} end of TIME_SYNC_COMMON */
+#ifndef INITIAL_TIMESTAMP_BUFFER_SIZE
+    #define INITIAL_TIMESTAMP_BUFFER_SIZE 4
 #endif
+
+
+typedef struct
+{
+    uint16_t sender_addr;
+    uint32_t timestamp_val;
+    uint8_t session_tid;
+    uint8_t hop_ctr;
+} timestamp_buffer_entry_t;
+
+/* Object type for rssi server instances. */
+typedef struct __time_sync_controller_t time_sync_controller_t;
+
+/* Time sync controller instance structure */
+struct __time_sync_controller_t
+{
+    access_model_handle_t model_handle;
+
+    bool is_master;
+    uint8_t current_session_tid;
+    nrf_mesh_tx_token_t current_tx_token;
+
+    uint8_t inital_timestamp_entry_ctr;
+    timestamp_buffer_entry_t inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFFER_SIZE];
+};
+
+/* Initializes the time sync controller model.
+ *
+ * @param[in,out] p_controller Pointer to the controller instance structure.
+ * @param[in] element_index Element index to use when registering the time sync controller.
+ *
+ * @retval NRF_SUCCESS The model was successfully initialized.
+ * @retval NRF_ERROR_NULL NULL pointer in function arguments
+ * @retval NRF_ERROR_FORBIDDEN This model has already been initialized 
+ *
+ * @see access_model_add()
+ */
+uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16_t element_index);
+
+/**
+ * Starts a syncronization session with the caller of this function as the root device.
+ */
+void time_sync_controller_synchronize(time_sync_controller_t * p_controller);
+
+/**
+ * Resets the time sync controller on all nodes.
+ *
+ * @note Should always be used before switching root time sync device.
+ */
+void time_sync_controller_reset(time_sync_controller_t * p_controller);
+
+/* For development only */
+void sync_set_pub_timer(bool on_off);
+
+/** @} end of TIME_SYNC_CONTROLLER */
+
+#endif
+

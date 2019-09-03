@@ -61,7 +61,7 @@
 #include "rssi_util.h"
 #include "rssi_common.h"
 #include "health_client.h"
-#include "time_sync_v1_controller.h"
+#include "time_sync_controller.h"
 
 /* Logging and RTT */
 #include "log.h"
@@ -86,11 +86,11 @@
 #include "ppi.h"
 #include "clock.h"
 #include "command_system.h"
-#include "timer_drift_measurement.h"
+#include "sync_line.h"
 #include "time_sync_timer.h"
 #include "config.h"
 #include "socket.h"
-#include "time_sync_v1_controller.h"
+#include "time_sync_controller.h"
 #include "sync_timer_handler.h"
 #include "i_am_alive.h"
 
@@ -104,7 +104,7 @@ static health_client_t m_health_client;
 static rssi_util_t m_rssi_util;
 
 /* Time sync v1 */
-static uint8_t own_MAC[6] = {0};
+static uint8_t own_mac[6] = {0};
 static uint8_t mesh_node_gap_name[18];
 static time_sync_controller_t m_time_sync_controller;
 static dsm_handle_t m_time_sync_subscribe_handle;
@@ -128,37 +128,29 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
     }
 }
 
-static void app_time_sync_event_cb(sync_event_t sync_event) 
-{
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src: %d\n", sync_event.sender.addr);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst: %d\n", sync_event.reciver.addr);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "src timestamp: %d\n", sync_event.sender.timestamp);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "dst timestamp: %d\n", sync_event.reciver.timestamp);
-}
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length) // TODO: Need to build packets in a better way
 {
-    uint8_t buf[SCAN_REPORT_LENGTH];
-    uint8_t len = 0;
+    if (length <= LINK_MONITOR_MAX_NEIGHBOR_NODES)
+    { 
+        dsm_local_unicast_address_t node_element_address;
+        dsm_local_unicast_addresses_get(&node_element_address);
+    
+        link_monitor_package_t package;
 
-    dsm_local_unicast_address_t local_addr;
-    dsm_local_unicast_addresses_get(&local_addr);
+        package.identifier = 0xDEADFACE;
+        package.element_address = node_element_address.address_start;
+        package.number_of_entries = length;
 
-    buf[0] = (uint8_t)((local_addr.address_start & 0xFF00) >> 8);
-    buf[1] = (uint8_t)(local_addr.address_start & 0x00FF);
+        for(uint8_t i=0; i<length; i++)
+        {
+          package.rssi_data_entry[i] = *(p_data+i);
+        }
 
-    uint8_t i;
-
-    for(i=0; i<length; i++)
+        send_over_ethernet((uint8_t*)&package, CMD_LINK_MONITOR);
+    } else
     {
-      buf[2] = (uint8_t)(((p_data+i)->src_addr & 0xFF00) >> 8);
-      buf[3] = (uint8_t)((p_data+i)->src_addr & 0x00FF);
-      buf[4] = (p_data+i)->mean_rssi;
-      buf[5] = (p_data+i)->msg_count;
-
-      len = 6;
-         
-      send_over_ethernet(&buf[0] , len);
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Link monitor package to long\n");
     }
 }
 
@@ -205,8 +197,7 @@ static void provisioning_complete_cb(void)
 
     ERROR_CHECK(dsm_appkey_add(0, m_netkey_handle, appkey, &m_appkey_handle));
 
-    health_server_t* p_health_server;
-    p_health_server = mesh_stack_health_server_get();
+    health_server_t* p_health_server = mesh_stack_health_server_get();
 
     ERROR_CHECK(dsm_address_subscription_add(HEALTH_GROUP_ADDRESS, &health_subscribe_handle));
     ERROR_CHECK(dsm_address_publish_add(HEALTH_GROUP_ADDRESS, &health_publish_handle));
@@ -261,7 +252,7 @@ static void models_init_cb(void)
     ERROR_CHECK(health_client_init(&m_health_client, 0, app_health_event_cb));
     ERROR_CHECK(access_model_subscription_list_alloc(m_health_client.model_handle));
 
-    ERROR_CHECK(time_sync_controller_init(&m_time_sync_controller, 0, app_time_sync_event_cb));
+    ERROR_CHECK(time_sync_controller_init(&m_time_sync_controller, 0));
     ERROR_CHECK(access_model_subscription_list_alloc(m_time_sync_controller.model_handle));
 }
 
@@ -302,7 +293,7 @@ static void initialize(uint8_t * gap_name)
             .p_device_uri = EX_URI_LS_SERVER
         };
         ERROR_CHECK(mesh_provisionee_prov_start(&prov_start_params));
-    }
+    } 
     ERROR_CHECK(mesh_stack_start());
 
     mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());
@@ -315,7 +306,7 @@ static void app_rtt_input_handler(int key)
     {
         case '0':
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SENDING TIMESTAMP\n");
-            send_timestamp();
+            time_sync_controller_synchronize(&m_time_sync_controller);
             break;
 
         case '1':
@@ -356,17 +347,19 @@ int main(void)
 
     rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
 
-    get_own_MAC(own_MAC);
-    sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
+    get_own_mac(own_mac);
+    sprintf((char *)&mesh_node_gap_name[0], "%02x:%02x:%02x:%02x:%02x:%02x", own_mac[0], own_mac[1], own_mac[2], own_mac[3], own_mac[4], own_mac[5]);
 
     initialize(mesh_node_gap_name);
-    ERROR_CHECK(dfu_clear_bootloader_flag());
+
+    dfu_init();
 
     #ifdef SEND_I_AM_ALIVE_MESSAGES
     i_am_alive_timer_init();
     i_am_alive_timer_start();
     #endif
 
+    access_flash_config_store();
     while(1){
       check_ctrl_cmd();
       (void)sd_app_evt_wait();

@@ -1,4 +1,3 @@
-
 #ifndef I_AM_ALIVE_H
 #define I_AM_ALIVE_H
 

@@ -1,13 +1,18 @@
-
 #ifndef ETHERNET_H
 #define ETHERNET_H
 
+#include "command_system.h"
+
 #define SOCKET_DHCP                         2
-#define SOCKET_TX                           3
+#define SOCKET_COMMAND                      3
+#define SOCKET_LINK_MONITOR                 4
+#define SOCKET_TIME_SYNC                    5
 #define SOCKET_RX                           6
-#define TARGET_IP                           ((const uint8_t[]){255, 255, 255, 255})
-#define TARGET_PORT                         11001
-#define BROADCAST_PORT                      10000
+#define TX_IP                               ((const uint8_t[]){255, 255, 255, 255})
+#define COMMAND_RX_PORT                     10000
+#define COMMAND_TX_PORT                     11001
+#define LINK_MONITOR_PORT                   11002
+#define TIME_SYNC_PORT                      11003
 #define TX_FLAGS                            0x00
 #define TX_BUF_SIZE                         2048
 
@@ -36,10 +41,10 @@ void dhcp_init(void);
 
 void ethernet_init(void);
 
-void send_over_ethernet(uint8_t* data, uint8_t len);
+void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode);
 
-void get_own_IP(uint8_t* p_IP);
+void get_own_ip(uint8_t* p_IP);
 
-void get_own_MAC(uint8_t* p_MAC);
+void get_own_mac(uint8_t* p_MAC);
 
 #endif

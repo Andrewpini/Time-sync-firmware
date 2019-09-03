@@ -90,10 +90,38 @@ __WEAK bool nrf_dfu_enter_check(void)
 
 void set_target_ip()
 {
-	targetIP[0] = (uint8_t)*P_DFU_SERVER_IP;
-	targetIP[1] = (uint8_t)*(P_DFU_SERVER_IP + 1);
-	targetIP[2] = (uint8_t)*(P_DFU_SERVER_IP + 2);
-	targetIP[3] = (uint8_t)*(P_DFU_SERVER_IP + 3);
+	uint32_t* p_server_ip = (uint32_t*)0xFE000;
+	
+	for(uint16_t i=0; i<4096; i++)
+  {
+    if (p_server_ip >= (uint32_t*)0xFF000)
+    {
+			while(true)
+			{
+			}
+    } 
+    else if (*p_server_ip == 0xFFFFFFFF)
+    {
+			p_server_ip -= 1;
+      break;
+    } 
+    else
+    {
+      p_server_ip += 1;
+    }
+  }
+	
+	uint32_t server_ip = *p_server_ip;
+	
+	targetIP[0] = ((uint8_t*)&server_ip)[0];
+	targetIP[1] = ((uint8_t*)&server_ip)[1];
+	targetIP[2] = ((uint8_t*)&server_ip)[2];
+	targetIP[3] = ((uint8_t*)&server_ip)[3];
+	
+//	targetIP[0] = 10;
+//	targetIP[1] = 0;
+//	targetIP[2] = 0;
+//	targetIP[3] = 22;
 }
 
 int application_update(void)
@@ -101,7 +129,7 @@ int application_update(void)
 		uint32_t tftp_server;
 		uint8_t *filename;
 		int ret;
-
+ 
 		tftp_server = (targetIP[0] << 24) | (targetIP[1] << 16) | (targetIP[2] << 8) | (targetIP[3]);
 		filename = (uint8_t *)FILE_NAME;
 

@@ -35,10 +35,10 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "time_sync_v1_controller.h"
+#include "time_sync_controller.h"
 #include "nrf_mesh_assert.h"
 #include "access_reliable.h"
-#include "time_sync_v1_common.h" 
+#include "time_sync_common.h" 
 #include "log.h"
 #include "mesh_app_utils.h"
 #include "nordic_common.h"
@@ -46,7 +46,7 @@
 #include "event.h"
 #include "nrf_mesh.h"
 #include "timeslot_timer.h"
-#include "sync_timer_handler.h"
+#include "time_sync_handler.h"
 #include "access_config.h"
 
 #ifndef CHANNEL_COMPENSATION_IN_MICRO_SEC
@@ -63,14 +63,14 @@
 
 typedef struct
 {
-    uint32_t tx_timestamp;
+    uint32_t timestamp;
     uint8_t session_tid;
-} sync_tx_timestamp_t;
+} sync_secondary_msg_t;
 
 typedef struct
 {
-    uint8_t tid;
-    uint16_t channel_comp; /**< Channel compensation in micro seconds */ 
+    uint8_t session_tid;
+    uint16_t time_comp_per_chan; /**< Channel compensation in micro seconds */ 
     uint8_t hop_ctr;
 } sync_initial_msg_t;
 
@@ -84,7 +84,7 @@ static bool m_publish_timer_active;
 
 /* Forward declaration */
 static uint32_t send_initial_sync_msg(time_sync_controller_t * p_controller, sync_initial_msg_t init_msg);
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_controller, sync_tx_timestamp_t msg);
+static uint32_t send_secondary_sync_msg(time_sync_controller_t * p_controller, sync_secondary_msg_t msg);
 
 
 /********** Development functions **********/
@@ -159,10 +159,10 @@ static void time_sync_core_evt_cb(const nrf_mesh_evt_t * p_evt)
         case NRF_MESH_EVT_TX_COMPLETE:
             if(mp_controller->current_tx_token == p_evt->params.tx_complete.token)
             {
-                sync_tx_timestamp_t msg;
-                msg.tx_timestamp = p_evt->params.tx_complete.timestamp - sync_timer_get_offset() - ((LAST_MESH_ADV_CHANNEL - FIRST_MESH_ADV_CHANNEL) * CHANNEL_COMPENSATION_IN_MICRO_SEC);
+                sync_secondary_msg_t msg;
+                msg.timestamp = p_evt->params.tx_complete.timestamp - sync_timer_get_offset() - ((LAST_MESH_ADV_CHANNEL - FIRST_MESH_ADV_CHANNEL) * CHANNEL_COMPENSATION_IN_MICRO_SEC);
                 msg.session_tid = mp_controller->current_session_tid;
-                (void) send_tx_sender_timestamp(mp_controller, msg);
+                (void) send_secondary_sync_msg(mp_controller, msg);
             }
             break;
 
@@ -197,10 +197,10 @@ static uint32_t send_initial_sync_msg(time_sync_controller_t * p_controller, syn
 }
 
 
-static uint32_t send_tx_sender_timestamp(time_sync_controller_t * p_controller, sync_tx_timestamp_t msg)
+static uint32_t send_secondary_sync_msg(time_sync_controller_t * p_controller, sync_secondary_msg_t msg)
 {
     access_message_tx_t message;
-    message.opcode.opcode = TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP;
+    message.opcode.opcode = TIME_SYNC_OPCODE_SEND_SEC_SYNC_MSG;
     message.opcode.company_id = ACCESS_COMPANY_ID_NORDIC;
     message.p_buffer = (const uint8_t*) &msg;
     message.length = sizeof(msg);
@@ -227,11 +227,11 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
         sync_initial_msg_t incoming_msg;
         memcpy(&incoming_msg, p_message->p_data, p_message->length);
 
-        if(is_higher_tid(incoming_msg.tid) && (!mp_controller->is_master))
+        if(is_higher_tid(incoming_msg.session_tid) && (!mp_controller->is_master))
         {
             uint32_t reciver_timestamp = p_message->meta_data.p_core_metadata->params.scanner.timestamp;
-            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel, incoming_msg.channel_comp);
-            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp - channel_compensation, incoming_msg.tid, incoming_msg.hop_ctr);
+            uint32_t channel_compensation = compensate_for_channel(p_message->meta_data.p_core_metadata->params.scanner.channel, incoming_msg.time_comp_per_chan);
+            add_timestamp_entry(p_message->meta_data.src.value, reciver_timestamp - channel_compensation, incoming_msg.session_tid, incoming_msg.hop_ctr);
         }
     }
 }
@@ -239,9 +239,9 @@ static void handle_msg_initial_sync(access_model_handle_t handle, const access_m
 
 static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const access_message_rx_t * p_message, void * p_args)
 {
-    if((p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER) && (p_message->length == sizeof(sync_tx_timestamp_t)))
+    if((p_message->meta_data.p_core_metadata->source == NRF_MESH_RX_SOURCE_SCANNER) && (p_message->length == sizeof(sync_secondary_msg_t)))
     {
-        sync_tx_timestamp_t sender_timestamp;
+        sync_secondary_msg_t sender_timestamp;
         memcpy(&sender_timestamp, p_message->p_data, p_message->length);
 
         /* Searches through the buffer for a matching entry */
@@ -249,10 +249,10 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
         {
             if ((mp_controller->inital_timestamp_buffer[i].sender_addr == p_message->meta_data.src.value) && (mp_controller->inital_timestamp_buffer[i].session_tid == sender_timestamp.session_tid) && (!mp_controller->is_master))
             {
-                sync_timer_set_timer_offset(mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+                sync_timer_set_timer_offset(mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.timestamp);
 
                 //TODO: Remove log when ready
-                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved a sync update. Offset set to %d\n", mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.tx_timestamp);
+                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Recieved a sync update. Offset set to %d\n", mp_controller->inital_timestamp_buffer[i].timestamp_val - sender_timestamp.timestamp);
 
                 /*Reset the buffer*/
                 mp_controller->inital_timestamp_entry_ctr = 0;
@@ -263,8 +263,8 @@ static void handle_msg_tx_sender_timestamp(access_model_handle_t handle, const a
                 uint8_t new_hop_count_val = mp_controller->inital_timestamp_buffer[i].hop_ctr + 1;
 
                 sync_initial_msg_t init_msg;
-                init_msg.tid = mp_controller->current_session_tid;
-                init_msg.channel_comp = CHANNEL_COMPENSATION_IN_MICRO_SEC;
+                init_msg.session_tid = mp_controller->current_session_tid;
+                init_msg.time_comp_per_chan = CHANNEL_COMPENSATION_IN_MICRO_SEC;
                 init_msg.hop_ctr = new_hop_count_val;
                 (void) send_initial_sync_msg(mp_controller, init_msg);
             }
@@ -290,7 +290,7 @@ static void handle_msg_reset(access_model_handle_t handle, const access_message_
 
 static const access_opcode_handler_t m_opcode_handlers[] =
 {
-    { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP, ACCESS_COMPANY_ID_NORDIC),   handle_msg_tx_sender_timestamp },
+    { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_SEND_SEC_SYNC_MSG, ACCESS_COMPANY_ID_NORDIC),   handle_msg_tx_sender_timestamp },
     { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG, ACCESS_COMPANY_ID_NORDIC),   handle_msg_initial_sync },
     { ACCESS_OPCODE_VENDOR(TIME_SYNC_OPCODE_RESET, ACCESS_COMPANY_ID_NORDIC),   handle_msg_reset },
 };
@@ -358,8 +358,8 @@ void time_sync_controller_synchronize(time_sync_controller_t * p_controller)
     mp_controller->current_session_tid++;
 
     sync_initial_msg_t init_msg;
-    init_msg.tid = mp_controller->current_session_tid;
-    init_msg.channel_comp = CHANNEL_COMPENSATION_IN_MICRO_SEC;
+    init_msg.session_tid = mp_controller->current_session_tid;
+    init_msg.time_comp_per_chan = CHANNEL_COMPENSATION_IN_MICRO_SEC;
     init_msg.hop_ctr = 0;
     (void) send_initial_sync_msg(p_controller, init_msg);
 

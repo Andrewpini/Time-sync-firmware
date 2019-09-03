@@ -10,7 +10,7 @@
 #include "gpio.h"
 #include "app_timer.h"
 #include "boards.h"
-#include "timer_drift_measurement.h"
+#include "sync_line.h"
 #include "ethernet_dfu.h"
 
 APP_TIMER_DEF(m_blink_timer);
@@ -21,8 +21,6 @@ static uint32_t m_prev_state;
 
 static uint32_t m_last_button_press;
 
-/**@brief Function for initialization of GPIOTE
- */
 void gpiote_init(void) 
 {
     // GPIOTE configuration for syncing of clocks
@@ -39,10 +37,10 @@ void gpiote_init(void)
                                                 | (GPIOTE_CONFIG_OUTINIT_High << GPIOTE_CONFIG_OUTINIT_Pos);
 
     // GPIOTE configuration for DFU button
-    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_DFU_BUTTON]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
-                                                | (BUTTON_0 << GPIOTE_CONFIG_PSEL_Pos)
-                                                | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                                | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
+    NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_DFU_BUTTON] = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
+                                                  | (BUTTON_0 << GPIOTE_CONFIG_PSEL_Pos)
+                                                  | (0 << GPIOTE_CONFIG_PORT_Pos)
+                                                  | (GPIOTE_CONFIG_POLARITY_HiToLo << GPIOTE_CONFIG_POLARITY_Pos);
 
     NVIC_EnableIRQ(GPIOTE_IRQn);
     NRF_GPIOTE->INTENSET = (GPIOTE_INTENSET_IN0_Enabled << GPIOTE_INTENSET_IN0_Pos) | (GPIOTE_INTENSET_IN3_Enabled << GPIOTE_INTENSET_IN3_Pos);
@@ -73,9 +71,7 @@ void GPIOTE_IRQHandler(void)
         if(TIMER_DIFF(m_last_button_press, NRF_RTC1->COUNTER) > DFU_BUTTON_PRESS_FREQUENCY){
           m_last_button_press = NRF_RTC1->COUNTER;
 
-          if(get_dfu_flag()){
-            dfu_initiate_and_reset();
-          }
+          dfu_start();
         }
     }
 }
@@ -138,7 +134,11 @@ void button_init_dfu(void)
 // Initializes time synchronization
 void sync_line_init(void) 
 {
+    #ifdef R39_PULLUP_CONNECTED
+    nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_NOPULL);
+    #else
     nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_PULLUP);
+    #endif
     nrf_gpio_cfg_output(SYNC_OUT);
     nrf_gpio_pin_clear(SYNC_OUT);
 }

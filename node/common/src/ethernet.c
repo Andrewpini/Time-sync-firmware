@@ -14,16 +14,17 @@
 #include "dhcp_cb.h"
 #include "nrf_drv_spi.h"
 #include "nrf_gpio.h"
+#include "command_system.h"
 
 static uint8_t TX_BUF[TX_BUF_SIZE];
-static uint8_t own_MAC[6]          = {0};
-static uint8_t own_IP[4]           = {0};
+static uint8_t own_mac[6] = {0};
+static uint8_t own_ip[4] = {1, 1, 1, 1};
 static uint8_t critical_section_depth;
 
 APP_TIMER_DEF(DHCP_TIMER);
 
-#define SPI_INSTANCE    0 /**< SPI instance index. */
-static const            nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);    /**< SPI instance. */
+#define SPI_INSTANCE 0 /**< SPI instance index. */
+static const nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);    /**< SPI instance. */
 
 static wiz_NetInfo gWIZNETINFO = 
 {
@@ -54,15 +55,15 @@ static void print_network_info(void)
 
 static void critical_section_enter(void)
 {
-  uint8_t dummy;
-  app_util_critical_region_enter(&dummy);
-  critical_section_depth++;
+    uint8_t dummy;
+    app_util_critical_region_enter(&dummy);
+    critical_section_depth++;
 }
 
 static void critical_section_exit(void)
 {
-  critical_section_depth--;
-  app_util_critical_region_exit(critical_section_depth);
+    critical_section_depth--;
+    app_util_critical_region_exit(critical_section_depth);
 }
 
 static bool spi_master_tx(SPIModuleNumber spi_num, uint16_t transfer_size, const uint8_t *tx_data)
@@ -121,14 +122,24 @@ static void wizchip_write(uint8_t wb)
     spi_master_tx(SPI0, 1, &wb);
 }
 
-static void tx_socket_init(void) 
+static void command_socket_init(void) 
 {
-    socket(SOCKET_TX, Sn_MR_UDP, TARGET_PORT, TX_FLAGS);
+    socket(SOCKET_COMMAND, Sn_MR_UDP, COMMAND_TX_PORT, TX_FLAGS); 
+}
+
+static void link_monitor_socket_init(void) 
+{
+    socket(SOCKET_LINK_MONITOR, Sn_MR_UDP, LINK_MONITOR_PORT, TX_FLAGS); 
+}
+
+static void time_sync_socket_init(void) 
+{
+    socket(SOCKET_TIME_SYNC, Sn_MR_UDP, TIME_SYNC_PORT, TX_FLAGS); 
 }
 
 static void rx_socket_init(void)
 {
-    socket(SOCKET_RX, Sn_MR_UDP, BROADCAST_PORT, SF_IO_NONBLOCK);
+    socket(SOCKET_RX, Sn_MR_UDP, COMMAND_RX_PORT, SF_IO_NONBLOCK);
 }
 
 static void ethernet_spi_init(void)
@@ -141,7 +152,7 @@ static void ethernet_spi_init(void)
     spi_config.orc       = 0x0;
     spi_config.mode      = NRF_DRV_SPI_MODE_3;
     spi_config.frequency = NRF_DRV_SPI_FREQ_1M;
-    nrf_gpio_cfg_output(SPIM0_SS_PIN); /* For manual controlling CS Pin */
+    nrf_gpio_cfg_output(SPIM0_SS_PIN); // For manual controlling CS Pin
     nrf_gpio_pin_clear(SPIM0_SS_PIN);
 
     uint32_t err_code = nrf_drv_spi_init(&spi_inst, &spi_config, NULL, NULL);
@@ -173,9 +184,9 @@ static void ethernet_dhcp_init(void)
 
         if(ret == DHCP_IP_LEASED)
         {
-            getSHAR(&own_MAC[0]);
-            getIPfromDHCP(&own_IP[0]);
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "This device' IP: %d.%d.%d.%d\r\n", own_IP[0], own_IP[1], own_IP[2], own_IP[3]);
+            getSHAR(own_mac);
+            getIPfromDHCP(own_ip);
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "This device' IP: %d.%d.%d.%d\r\n", own_ip[0], own_ip[1], own_ip[2], own_ip[3]);
             print_network_info();
             break;
         }
@@ -187,9 +198,6 @@ static void ethernet_dhcp_init(void)
         if(dhcp_retry > 10)
         {
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initialization of DHCP failed\r\n");
-            while(1)
-            {
-            }
         }
     }
 }
@@ -244,7 +252,7 @@ void ethernet_init(void)
 
     /* Setting retry time value and retry count */
     timeout_info.retry_cnt = 1;
-    timeout_info.time_100us = 1000;	// timeout value = 10ms
+    timeout_info.time_100us = 1000; // timeout value = 10ms
     wizchip_settimeout(&timeout_info);
     
     /* Network initialization */
@@ -256,24 +264,99 @@ void ethernet_init(void)
     ethernet_dhcp_init();
 
     /* Socket initialization*/
-    tx_socket_init(); 
+    command_socket_init();
+    link_monitor_socket_init();
+    time_sync_socket_init();
     rx_socket_init();
+
+    /* Setting the MAC address in the command system module */
+    command_system_set_mac();
 }
 
-void send_over_ethernet(uint8_t* data, uint8_t len)
+void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode)
 {
-    int32_t err = sendto(SOCKET_TX, data, len, (uint8_t*)TARGET_IP, TARGET_PORT);
+    uint8_t socket;
+    uint16_t port;
 
-    if(err < 0)
+    command_system_package_t package;
+    package.identifier = 0xDEADFACE;
+    package.opcode = msg_opcode;
+    get_own_mac((uint8_t*)&package.mac);
+    
+    bool send_package = true;
+
+    switch(msg_opcode)
     {
-      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+        case CMD_I_AM_ALIVE:
+            socket = SOCKET_COMMAND;
+            port = COMMAND_TX_PORT;
+
+            i_am_alive_package_t i_am_alive_package;
+            memcpy(&i_am_alive_package, payload_package, sizeof(i_am_alive_package_t));
+            package.payload.i_am_alive_package = i_am_alive_package;
+            break;
+
+        case CMD_COMMAND:
+            socket = SOCKET_COMMAND;
+            port = COMMAND_TX_PORT;
+            break;
+
+        /* Common acknowledge message */
+        case CMD_ACK:
+            socket = SOCKET_COMMAND;
+            port = COMMAND_TX_PORT;
+            ack_package_t ack_package;
+            memcpy(&ack_package, payload_package, sizeof(ack_package_t));
+            package.payload.ack_package = ack_package;
+            break;
+
+        case CMD_LINK_MONITOR: 
+            /* Special because of variable size */
+            socket = SOCKET_LINK_MONITOR;
+            port = LINK_MONITOR_PORT;
+
+            link_monitor_package_t link_monitor_package;
+            memcpy(&link_monitor_package, payload_package, sizeof(link_monitor_package_t));
+
+            uint8_t length = offsetof(link_monitor_package_t, rssi_data_entry[link_monitor_package.number_of_entries]);
+
+            int32_t err = sendto(socket, (uint8_t*)&link_monitor_package, length, (uint8_t*)TX_IP, port);
+
+            if(err < 0)
+            {
+              __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+            }
+
+            send_package = false;
+            break;
+
+        case CMD_TIME_SYNC:
+            socket = SOCKET_COMMAND;
+            port = COMMAND_TX_PORT;
+            memcpy(&package.payload.ack_package, payload_package, sizeof(sync_sample_package_t));
+            break;
+
+        default:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "send_over_ethernet: Unknown package type chosen");
+            send_package = false;
+            break;
+    }
+    
+    if (send_package)
+    {
+        int32_t err = sendto(socket, (uint8_t*)&package, sizeof(command_system_package_t), (uint8_t*)TX_IP, port);
+
+        if(err < 0)
+        {
+          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Error sending packet - error code: %d\n", err);
+        }
     }
 }
 
-void get_own_IP(uint8_t* p_IP){ 
-    memcpy(p_IP, own_IP, 4);
+void get_own_ip(uint8_t* p_IP){ 
+    memcpy(p_IP, own_ip, 4);
 }
 
-void get_own_MAC(uint8_t* p_MAC){ 
-    memcpy(p_MAC, own_MAC, 6);
+void get_own_mac(uint8_t* p_MAC){ 
+    memcpy(p_MAC, own_mac, 6);
 }

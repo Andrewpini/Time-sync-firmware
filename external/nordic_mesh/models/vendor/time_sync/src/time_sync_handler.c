@@ -35,25 +35,43 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TIME_SYNC_V1_COMMON_H__
-#define TIME_SYNC_V1_COMMON_H__
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
+#include "nordic_common.h"
+#include "app_error.h"
+#include "timer.h"
 
-/**
- * @defgroup TIME_SYNC_COMMON Time Sync controller common 
- * @ingroup MESH_API_GROUP_VENDOR_MODELS
- * @{
- */
+static int32_t m_offset;
 
-/* Model ID for the time sync controller model. */
-#define TIME_SYNC_CONTROLLER_MODEL_ID 0x0026
-
-/* Time sync model common opcode */
-typedef enum
+uint32_t sync_timer_get_adjusted_timestamp(void)
 {
-    TIME_SYNC_OPCODE_SEND_INIT_SYNC_MSG = 0xF6,
-    TIME_SYNC_OPCODE_SEND_TX_SENDER_TIMESTAMP = 0xF7,
-    TIME_SYNC_OPCODE_RESET = 0xF8
-} time_sync_common_opcode_t;
+    return timer_now() - m_offset;
+}
 
-/**@} end of TIME_SYNC_COMMON */
-#endif
+uint32_t sync_timer_get_raw_timestamp(void)
+{
+    return timer_now();
+}
+
+void sync_timer_set_timer_offset(int32_t offset)
+{
+    m_offset = offset;
+}
+
+void sync_timer_increment_timer_offset(int32_t increment)
+{
+    m_offset = increment + m_offset;
+}
+
+int32_t sync_timer_get_offset(void)
+{
+    return m_offset;
+}
+
+void sync_timer_reset(void)
+{
+    m_offset = 0;
+}

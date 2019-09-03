@@ -13,36 +13,21 @@
 // Typedef for control commands
 typedef enum
 {
-    RESET_NODE                      = 0,
-    WHOAMI_START                    = 1,
-    WHOAMI_STOP                     = 2,
-    CMD_SERVER_IP_BROADCAST         = 10,
-    CMD_NEW_SERVER_IP               = 12,
-    CMD_NEW_ACCESS_ADDRESS          = 13,
-    CMD_ADVERTISING_START           = 14,
-    CMD_ADVERTISING_STOP            = 15,
-    CMD_ALL_HPLED_ON                = 40,
-    CMD_ALL_HPLED_OFF               = 41,
-    CMD_ALL_HPLED_DEFAULT           = 42,
-    CMD_ALL_HPLED_NEW_DEFAULT       = 43,
-    CMD_ALL_HPLED_CUSTOM            = 44,
-    CMD_SINGLE_HPLED_ON             = 50,
-    CMD_SINGLE_HPLED_OFF            = 51,
-    CMD_SINGLE_HPLED_DEFAULT        = 52,
-    CMD_SINGLE_HPLED_CUSTOM         = 53,
-    CMD_SINGLE_ADVERTISING_ON       = 60,
-    CMD_SINGLE_ADVERTISING_OFF      = 61,
-    CMD_SYNC_NODE_SET               = 70,
-    CMD_SYNC_SET_INTERVAL           = 71,
-    CMD_SYNC_RESET                  = 72,
-    CMD_NEW_FIRMWARE_ALL            = 80,
-    CMD_NEW_FIRMWARE_MAC            = 81,
-    CMD_NEW_FIRMWARE_BUTTON_ENABLE  = 82,
-    CMD_NEW_FIRMWARE_BUTTON_DISABLE = 83,
-    RESET_SYNC                      = 3
+    CMD_RESET_ALL_NODES             = 0x01,
+    CMD_RESET_NODE_MAC              = 0x02,
+    CMD_DFU_ALL                     = 0x10,
+    CMD_DFU_MAC                     = 0x11,
+    CMD_DFU_BUTTON_ENABLE           = 0x12,
+    CMD_DFU_BUTTON_DISABLE          = 0x13,
+    CMD_ALL_HPLED_ON                = 0x20,
+    CMD_ALL_HPLED_OFF               = 0x21,
+    CMD_SINGLE_HPLED_ON             = 0x22,
+    CMD_SINGLE_HPLED_OFF            = 0x23,
+    CMD_SYNC_LINE_START_MASTER      = 0x30,
+    CMD_SYNC_LINE_RESET             = 0x31,
+    CMD_SYNC_LINE_STOP              = 0x32,
+    CMD_TIME_SYNC_START_MASTER      = 0x40,
+    CMD_TIME_SYNC_STOP              = 0x41
 } ctrl_cmd_t;
-
-
-
 
 #endif

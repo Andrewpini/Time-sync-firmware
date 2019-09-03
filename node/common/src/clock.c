@@ -8,8 +8,6 @@
 #include "config.h"
 #include "nrf_gpio.h"
 
-/**@brief Function for initialization oscillators.
- */
 void clock_init(void)
 {
     if(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0)

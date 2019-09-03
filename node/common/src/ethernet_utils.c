@@ -7,8 +7,7 @@
 #include "ethernet_utils.h"
 
 
-// Returns true if arr1[0..n-1] and arr2[0..m-1]
-// contain same elements.
+/* Returns true if arr1[0..n-1] and arr2[0..m-1] contain same elements */
 bool arrays_are_equal(uint8_t * p_arr1, uint8_t * p_arr2, uint8_t n, uint8_t m)
 {
     if (n != m)

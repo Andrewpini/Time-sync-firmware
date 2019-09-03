@@ -1,4 +1,3 @@
-
 #ifndef APP_CLOCK_H
 #define APP_CLOCK_H
 

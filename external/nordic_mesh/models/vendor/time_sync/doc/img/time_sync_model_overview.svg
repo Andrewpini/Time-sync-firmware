@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="23cm" height="23cm" viewBox="509 288 460 452" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #0000ff" cx="731.367" cy="512.758" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="731.367" y="517.558">
+      <tspan x="731.367" y="517.558">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #ff0000" cx="687.553" cy="436.651" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="687.553" y="441.451">
+      <tspan x="687.553" y="441.451">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #009400" cx="767.55" cy="385.877" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="767.55" y="390.677">
+      <tspan x="767.55" y="390.677">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #009400" cx="847.197" cy="573.176" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="847.197" y="577.976">
+      <tspan x="847.197" y="577.976">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #009400" cx="730.626" cy="642.744" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="730.626" y="647.544">
+      <tspan x="730.626" y="647.544">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #009400" cx="606.978" cy="438.796" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="606.978" y="443.596">
+      <tspan x="606.978" y="443.596">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 0.2; stroke-dasharray: 16; stroke: #ff0000" cx="779.734" cy="565.948" rx="97.5229" ry="97.3001"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="779.734" y="570.748">
+      <tspan x="779.734" y="570.748">  </tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: #84fc84" cx="847.436" cy="573.558" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #009400" cx="847.436" cy="573.558" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="865.511" y="578.358">
+      <tspan x="865.511" y="578.358"></tspan>
+    </text>
+  </g>
+  <g>
+    <ellipse style="fill: #84fc84" cx="730.953" cy="642.792" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #009400" cx="730.953" cy="642.792" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="749.028" y="647.592">
+      <tspan x="749.028" y="647.592"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="710.775" y="634.75">
+    <tspan x="710.775" y="634.75">   NODE</tspan>
+    <tspan x="710.775" y="644.628">  WITHIN</tspan>
+    <tspan x="710.775" y="654.505">TWO HOPS</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #ff9292" cx="780.082" cy="566.222" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #ff0000" cx="780.082" cy="566.222" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="798.157" y="571.022">
+      <tspan x="798.157" y="571.022"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="762.872" y="558.803">
+    <tspan x="762.872" y="558.803">  NODE</tspan>
+    <tspan x="762.872" y="568.681"> WITHIN</tspan>
+    <tspan x="762.872" y="578.559">ONE HOP</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #ff9292" cx="687.9" cy="436.925" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #ff0000" cx="687.9" cy="436.925" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="705.975" y="441.725">
+      <tspan x="705.975" y="441.725"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="670.691" y="429.506">
+    <tspan x="670.691" y="429.506">  NODE</tspan>
+    <tspan x="670.691" y="439.384"> WITHIN</tspan>
+    <tspan x="670.691" y="449.262">ONE HOP</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #b3b3ff" cx="731.714" cy="513.032" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #0000ff" cx="731.714" cy="513.032" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="749.789" y="517.832">
+      <tspan x="749.789" y="517.832"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="717.714" y="506.53">
+    <tspan x="717.714" y="506.53">  SYNC</tspan>
+    <tspan x="717.714" y="516.408">MASTER</tspan>
+    <tspan x="717.714" y="526.286">  NODE</tspan>
+  </text>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="827.933" y="565.222">
+    <tspan x="827.933" y="565.222">   NODE</tspan>
+    <tspan x="827.933" y="575.1">  WITHIN</tspan>
+    <tspan x="827.933" y="584.978">TWO HOPS</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #84fc84" cx="767.633" cy="386.49" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #009400" cx="767.633" cy="386.49" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="785.709" y="391.29">
+      <tspan x="785.709" y="391.29"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="748.131" y="378.154">
+    <tspan x="748.131" y="378.154">   NODE</tspan>
+    <tspan x="748.131" y="388.032">  WITHIN</tspan>
+    <tspan x="748.131" y="397.909">TWO HOPS</tspan>
+  </text>
+  <g>
+    <ellipse style="fill: #84fc84" cx="606.7" cy="438.759" rx="27.1462" ry="27.6461"/>
+    <ellipse style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #009400" cx="606.7" cy="438.759" rx="27.1462" ry="27.6461"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:end;font-family:sans-serif;font-style:normal;font-weight:normal" x="624.775" y="443.559">
+      <tspan x="624.775" y="443.559"></tspan>
+    </text>
+  </g>
+  <text font-size="7.90222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="587.198" y="430.423">
+    <tspan x="587.198" y="430.423">   NODE</tspan>
+    <tspan x="587.198" y="440.301">  WITHIN</tspan>
+    <tspan x="587.198" y="450.179">TWO HOPS</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #0000ff" d="M 743.058,486.829 A 39.0301,39.0301 0 0 0 718.194,449.122"/>
+    <polygon style="fill: #0000ff" points="718.792,446.816 714.44,447.848 717.876,450.71 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #0000ff" points="718.792,446.816 714.44,447.848 717.876,450.71 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #0000ff" d="M 721.186,539.58 A 35.9867,35.9867 0 0 0 747.725,573.213"/>
+    <polygon style="fill: #0000ff" points="747.389,575.603 751.59,574.069 747.842,571.629 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #0000ff" points="747.389,575.603 751.59,574.069 747.842,571.629 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" d="M 848.304,539.999 A 36.6693,36.6693 0 0 0 783.414,537.789"/>
+    <polygon style="fill: #ff0000" points="846.763,540.413 849.858,543.641 850.583,539.228 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" points="846.763,540.413 849.858,543.641 850.583,539.228 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" d="M 762.765,652.833 A 45.7563,45.7563 0 0 0 800.311,586.132"/>
+    <polygon style="fill: #ff0000" points="762.892,651.164 758.793,652.953 762.683,655.159 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" points="762.892,651.164 758.793,652.953 762.683,655.159 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" d="M 742.459,364.506 A 47.296,47.296 0 0 0 678.659,409.888"/>
+    <polygon style="fill: #ff0000" points="741.66,365.988 746.132,366.028 743.48,362.427 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" points="741.66,365.988 746.132,366.028 743.48,362.427 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" d="M 614.032,471.657 A 41.6157,41.6157 0 0 0 684.801,465.393"/>
+    <polygon style="fill: #ff0000" points="615.491,470.905 611.806,468.371 611.99,472.839 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #ff0000" points="615.491,470.905 611.806,468.371 611.99,472.839 "/>
+  </g>
+  <text font-size="8.46654" style="fill: #0000ff;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="737.31" y="459.837">
+    <tspan x="737.31" y="459.837">Itr #1</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #0000ff;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="702.9" y="571.253">
+    <tspan x="702.9" y="571.253">Itr #1</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #ff0000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="772.111" y="623.522">
+    <tspan x="772.111" y="623.522">Itr #2</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #ff0000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="804.183" y="535.948">
+    <tspan x="804.183" y="535.948">Itr #2</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #ff0000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="636.807" y="479.094">
+    <tspan x="636.807" y="479.094">Itr #2</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #ff0000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="698.223" y="384.184">
+    <tspan x="698.223" y="384.184">Itr #2</tspan>
+  </text>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 759.622,359.038 A 90.576,90.576 0 0 0 691.411,308.277"/>
+    <polygon style="fill: #009400" points="691.617,306.12 687.452,307.75 691.255,310.104 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="691.617,306.12 687.452,307.75 691.255,310.104 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 795.157,392.354 A 86.4155,86.4155 0 0 0 869.524,356.201"/>
+    <polygon style="fill: #009400" points="871.365,357.358 871.777,352.905 867.967,355.247 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="871.365,357.358 871.777,352.905 867.967,355.247 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 585.182,455.753 A 88.7232,88.7232 0 0 0 564.308,538.007"/>
+    <polygon style="fill: #009400" points="562.239,538.664 565.371,541.856 566.046,537.436 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="562.239,538.664 565.371,541.856 566.046,537.436 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 604.757,410.23 A 93.0295,93.0295 0 0 0 548.523,344.346"/>
+    <polygon style="fill: #009400" points="549.215,342.298 544.788,342.934 547.953,346.093 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="549.215,342.298 544.788,342.934 547.953,346.093 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 873.131,561.89 A 83.3446,83.3446 0 0 0 909.617,490.074"/>
+    <polygon style="fill: #009400" points="911.788,489.868 909.398,486.088 907.808,490.268 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="911.788,489.868 909.398,486.088 907.808,490.268 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 853.499,601.535 A 95.8648,95.8648 0 0 0 919.477,660.376"/>
+    <polygon style="fill: #009400" points="919.057,662.492 923.365,661.291 919.819,658.566 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="919.057,662.492 923.365,661.291 919.819,658.566 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 872.043,587.461 A 99.3885,99.3885 0 0 0 962.506,578.052"/>
+    <polygon style="fill: #009400" points="963.774,579.79 965.811,575.809 961.404,576.568 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="963.774,579.79 965.811,575.809 961.404,576.568 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 3; stroke-dasharray: 6; stroke: #009400" d="M 703.745,635.45 A 91.608,91.608 0 0 0 623.812,667.366"/>
+    <polygon style="fill: #009400" points="622.084,666.062 621.291,670.463 625.288,668.456 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 3; stroke: #009400" points="622.084,666.062 621.291,670.463 625.288,668.456 "/>
+  </g>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="819.359" y="373.639">
+    <tspan x="819.359" y="373.639">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="706.499" y="340.365">
+    <tspan x="706.499" y="340.365">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="559.274" y="387.591">
+    <tspan x="559.274" y="387.591">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="567.94" y="500.382">
+    <tspan x="567.94" y="500.382">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="870.046" y="519.18">
+    <tspan x="870.046" y="519.18">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="904.847" y="581.995">
+    <tspan x="904.847" y="581.995">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="885.544" y="637.474">
+    <tspan x="885.544" y="637.474">Itr #3</tspan>
+  </text>
+  <text font-size="8.46654" style="fill: #009400;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="659.915" y="653.521">
+    <tspan x="659.915" y="653.521">Itr #3</tspan>
+  </text>
+</svg>

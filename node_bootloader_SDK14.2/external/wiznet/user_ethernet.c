@@ -115,10 +115,38 @@ void user_ethernet_init(void)
     gWIZNETINFO.mac[4] = (NRF_FICR->DEVICEADDR[1]      ) & 0xFF;
     gWIZNETINFO.mac[5] = (NRF_FICR->DEVICEADDR[1] >>  8) & 0xFF;
 			
-		gWIZNETINFO.ip[0] = (uint8_t)*P_DFU_OWN_IP;
-		gWIZNETINFO.ip[1] = (uint8_t)*(P_DFU_OWN_IP + 1);
-		gWIZNETINFO.ip[2] = (uint8_t)*(P_DFU_OWN_IP + 2);
-		gWIZNETINFO.ip[3] = (uint8_t)*(P_DFU_OWN_IP + 3);
+		uint32_t* p_own_ip = (uint32_t*)0xFE000;
+	
+		for(uint16_t i=0; i<4096; i++)
+		{
+			if (p_own_ip >= (uint32_t*)0xFF000)
+			{
+				while(true)
+				{
+				}
+			} 
+			else if (*p_own_ip == 0xFFFFFFFF)
+			{
+				p_own_ip -= 2;
+				break;
+			} 
+			else
+			{
+				p_own_ip += 1;
+			}
+		}
+		
+		uint32_t own_ip = *p_own_ip;
+			
+		gWIZNETINFO.ip[0] = ((uint8_t*)&own_ip)[0];
+		gWIZNETINFO.ip[1] = ((uint8_t*)&own_ip)[1];
+		gWIZNETINFO.ip[2] = ((uint8_t*)&own_ip)[2];
+		gWIZNETINFO.ip[3] = ((uint8_t*)&own_ip)[3];
+		
+//		gWIZNETINFO.ip[0] = 10;
+//		gWIZNETINFO.ip[1] = 0;
+//		gWIZNETINFO.ip[2] = 0;
+//		gWIZNETINFO.ip[3] = 60;
 
     spi_drv_init();
 

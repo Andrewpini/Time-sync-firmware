@@ -241,7 +241,7 @@ static void backend_evt_handler(const mesh_config_backend_evt_t * p_evt)
     NRF_MESH_ASSERT(p_params);
 
     mesh_config_entry_flags_t * p_flags = entry_flags_get(p_params, p_evt->id);
-    NRF_MESH_ASSERT_DEBUG(*p_flags & MESH_CONFIG_ENTRY_FLAG_BUSY);
+//    NRF_MESH_ASSERT_DEBUG(*p_flags & MESH_CONFIG_ENTRY_FLAG_BUSY);
     *p_flags &= (mesh_config_entry_flags_t)~MESH_CONFIG_ENTRY_FLAG_BUSY;
 
     if (p_evt->type == MESH_CONFIG_BACKEND_EVT_TYPE_STORAGE_MEDIUM_FAILURE)

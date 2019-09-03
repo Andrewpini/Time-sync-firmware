@@ -7,26 +7,26 @@
 #include "app_timer.h"
 #include "hal.h"
 #include "ethernet.h"
+#include "command_system.h"
 #include "socket.h"
+#include "device_state_manager.h"
 
 APP_TIMER_DEF(IM_ALIVE_TIMER);
 
 void send_i_am_alive_message(void)
 {
-    uint8_t buf[50];
-    uint8_t len = 0;
-    uint8_t own_MAC[6] = {0};
-    get_own_MAC(own_MAC);
+    dsm_local_unicast_address_t node_element_address;
+    dsm_local_unicast_addresses_get(&node_element_address);
     
-    sprintf((char *)&buf[0], "I AM ALIVE - %02x:%02x:%02x:%02x:%02x:%02x", own_MAC[0], own_MAC[1], own_MAC[2], own_MAC[3], own_MAC[4], own_MAC[5]);
+    i_am_alive_package_t i_am_alive_package;
 
-    len = strlen((const char *)&buf[0]);
+    get_own_ip((uint8_t*)&i_am_alive_package.ip);
+    i_am_alive_package.element_address = node_element_address.address_start;
 
-    send_over_ethernet(&buf[0] , len);
+    send_over_ethernet((uint8_t*)&i_am_alive_package, CMD_I_AM_ALIVE);
 }
 
 void i_am_alive_timer_handler(void * p_unused){
-//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "I AM ALIVE TIMER\n");
     send_i_am_alive_message();
 }
 
