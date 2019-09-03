@@ -46,7 +46,7 @@ typedef enum
     CMD_ACK                         = 0x52,
     CMD_LINK_MONITOR                = 0x53,
     CMD_TIME_SYNC                   = 0x54,
-    CMD_TX_POWER                    = 0x55,
+    CMD_TX_POWER                    = 0x55, // TODO: Move from TX CMD to RX CMD
 } ctrl_cmd_t;
 
 typedef struct __attribute((packed))

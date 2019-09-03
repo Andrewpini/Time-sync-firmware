@@ -1,11 +1,6 @@
-# Indoor positioning platform firmware
+# Bluetooth Mesh Test Rig
 
-This repository contains firmware for indoor positioning platform based on PCA20036 nodes and PCA10056 DKs as tags and time sync controller. 
-Fimrware for the following parts is available
-- Nodes
-  - Bootloader for DFU using TFTP: [node_bootloader_SDK14.2](https://github.com/jtguggedal/positioning_firmware/tree/master/node_bootloader_SDK14.2)
-  - Application: [node](https://github.com/jtguggedal/positioning_firmware/tree/master/node)
-- [Tags](https://github.com/jtguggedal/positioning_firmware/tree/master/tag)
-- [External time sync](https://github.com/jtguggedal/positioning_firmware/tree/master/time_syncer)
+This repository contains firmware and bootloader for Bluetooth Mesh test rig using PCA20036 cards. The system has ethernet funcionality using a Wiznet W5500 chip.
 
-The folders contain source files, including SEGGER Embedded Studio project files (v3.30 tested), along with compiled hex files that can be flashed directly to PCA20036 (nodes) and PCA10056 (tags and time sync signal controller).
+- Firmware based on Mesh SDK v3.1.0
+- Bootloader based on nRF5 SDK v14.2 with added TFTP functionality

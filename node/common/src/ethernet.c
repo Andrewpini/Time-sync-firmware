@@ -330,7 +330,7 @@ void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode)
             send_package = false;
             break;
 
-        case CMD_TIME_SYNC:
+        case CMD_TIME_SYNC: // TODO: Dont need TIME_SYNC_PORT / SOCKET etc?
             socket = SOCKET_COMMAND;
             port = COMMAND_TX_PORT;
             memcpy(&package.payload.ack_package, payload_package, sizeof(sync_sample_package_t));
