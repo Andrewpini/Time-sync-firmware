@@ -63,7 +63,7 @@ uint32_t sync_timer_get_raw_timestamp(void);
 /**
  * Set the time sync offset.
  *
- * @param[in] offset    The value of the offset.
+ * @param[in] offset    The value of the offset. 
  */
 void sync_timer_set_timer_offset(int32_t offset);
 

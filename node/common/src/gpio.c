@@ -12,6 +12,8 @@
 #include "boards.h"
 #include "sync_line.h"
 #include "ethernet_dfu.h"
+#include "log.h"
+
 
 APP_TIMER_DEF(m_blink_timer);
 static uint32_t m_blink_count;
@@ -29,7 +31,7 @@ void gpiote_init(void)
     NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_IN]  = (GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos)
                                                 | (SYNC_IN << GPIOTE_CONFIG_PSEL_Pos)
                                                 | (0 << GPIOTE_CONFIG_PORT_Pos)
-                                                | (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos);
+                                                | (GPIOTE_CONFIG_POLARITY_LoToHi << GPIOTE_CONFIG_POLARITY_Pos);
 
     // GPIOTE configuration for LED pin
     NRF_GPIOTE->CONFIG[GPIOTE_CHANNEL_SYNC_LED] = (GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos)
@@ -64,6 +66,7 @@ void GPIOTE_IRQHandler(void)
 {
     if (NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN]){
         NRF_GPIOTE->EVENTS_IN[GPIOTE_CHANNEL_SYNC_IN] = 0;
+
         sync_line_event_handler(); 
     }
     
@@ -142,5 +145,10 @@ void sync_line_init(void)
     nrf_gpio_cfg_input(SYNC_IN, NRF_GPIO_PIN_PULLUP);
     #endif
     nrf_gpio_cfg_output(SYNC_OUT);
+
+    //TODO: Remove after done testing
+    nrf_gpio_cfg_output(19UL);
+    nrf_gpio_pin_clear(19UL);
+
     nrf_gpio_pin_clear(SYNC_OUT);
 }

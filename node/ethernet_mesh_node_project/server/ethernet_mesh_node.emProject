@@ -60,6 +60,8 @@
       <file file_name="../../common/src/time_sync_timer.c" />
       <file file_name="../../common/src/i_am_alive.c" />
       <file file_name="../../common/src/sync_line.c" />
+      <file file_name="../../common/src/sync_line_debouncer.c" />
+      <file file_name="../../common/include/sync_line_debouncer.h" />
     </folder>
     <folder Name="Ethernet backend">
       <file file_name="../../common/src/command_system.c" />
@@ -208,7 +210,7 @@
     </folder>
     <folder Name="Time sync model">
       <file file_name="../../../external/nordic_mesh/models/vendor/time_sync/src/time_sync_controller.c" />
-      <file file_name="../../../external/nordic_mesh/models/vendor/time_sync/src/time_sync_handler.c" />
+      <file file_name="../../../external/nordic_mesh/examples/common/src/synchronized_timer.c" />
     </folder>
     <folder Name="Other">
       <file file_name="../../../external/nordic_mesh/external/app_timer/app_timer_mesh.c" />

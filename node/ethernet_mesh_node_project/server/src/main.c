@@ -93,6 +93,7 @@
 #include "time_sync_controller.h"
 #include "sync_timer_handler.h"
 #include "i_am_alive.h"
+#include "sync_line_debouncer.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -117,6 +118,10 @@ static dsm_handle_t rssi_util_publish_handle;
 static dsm_handle_t rssi_server_publish_handle;
 
 static bool m_device_provisioned;
+
+/* Forward declaration */
+void sync_set_pub_timer(bool on_off); // <- For the time sync algorithm 
+
 
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event) 
 {
@@ -324,6 +329,26 @@ static void app_rtt_input_handler(int key)
             sync_timer_set_timer_offset(2000);
             break;
 
+        case '4':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SET SYNC MASTER\n");
+            sync_master_set(1500);
+            break;
+
+        case '5':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "DEBOUNCE TEST\n");
+            debounce_test(500);
+            break;
+
+        case '6':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "DEBOUNCE TEST\n");
+            debounce_test(1100);
+            break;
+
+        case '7':
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "RESET \n");
+            ERROR_CHECK(sd_nvic_SystemReset());
+            break;
+
         default:
             break;
     }
@@ -338,6 +363,8 @@ int main(void)
     leds_init();
     button_init_dfu();
     sync_line_init();
+    debounce_test_init();
+    sync_line_debouncer_init();
     drift_timer_init();
     gpiote_init();
     ppi_init();

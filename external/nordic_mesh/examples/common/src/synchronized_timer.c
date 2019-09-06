@@ -17,7 +17,7 @@
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
- * 4. This software, with or without modification, must only be used with a
+ * 4. This software, with or without modification, must only be used with a 
  *    Nordic Semiconductor ASA integrated circuit.
  *
  * 5. Any software provided in binary form under this license must not be reverse
@@ -37,7 +37,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <stdbool.h> 
 #include <string.h>
 #include <ctype.h>
 #include "nordic_common.h"

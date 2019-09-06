@@ -42,6 +42,10 @@ static uint8_t uninitialized_ip[4] = {1, 1, 1, 1};
 static uint8_t server_ip[4] = {1, 1, 1, 1};
 static uint16_t broadcast_port = COMMAND_RX_PORT;
 
+
+/* Forward declaration */
+void sync_set_pub_timer(bool on_off); // <- For the time sync algorithm 
+
 /* Function for checking if the device has received a new control command */
 void check_ctrl_cmd(void)
 {

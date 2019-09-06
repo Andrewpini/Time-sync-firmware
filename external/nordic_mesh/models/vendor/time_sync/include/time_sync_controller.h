@@ -51,27 +51,28 @@
  * @{
  */
 
+/** Size of the buffer storing initial time sync messages */
 #ifndef INITIAL_TIMESTAMP_BUFFER_SIZE
-    #define INITIAL_TIMESTAMP_BUFFER_SIZE 4
+    #define INITIAL_TIMESTAMP_BUFFER_SIZE (4)
 #endif
 
 
 typedef struct
 {
-    uint16_t sender_addr;
-    uint32_t timestamp_val;
-    uint8_t session_tid;
-    uint8_t hop_ctr;
+    uint16_t sender_addr; /**< The address of the sender of the respective message. */
+    uint32_t timestamp; /**< The local timestamp when this message was recieved */
+    uint8_t session_tid; /**< The transaction ID of the syncronization session  */
+    uint8_t hop_count; /**< How many hops this message did before arriving at the reciever */
 } timestamp_buffer_entry_t;
 
-/* Object type for rssi server instances. */
+/* Object type for time sync controller instances. */
 typedef struct __time_sync_controller_t time_sync_controller_t;
 
 /* Time sync controller instance structure */
 struct __time_sync_controller_t
 {
     access_model_handle_t model_handle;
-
+ 
     bool is_master;
     uint8_t current_session_tid;
     nrf_mesh_tx_token_t current_tx_token;
@@ -80,7 +81,8 @@ struct __time_sync_controller_t
     timestamp_buffer_entry_t inital_timestamp_buffer[INITIAL_TIMESTAMP_BUFFER_SIZE];
 };
 
-/* Initializes the time sync controller model.
+/**
+ * Initializes the time sync controller model.
  *
  * @param[in,out] p_controller Pointer to the controller instance structure.
  * @param[in] element_index Element index to use when registering the time sync controller.
@@ -95,18 +97,23 @@ uint32_t time_sync_controller_init(time_sync_controller_t * p_controller, uint16
 
 /**
  * Starts a syncronization session with the caller of this function as the root device.
+ *
+ * @param[in,out] p_controller Pointer to the controller instance structure.
+ *
+ * @see access_model_publish()
  */
-void time_sync_controller_synchronize(time_sync_controller_t * p_controller);
+uint32_t time_sync_controller_synchronize(time_sync_controller_t * p_controller);
 
 /**
  * Resets the time sync controller on all nodes.
  *
+ * @param[in,out] p_controller Pointer to the controller instance structure.
+ *
+ * @see access_model_publish()
+ *
  * @note Should always be used before switching root time sync device.
  */
-void time_sync_controller_reset(time_sync_controller_t * p_controller);
-
-/* For development only */
-void sync_set_pub_timer(bool on_off);
+uint32_t time_sync_controller_reset(time_sync_controller_t * p_controller);
 
 /** @} end of TIME_SYNC_CONTROLLER */
 

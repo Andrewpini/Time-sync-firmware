@@ -14,30 +14,49 @@
 #include "ethernet.h"
 #include "socket.h"
 #include "w5500.h"
-#include "time_sync_handler.h"
+#include "synchronized_timer.h"
 #include "toolchain.h"
 #include "timer.h"
 #include "gpio.h"
 #include "ppi.h"
 #include "command_system.h"
 #include "ethernet.h"
+#include "boards.h"
+#include "app_timer.h"
+#include "log.h"
 
+
+
+#define DEBOUNCE_PERIOD_MS 1 
+
+typedef struct{
+    sync_sample_package_t sample;
+    bool sync_line_state;
+} debounce_t;
+
+APP_TIMER_DEF(m_debounce_timer);
 static uint32_t m_time_tic;
+static bool m_initial_line_state;
 static bool m_controls_sync_signal = false;
 
-static void send_drift_timing_sample(uint32_t adjusted_sync_timer)
+//TODO: Remove test var
+static volatile uint32_t teller;
+static volatile uint32_t teller_to;
+
+static void debounce(sync_sample_package_t sample)
 {
-    sync_sample_package_t sample;
-    sample.sample_nr = m_time_tic;
-    sample.sample_value = adjusted_sync_timer;
-    send_over_ethernet((uint8_t*)&sample, CMD_TIME_SYNC);
+    teller_to++;
+
+    static debounce_t debounce;
+    debounce.sync_line_state = (bool)nrf_gpio_pin_read(SYNC_IN);
+    debounce.sample = sample;
+    app_timer_start(m_debounce_timer, APP_TIMER_TICKS(DEBOUNCE_PERIOD_MS), &debounce);
 }
+
 
 /* Should trigger each time the sync-line is set high by the master node */
 void sync_line_event_handler(void)
 {
-    m_time_tic++;
-
     uint32_t was_masked;
     _DISABLE_IRQS(was_masked);
 
@@ -47,8 +66,12 @@ void sync_line_event_handler(void)
     uint32_t adjusted_sync_timer = now - sync_timer_get_offset();
 
     _ENABLE_IRQS(was_masked);
-
-    send_drift_timing_sample(adjusted_sync_timer);
+   
+    m_time_tic++;
+    sync_sample_package_t sample;
+    sample.sample_nr = m_time_tic;
+    sample.sample_value = adjusted_sync_timer;
+    debounce(sample);
 }
 
 void reset_drift_measure_params(void)
@@ -70,4 +93,25 @@ void sync_master_unset(void)
 {
     SYNC_TIMER->TASKS_STOP = 1;
     m_controls_sync_signal = false;
+}
+
+
+
+static void debounce_timeout_handler(void * p_context)
+{
+    debounce_t* p_debounce = (debounce_t*)p_context;
+    bool current_sync_line_state = (bool)nrf_gpio_pin_read(SYNC_IN);
+
+    if(p_debounce->sync_line_state == current_sync_line_state)
+    {
+        teller++;
+        send_over_ethernet((uint8_t*)&p_debounce->sample, CMD_TIME_SYNC);
+    }
+}
+
+
+
+void sync_line_debouncer_init(void)
+{
+   APP_ERROR_CHECK(app_timer_create(&m_debounce_timer, APP_TIMER_MODE_SINGLE_SHOT, debounce_timeout_handler));
 }
