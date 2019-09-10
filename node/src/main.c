@@ -79,7 +79,6 @@
 #include "ethernet.h"
 #include "ethernet_dfu.h"
 
-//NOTE: Trial and error for implementing the init routines from the ethernet node project
 #include "gpio.h"
 #include "command_system.h"
 #include "pwm.h"
@@ -127,7 +126,6 @@ static void app_health_event_cb(const health_client_t * p_client, const health_c
         rssi_server_add_rssi_data(element_addr.address_start, p_event->p_meta_data->p_core_metadata->params.scanner.rssi);
     }
 }
-
 
 static void app_rssi_server_cb(const rssi_data_entry_t* p_data, uint8_t length)
 {
@@ -360,6 +358,7 @@ int main(void)
     #endif
 
     access_flash_config_store();
+
     while(1){
       check_ctrl_cmd();
       (void)sd_app_evt_wait();

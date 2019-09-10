@@ -18,7 +18,7 @@
       build_treat_warnings_as_errors="Yes"
       c_preprocessor_definitions="NO_VTOR_CONFIG;USE_APP_CONFIG;CONFIG_APP_IN_CORE;ACCESS_MODEL_PUBLISH_PERIOD_RESTORE;NRF52_SERIES;NRF52840;NRF52840_XXAA;S132;SOFTDEVICE_PRESENT;NRF_SD_BLE_API_VERSION=6;BOARD_PCA20036;BOARD_WIZBLE520;CONFIG_GPIO_AS_PINRESET;RSSI_OVER_ETHERNET_ENABLED;SEND_I_AM_ALIVE_MESSAGES"
       c_user_include_directories="include;../external/Wiznet/ioLibrary_Driver/callback;../external/Wiznet/ioLibrary_Driver/;../external/Wiznet/ioLibrary_Driver/Ethernet;../external/Wiznet/ioLibrary_Driver/Ethernet/W5500;../external/Wiznet/ioLibrary_Driver/Internet/DHCP;../external/nRF5_SDK_15.3.0_59ac345/integration/nrfx;../external/nRF5_SDK_15.3.0_59ac345/integration/nrfx/legacy;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx/templates/nRF52840;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx/templates;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx/drivers/include;../external/nordic_mesh/examples/common/include;../external/nordic_mesh/external/rtt/include;../external/nRF5_SDK_15.3.0_59ac345/components/ble/common;../external/nRF5_SDK_15.3.0_59ac345/components/softdevice/common;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/strerror;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/atomic;../external/nordic_mesh/models/foundation/config/include;../external/nordic_mesh/models/foundation/health/include;../external/nordic_mesh/models/vendor/rssi_monitor/include;../external/nordic_mesh/models/vendor/time_sync/include;../external/nordic_mesh/models/model_spec/generic_onoff/include;../external/nordic_mesh/models/model_spec/common/include;../external/nordic_mesh/models/model_spec/generic_level/include;../external/nordic_mesh/models/model_spec/common/include;../external/nordic_mesh/mesh/stack/api;../external/nordic_mesh/mesh/core/api;../external/nordic_mesh/mesh/core/include;../external/nordic_mesh/mesh/access/api;../external/nordic_mesh/mesh/access/include;../external/nordic_mesh/mesh/dfu/api;../external/nordic_mesh/mesh/dfu/include;../external/nordic_mesh/mesh/prov/api;../external/nordic_mesh/mesh/prov/include;../external/nordic_mesh/mesh/bearer/api;../external/nordic_mesh/mesh/bearer/include;../external/nordic_mesh/mesh/gatt/api;../external/nordic_mesh/mesh/gatt/include;../external/nRF5_SDK_15.3.0_59ac345/components/softdevice/s132/headers/;../external/nRF5_SDK_15.3.0_59ac345/components/softdevice/s132/headers/nrf52/;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx/mdk;../external/nRF5_SDK_15.3.0_59ac345/modules/nrfx/hal;../external/nRF5_SDK_15.3.0_59ac345/components/toolchain/cmsis/include;../external/nRF5_SDK_15.3.0_59ac345/components/toolchain/gcc;../external/nRF5_SDK_15.3.0_59ac345/components/toolchain/cmsis/dsp/GCC;../external/nRF5_SDK_15.3.0_59ac345/components/boards;../external/nRF5_SDK_15.3.0_59ac345/integration/nrfx;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/util;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/timer;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/log;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/log/src;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/experimental_section_vars;../external/nRF5_SDK_15.3.0_59ac345/components/libraries/delay;../external/nordic_mesh/external/micro-ecc;../external/nordic_mesh/mesh/core/include"
-	  debug_additional_load_file="$(SDK_ROOT:../external/nRF5_SDK_15.3.0_59ac345)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex"
+      debug_additional_load_file="$(SDK_ROOT:../external/nRF5_SDK_15.3.0_59ac345)/components/softdevice/s132/hex/s132_nrf52_6.1.1_softdevice.hex"
       debug_additional_load_file1="../node_bootloader_SDK14.2/examples/dfu/bootloader_secure_ble/pca10056/arm5_no_packs/_build/nrf52840_xxaa_s140.hex"
       debug_start_from_entry_point_symbol="No"
       debug_target_connection="J-Link"
@@ -53,7 +53,7 @@
       <file file_name="../external/Wiznet/ioLibrary_Driver/callback/dhcp_cb.c" />
       <file file_name="../external/Wiznet/ioLibrary_Driver/Internet/DHCP/dhcp.c" />
     </folder>
-    <folder Name="Application peripheral">
+    <folder Name="Application Peripheral">
       <file file_name="src/clock.c" />
       <file file_name="src/gpio.c" />
       <file file_name="src/ppi.c" />
@@ -62,7 +62,7 @@
       <file file_name="src/i_am_alive.c" />
       <file file_name="src/sync_line.c" />
     </folder>
-    <folder Name="Ethernet backend">
+    <folder Name="Ethernet Backend">
       <file file_name="src/command_system.c" />
       <file file_name="src/ethernet_dfu.c" />
       <file file_name="src/ethernet.c" />
@@ -121,7 +121,7 @@
       <file file_name="../external/nordic_mesh/mesh/core/src/core_tx_adv.c" />
       <file file_name="../external/nordic_mesh/mesh/core/src/mesh_mem_stdlib.c" />
     </folder>
-    <folder Name="Mesh stack">
+    <folder Name="Mesh Stack">
       <file file_name="../external/nordic_mesh/mesh/stack/src/mesh_stack.c" />
     </folder>
     <folder Name="GATT">
@@ -203,20 +203,18 @@
       <file file_name="../external/nordic_mesh/models/foundation/health/src/health_server.c" />
       <file file_name="../external/nordic_mesh/models/foundation/health/src/health_client.c" />
     </folder>
-    <folder Name="Rssi models">
+    <folder Name="RSSI Models">
       <file file_name="../external/nordic_mesh/models/vendor/rssi_monitor/src/rssi_util.c" />
       <file file_name="../external/nordic_mesh/models/vendor/rssi_monitor/src/rssi_server.c" />
     </folder>
-    <folder Name="Time sync model">
+    <folder Name="Time Sync Model">
       <file file_name="../external/nordic_mesh/models/vendor/time_sync/src/time_sync_controller.c" />
       <file file_name="../external/nordic_mesh/models/vendor/time_sync/src/time_sync_handler.c" />
     </folder>
     <folder Name="Other">
       <file file_name="../external/nordic_mesh/external/app_timer/app_timer_mesh.c" />
     </folder>
-    <configuration
-      Name="Debug" />
-    <folder Name="Board_support" />
+    <configuration Name="Debug" />
   </project>
   <configuration
     Name="Debug"

@@ -23,8 +23,8 @@ static uint8_t critical_section_depth;
 
 APP_TIMER_DEF(DHCP_TIMER);
 
-#define SPI_INSTANCE 0 /**< SPI instance index. */
-static const nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);    /**< SPI instance. */
+#define SPI_INSTANCE 0
+static const nrf_drv_spi_t spi_inst = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);
 
 static wiz_NetInfo gWIZNETINFO = 
 {
