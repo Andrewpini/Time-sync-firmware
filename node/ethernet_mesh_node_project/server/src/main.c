@@ -94,6 +94,7 @@
 #include "sync_timer_handler.h"
 #include "i_am_alive.h"
 #include "sync_line_debouncer.h"
+#include "SEGGER_RTT.h"
 
 
 static const uint8_t appkey[16] = {0x71, 0x6F, 0x72, 0x64, 0x69, 0x63, 0x5F, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x5F, 0x31};
@@ -120,7 +121,10 @@ static dsm_handle_t rssi_server_publish_handle;
 static bool m_device_provisioned;
 
 /* Forward declaration */
-void sync_set_pub_timer(bool on_off); // <- For the time sync algorithm 
+void sync_set_pub_timer(bool on_off); // <- For the time sync algorithm
+
+/* For some reason, this function, while not static, is not included in the RTT header files. */
+int SEGGER_RTT_vprintf(unsigned, const char *, va_list *); 
 
 
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event) 
@@ -354,10 +358,17 @@ static void app_rtt_input_handler(int key)
     }
 }
 
+void log_callback(uint32_t dbg_level, const char * p_filename, uint16_t line, uint32_t timestamp, const char * format, va_list arguments)
+{
+    __ASM volatile("nop");
+    SEGGER_RTT_printf(0, "<t: %10u>, %s, %4d, ",timestamp, p_filename, line);
+    SEGGER_RTT_vprintf(0, format, &arguments);
+}
+
 int main(void)
 {
     clock_init();
-    __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, LOG_CALLBACK_DEFAULT);
+    __LOG_INIT(LOG_SRC_APP | LOG_SRC_ACCESS | LOG_SRC_BEARER, LOG_LEVEL_INFO, log_callback);
     ERROR_CHECK(app_timer_init());
 
     leds_init();
