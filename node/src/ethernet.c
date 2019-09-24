@@ -45,7 +45,7 @@ static void print_network_info(void)
     ctlwizchip(CW_GET_ID,(void*)tmpstr);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "=== %s NET CONF ===\r\n",(char*)tmpstr);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "MAC:\t %02X:%02X:%02X:%02X:%02X:%02X\r\n",gWIZNETINFO.mac[0],gWIZNETINFO.mac[1],gWIZNETINFO.mac[2],
-              gWIZNETINFO.mac[3],gWIZNETINFO.mac[4],gWIZNETINFO.mac[5]);
+    gWIZNETINFO.mac[3],gWIZNETINFO.mac[4],gWIZNETINFO.mac[5]);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SIP:\t %d.%d.%d.%d\r\n", gWIZNETINFO.ip[0],gWIZNETINFO.ip[1],gWIZNETINFO.ip[2],gWIZNETINFO.ip[3]);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "GAR:\t %d.%d.%d.%d\r\n", gWIZNETINFO.gw[0],gWIZNETINFO.gw[1],gWIZNETINFO.gw[2],gWIZNETINFO.gw[3]);
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SUB:\t %d.%d.%d.%d\r\n", gWIZNETINFO.sn[0],gWIZNETINFO.sn[1],gWIZNETINFO.sn[2],gWIZNETINFO.sn[3]);
@@ -84,7 +84,7 @@ static bool spi_master_tx(SPIModuleNumber spi_num, uint16_t transfer_size, const
 
 static bool spi_master_rx(SPIModuleNumber spi_num, uint16_t transfer_size, uint8_t *rx_data)
 {    
-     if(rx_data == 0)
+    if(rx_data == 0)
     {
         return false;
     }
@@ -342,7 +342,7 @@ void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode)
             break;
     }
     
-    if (send_package)
+    if(send_package)
     {
         int32_t err = sendto(socket, (uint8_t*)&package, sizeof(command_system_package_t), (uint8_t*)TX_IP, port);
 
@@ -353,10 +353,12 @@ void send_over_ethernet(uint8_t* payload_package, ctrl_cmd_t msg_opcode)
     }
 }
 
-void get_own_ip(uint8_t* p_IP){ 
+void get_own_ip(uint8_t* p_IP)
+{ 
     memcpy(p_IP, own_ip, 4);
 }
 
-void get_own_mac(uint8_t* p_MAC){ 
+void get_own_mac(uint8_t* p_MAC)
+{ 
     memcpy(p_MAC, own_mac, 6);
 }
